@@ -1,6 +1,6 @@
 package com.urutare.stockm.service;
 
-import com.urutare.stockm.constants.Constants;
+import com.urutare.stockm.constants.Properties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
@@ -10,11 +10,18 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
+@Component
 public class AuthFilter extends GenericFilterBean {
+    private final Properties properties;
+
+    public AuthFilter(Properties properties) {
+        this.properties = properties;
+    }
 
 
     @Override
@@ -29,15 +36,15 @@ public class AuthFilter extends GenericFilterBean {
                 String token = authHeaderArr[1];
                 // System.out.print(token);
                 try {
-                    Claims claims = Jwts.parser().setSigningKey(Constants.API_SECRET_KEY)
+                    Claims claims = Jwts.parser().setSigningKey(properties.getAPI_SECRET_KEY())
                             .parseClaimsJws(token).getBody();
 
-                     String  userEmail = claims.get("email").toString();
-                     String fullNames = claims.get("fullNames").toString();
-                     String userId = claims.get("userId").toString();
+                    String userEmail = claims.get("email").toString();
+                    String fullNames = claims.get("fullNames").toString();
+                    String userId = claims.get("userId").toString();
                     httpRequest.setAttribute("userId", Long.parseLong(userId));
-                    httpRequest.setAttribute("email",userEmail);
-                    httpRequest.setAttribute("fullName",fullNames);
+                    httpRequest.setAttribute("email", userEmail);
+                    httpRequest.setAttribute("fullName", fullNames);
 
                 } catch (Exception e) {
                     System.out.println(e);
