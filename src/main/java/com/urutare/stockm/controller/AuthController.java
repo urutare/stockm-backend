@@ -1,9 +1,12 @@
 package com.urutare.stockm.controller;
 
 import com.urutare.stockm.entity.User;
-import com.urutare.stockm.repository.UserRepository;
+import com.urutare.stockm.exception.AuthException;
 import com.urutare.stockm.service.UserService;
-import jakarta.security.auth.message.AuthException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,26 +22,29 @@ import static com.urutare.stockm.service.OathService.generateJWTToken;
 @RequestMapping("/api")
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepository;
-
     Logger logger = LoggerFactory.getLogger(UserController.class);
-
 
     @Autowired
     UserService userService;
+    @Operation(summary = "This is to  login to system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "login to the system", content = {
+                    @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
+           })
+
     @PostMapping("/auth/login")
     public ResponseEntity<Object> login(@RequestBody Map<String, Object> UserMap) {
 
-        Map<String, Object> data = null;
+        Map<String, Object> data;
         try {
             String email = (String) UserMap.get("email");
             String password = (String) UserMap.get("password");
             User user = userService.validateUser(email, password);
-            data = new HashMap<String, Object>();
-            data.putAll(generateJWTToken(user));
+
+            data = new HashMap<>(generateJWTToken(user));
             return ResponseEntity.ok().body(data);
-        } catch (AuthException e) {
+        } catch (AuthException | jakarta.security.auth.message.AuthException e) {
             logger.error("An error occurred while login", e);
             Map<String, String> response = new HashMap<>();
             response.put("message", e.getMessage());
@@ -46,18 +52,22 @@ public class AuthController {
         }
     }
 
-
-    // @SecurityRequirement(name = "bearerAuth")
-
+    @Operation(summary = "This is to  register into the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "signup to the system", content = {
+                    @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
+    })
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody User User){
+    public ResponseEntity<Object> signup(@RequestBody User user){
         try{
-            User UserCreated = userService.registerUser(User);
-            Map<String, Object> data = new HashMap<String, Object>();
+            System.out.println("User: "+user.getEmail());
+            User UserCreated = userService.registerUser(user);
+            Map<String, Object> data = new HashMap<>();
             data.put("message","Account created");
             data.put("User id", UserCreated.getId());
             return ResponseEntity.ok().body(data);
-        } catch (AuthException e) {
+        } catch (AuthException | jakarta.security.auth.message.AuthException e) {
             logger.error("An error occurred while signup", e);
             Map<String, String> response = new HashMap<>();
             response.put("message", e.getMessage());
