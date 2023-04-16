@@ -1,22 +1,25 @@
 package com.urutare.stockm.service;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
+
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.security.auth.message.AuthException;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 @Service
 @Transactional
 public class UserService {
-    @Autowired
-    UserRepository userRepository;
 
+    UserRepository userRepository;
+   public UserService(UserRepository userRepository){
+       this.userRepository=userRepository;
+   }
     public User validateUser(String email, String password) throws AuthException {
         if (email != null)
             email = email.toLowerCase();
@@ -25,15 +28,20 @@ public class UserService {
             if (!BCrypt.checkpw(password, userFound.getPassword())) {
                 throw new AuthException("Invalid email or password");
             }
-
-
             return userFound;
 
         } catch (Exception e) {
             throw new AuthException("Invalid email or password");
         }
     }
-
+    public record PublicUser(Long id, String email, String fullName) {}
+    public List<PublicUser> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        List<PublicUser> publicUsers = users.stream()
+                .map(user -> new PublicUser(user.getId(), user.getEmail(), user.getFullName()))
+                .collect(Collectors.toList());
+        return publicUsers;
+    }
 
 
     public User registerUser(User user) throws AuthException {

@@ -7,11 +7,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,8 +25,11 @@ public class AuthController {
 
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @Autowired
-    UserService userService;
+
+   private final UserService userService;
+    public AuthController(UserService userService){
+        this.userService=userService;
+    }
     @Operation(summary = "This is to  login to system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login to the system", content = {
@@ -41,9 +45,16 @@ public class AuthController {
             String email = (String) UserMap.get("email");
             String password = (String) UserMap.get("password");
             User user = userService.validateUser(email, password);
+            if(user!=null) {
+                data = new HashMap<>(generateJWTToken(user));
+                return ResponseEntity.ok().body(data);
+            }
+            else{
+                Map<String, String> response = new HashMap<>();
+                response.put("message","Invalid email or password");
+                return ResponseEntity.status(403).body(response);
+            }
 
-            data = new HashMap<>(generateJWTToken(user));
-            return ResponseEntity.ok().body(data);
         } catch (AuthException | jakarta.security.auth.message.AuthException e) {
             logger.error("An error occurred while login", e);
             Map<String, String> response = new HashMap<>();
@@ -51,7 +62,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
     @Operation(summary = "This is to  register into the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "signup to the system", content = {
@@ -59,7 +69,7 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody User user){
+    public ResponseEntity<Object> signup(@RequestBody @Validated User user){
         try{
             System.out.println("User: "+user.getEmail());
             User UserCreated = userService.registerUser(user);
@@ -76,7 +86,7 @@ public class AuthController {
 
     }
     @PostMapping("/auth/logout")
-    public ResponseEntity<Object> logout() {
+    public ResponseEntity<Object> logout(HttpServletRequest request) {
         try {
             // TODO: Implement logout
             

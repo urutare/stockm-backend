@@ -15,7 +15,7 @@ import org.springframework.web.filter.GenericFilterBean;
 import java.io.IOException;
 
 public class AuthFilter extends GenericFilterBean {
-    public String useremail;
+
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -32,18 +32,15 @@ public class AuthFilter extends GenericFilterBean {
                     Claims claims = Jwts.parser().setSigningKey(Constants.API_SECRET_KEY)
                             .parseClaimsJws(token).getBody();
 
-                    useremail = claims.get("email").toString();
-                    // System.out.println("set user id" + claims.get("role").toString());
-
-                    httpRequest.setAttribute("userId",
-                            Long.parseLong(claims.get("userId").toString()));
-                    httpRequest.setAttribute("role",
-                            claims.get("role").toString());
-
-                    httpRequest.setAttribute("email", claims.get("email").toString());
+                     String  userEmail = claims.get("email").toString();
+                     String fullNames = claims.get("fullNames").toString();
+                     String userId = claims.get("userId").toString();
+                    httpRequest.setAttribute("userId", Long.parseLong(userId));
+                    httpRequest.setAttribute("email",userEmail);
+                    httpRequest.setAttribute("fullName",fullNames);
 
                 } catch (Exception e) {
-                    System.out.println(e.toString());
+                    System.out.println(e);
                     httpResponse.sendError(HttpStatus.FORBIDDEN.value(), "invalid/expired please login again");
                     return;
                 }

@@ -24,8 +24,7 @@ public class StockmApplication {
 		SpringApplication.run(StockmApplication.class, args);
 	}
 	@Configuration
-	public class CorsConfig implements WebMvcConfigurer {
-
+	public static class CorsConfig implements WebMvcConfigurer {
 
 		@Override
 		public void addCorsMappings(CorsRegistry registry) {
@@ -41,7 +40,8 @@ public class StockmApplication {
 		AuthFilter authFilter = new AuthFilter();
 		registrationBean.setFilter(authFilter);
 		registrationBean.addUrlPatterns(
-				"/api/logout"
+				"/api/auth/logout",
+				"/api/users/*"
 		);
 		return registrationBean;
 	}

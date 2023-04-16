@@ -1,11 +1,9 @@
 package com.urutare.stockm.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.urutare.stockm.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,22 +11,26 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.urutare.stockm.entity.User;
-import com.urutare.stockm.repository.UserRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
-
+    private final UserService userService;
+public UserController(UserService userService){
+    this.userService=userService;
+}
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping("/users")
-    public ResponseEntity<Object> getAllUsers() {
+    public ResponseEntity<Object> getAllUsers(HttpServletRequest request) {
+        String userEmail = request.getAttribute("email").toString();
+        System.out.println("Requested by: "+userEmail);
         try {
-            List<User> users = userRepository.findAll();
+            List<UserService.PublicUser> users = userService.getAllUsers();
             return ResponseEntity.ok().body(users);
         } catch (Exception e) {
             logger.error("An error occurred while retrieving all users", e);
