@@ -12,7 +12,6 @@ import java.util.Map;
 public class OathService {
     public static Map<String, String> generateJWTToken(User user) {
         long timestamp = System.currentTimeMillis();
-        // System.out.print("current user role:" + user.getRole());
        String token = Jwts.builder().signWith(SignatureAlgorithm.HS256,
                         Constants.API_SECRET_KEY)
                 .setIssuedAt(new Date(timestamp))
