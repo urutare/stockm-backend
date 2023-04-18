@@ -1,6 +1,8 @@
 package com.urutare.stockm.service;
 
+import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.User;
+import com.urutare.stockm.exception.ResourceNotFoundException;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.security.auth.message.AuthException;
 import org.mindrot.jbcrypt.BCrypt;
@@ -57,6 +59,13 @@ public class UserService {
         if (count > 0)
             throw new AuthException("Email already in use");
         return userRepository.save(user);
+    }
+
+    public UserDto findById(String userId) throws ResourceNotFoundException {
+        UserDto userDto = userRepository.findUserDtoById(userId);
+        if (userDto == null)
+            throw new ResourceNotFoundException("User not found");
+        return userDto;
     }
 
 }
