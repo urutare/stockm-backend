@@ -19,23 +19,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.urutare.stockm.service.OathService.generateJWTToken;
+
 @RestController
 @RequestMapping("/api")
 public class AuthController {
 
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
+    private final UserService userService;
 
-   private final UserService userService;
-    public AuthController(UserService userService){
-        this.userService=userService;
+    public AuthController(UserService userService) {
+        this.userService = userService;
     }
+
     @Operation(summary = "This is to  login to system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login to the system", content = {
                     @Content(mediaType = "application/json") }),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
-           })
+    })
 
     @PostMapping("/auth/login")
     public ResponseEntity<Object> login(@RequestBody Map<String, Object> UserMap) {
@@ -45,13 +47,12 @@ public class AuthController {
             String email = (String) UserMap.get("email");
             String password = (String) UserMap.get("password");
             User user = userService.validateUser(email, password);
-            if(user!=null) {
+            if (user != null) {
                 data = new HashMap<>(generateJWTToken(user));
                 return ResponseEntity.ok().body(data);
-            }
-            else{
+            } else {
                 Map<String, String> response = new HashMap<>();
-                response.put("message","Invalid email or password");
+                response.put("message", "Invalid email or password");
                 return ResponseEntity.status(403).body(response);
             }
 
@@ -62,6 +63,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
     @Operation(summary = "This is to  register into the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "signup to the system", content = {
@@ -69,145 +71,77 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody @Validated User user){
-        try{
-            System.out.println("User: "+user.getEmail());
-            User UserCreated = userService.registerUser(user);
-            Map<String, Object> data = new HashMap<>();
-            data.put("message","Account created");
-            data.put("User id", UserCreated.getId());
-            return ResponseEntity.ok().body(data);
-        } catch (AuthException | jakarta.security.auth.message.AuthException e) {
-            logger.error("An error occurred while signup", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<Object> signup(@RequestBody @Validated User user)
+            throws jakarta.security.auth.message.AuthException {
+        System.out.println("User: " + user.getEmail());
+        User UserCreated = userService.registerUser(user);
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", "Account created");
+        data.put("User id", UserCreated.getId());
+        return ResponseEntity.ok().body(data);
 
     }
+
     @PostMapping("/auth/logout")
     public ResponseEntity<Object> logout(HttpServletRequest request) {
-        try {
-            // TODO: Implement logout
-            
-            return ResponseEntity.ok().body("{\"message\": \"Logged out\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while logout", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement logout
+
+        return ResponseEntity.ok().body("{\"message\": \"Logged out\"}");
     }
 
     @PostMapping("/auth/activate-account")
     public ResponseEntity<Object> activateAccount() {
-        try {
-            // TODO: Implement activate account
-            
-            return ResponseEntity.ok().body("{\"message\": \"Account is activated\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while activating account", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement activate account
+
+        return ResponseEntity.ok().body("{\"message\": \"Account is activated\"}");
     }
 
     @PostMapping("/auth/reset-password")
     public ResponseEntity<Object> resetPassword() {
-        try {
-            // TODO: Implementation here
-            
-            return ResponseEntity.ok().body("{\"message\": \"Password is reset\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while activating account", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implementation here
+
+        return ResponseEntity.ok().body("{\"message\": \"Password is reset\"}");
     }
 
     @PostMapping("/auth/forgot-password")
     public ResponseEntity<Object> forgotPassword() {
-        try {
-            // TODO: Implement
-            
-            return ResponseEntity.ok().body("{\"message\": \"Reset link is sent\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while reset password", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement
+
+        return ResponseEntity.ok().body("{\"message\": \"Reset link is sent\"}");
     }
 
     @PostMapping("/auth/two-factor")
     public ResponseEntity<Object> twoFactor() {
-        try {
-            // TODO: Implement
-            
-            return ResponseEntity.ok().body("{\"message\": \"Two factor\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while two factor auth", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement
+
+        return ResponseEntity.ok().body("{\"message\": \"Two factor\"}");
     }
 
     @PostMapping("/auth/auth-token")
     public ResponseEntity<Object> authToken() {
-        try {
-            // TODO: Implement
-            
-            return ResponseEntity.ok().body("{\"message\": \"Get token\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while getting token", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement
+
+        return ResponseEntity.ok().body("{\"message\": \"Get token\"}");
     }
 
     @PostMapping("/auth/refresh-token")
     public ResponseEntity<Object> refreshToken() {
-        try {
-            // TODO: Implement
-            
-            return ResponseEntity.ok().body("{\"message\": \"Refresh token\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while refreshing token", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement
+
+        return ResponseEntity.ok().body("{\"message\": \"Refresh token\"}");
     }
 
     @PostMapping("/auth/verify-phone")
     public ResponseEntity<Object> verifyToken() {
-        try {
-            // TODO: Implement
-            
-            return ResponseEntity.ok().body("{\"message\": \"Phone verified\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while verifying phone", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement
+
+        return ResponseEntity.ok().body("{\"message\": \"Phone verified\"}");
     }
 
     @PatchMapping("/auth/change-password")
     public ResponseEntity<Object> changePassword() {
-        try {
-            // TODO: Implement
-            
-            return ResponseEntity.ok().body("{\"message\": \"Change password\"}");
-        } catch (Exception e) {
-            logger.error("An error occurred while changing password", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // TODO: Implement
+
+        return ResponseEntity.ok().body("{\"message\": \"Change password\"}");
     }
 }
