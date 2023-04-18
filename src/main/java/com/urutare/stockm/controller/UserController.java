@@ -3,6 +3,7 @@ package com.urutare.stockm.controller;
 import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.exception.ResourceNotFoundException;
 import com.urutare.stockm.service.UserService;
+import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@Api(tags = "users")
 public class UserController {
 
     private final UserService userService;
@@ -41,9 +43,10 @@ public class UserController {
     public ResponseEntity<Object> authenticatedUser(HttpServletRequest request) {
         String userId = request.getAttribute("userId").toString();
         logger.info("Authenticated user id: {}", userId);
-
         UserDto user = userService.findById(userId);
-
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok().body(user);
     }
 

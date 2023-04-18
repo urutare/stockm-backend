@@ -3,6 +3,7 @@ package com.urutare.stockm.controller;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
 import com.urutare.stockm.service.UserService;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +23,7 @@ import static com.urutare.stockm.service.OathService.generateJWTToken;
 
 @RestController
 @RequestMapping("/api")
+@Api(tags = "Auth")
 public class AuthController {
 
     Logger logger = LoggerFactory.getLogger(UserController.class);

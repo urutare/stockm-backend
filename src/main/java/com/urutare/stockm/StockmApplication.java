@@ -9,17 +9,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import springfox.documentation.swagger2.annotations.EnableSwagger2WebFlux;
 
 @SpringBootApplication
 @EnableMongoRepositories
 @EnableJpaAuditing
-@ComponentScan(basePackages = "com.urutare.stockm")
 @OpenAPIDefinition(info = @Info(title = "My Stock Application", version = "1.0", description = "My Stock Application API", license = @License(name = "MIT License", url = "https://opensource.org/licenses/MIT"), contact = @Contact(url = "https://mycompany.com/contact", name = "My Company", email = "support@mycompany.com")))
 public class StockmApplication {
 	public static void main(String[] args) {
