@@ -78,6 +78,8 @@ public class UserService {
         long count = userRepository.getCountByEmail(email);
         if (count > 0)
             throw new AuthException("Email already in use");
+        emailService.sendEmail(email, "Welcome to Urutare Inc!", "Dear " + user.getFullName() + ",\n\nWe are thrilled to welcome you to Urutare Inc! Thank you for creating an account with our stock management app. We're confident that you'll find our app to be a powerful tool for managing your inventory and streamlining your business operations.\n\nAs a new member of our community, you can expect exceptional customer support and ongoing improvements to our app. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+
         return userRepository.save(user);
     }
 
