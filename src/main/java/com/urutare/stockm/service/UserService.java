@@ -1,13 +1,19 @@
 package com.urutare.stockm.service;
 
+import com.urutare.stockm.constants.Properties;
 import com.urutare.stockm.dto.UserDto;
+import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.ResourceNotFoundException;
+import com.urutare.stockm.repository.ResetRepository;
 import com.urutare.stockm.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -18,10 +24,25 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
 
-    UserRepository userRepository;
-   public UserService(UserRepository userRepository){
-       this.userRepository=userRepository;
-   }
+    private final EmailService emailService;
+    private final OathService oathService;
+    private final Properties properties;
+    private final UserRepository userRepository;
+    private final ResetRepository resetRepository;
+
+
+    public UserService(@Autowired UserRepository userRepository,
+                       @Autowired EmailService emailService,
+                       @Autowired OathService oathService,
+                       @Autowired Properties properties,
+                       @Autowired ResetRepository resetRepository) {
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+        this.oathService = oathService;
+        this.properties = properties;
+        this.resetRepository = resetRepository;
+    }
+
     public User validateUser(String email, String password) throws AuthException {
         if (email != null)
             email = email.toLowerCase();
@@ -36,7 +57,7 @@ public class UserService {
             throw new AuthException("Invalid email or password");
         }
     }
-    public record PublicUser(Long id, String email, String fullName) {}
+
     public List<PublicUser> getAllUsers() {
         List<User> users = userRepository.findAll();
         List<PublicUser> publicUsers = users.stream()
@@ -44,7 +65,6 @@ public class UserService {
                 .collect(Collectors.toList());
         return publicUsers;
     }
-
 
     public User registerUser(User user) throws AuthException {
         Pattern pattern = Pattern.compile("^(.+)@(.+)$");
@@ -66,6 +86,42 @@ public class UserService {
         if (userDto == null)
             throw new ResourceNotFoundException("User not found");
         return userDto;
+    }
+
+    public void forgotPassword(String email) throws AuthException, MessagingException {
+        if (email == null) {
+            throw new AuthException("Email is required");
+        }
+        email = email.toLowerCase();
+        User user = userRepository.findByEmailAddress(email);
+        if (user == null) {
+            throw new AuthException("Email not found");
+        }
+        String token = oathService.generateResetPasswordToken(user);
+        resetRepository.save(new ResetPasswordToken(user.getId(), token));
+        String resetPasswordLink = "/api/auth/reset-password?token=" + token;
+        String subject = "Reset your password";
+        Context context = new Context();
+        context.setVariable("link", properties.getBASE_URL() + resetPasswordLink);
+
+        emailService.sendEmail(email, subject, context, "reset_password_email.html");
+    }
+
+    public void resetPassword(String token, String password) throws AuthException {
+        ResetPasswordToken resetPasswordToken = resetRepository.findByToken(token);
+        if (resetPasswordToken == null) {
+            throw new AuthException("Invalid token");
+        }
+
+        User user = oathService.getUserFromTokenWhenResetPassword(token);
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+        user.setPassword(hashedPassword);
+        userRepository.save(user);
+
+        resetRepository.delete(resetPasswordToken);
+    }
+
+    public record PublicUser(Long id, String email, String fullName) {
     }
 
 }
