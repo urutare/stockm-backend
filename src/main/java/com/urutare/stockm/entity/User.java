@@ -1,18 +1,21 @@
 package com.urutare.stockm.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.urutare.stockm.models.Role;
+import com.urutare.stockm.utils.MapUtils;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.Date;
+import java.util.Map;
 
 @Entity
 @Table(name = "users")
+@Data
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -20,41 +23,59 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String fullName;
+
+    private String phoneNumber;
+
+    @Column
+    private String gender;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Role role;
+    @Column
+    private boolean isEnabled;
+    /**
+     * for chat purpose
+     */
+    @Column
+    private boolean isActive;
+    @Column
+    private String avatar;
+    @Column
+    private boolean verified;
+    @Column
+    private Date lastTimePasswordUpdated;
+    @Column
+    private String birthdate;
+    //    private List<String> Permissions;
+    @Column
+    private Date lastLogin;
+
 
     public User() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
+    public User(String email, String password, String fullName,
+                String phoneNumber) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
         this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public User(String email, String password, String fullName, String phoneNumber, Role role) {
+        this.email = email;
+        this.password = password;
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+        this.role = role;
+    }
+
+    public static User fromMap(Map<String, Object> map) {
+        return MapUtils.of().fromMap(map, User.class);
+    }
+
+    public Map<String, Object> toMap(boolean simplified) {
+        return MapUtils.instance.toMap(this, simplified);
     }
 }

@@ -2,40 +2,43 @@ package com.urutare.stockm.controller;
 
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
+import com.urutare.stockm.service.OathService;
 import com.urutare.stockm.service.UserService;
+import com.urutare.stockm.utils.JsonUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.urutare.stockm.service.OathService.generateJWTToken;
-
 @RestController
 @RequestMapping("/api")
 public class AuthController {
 
+    private final UserService userService;
+    private final OathService oathService;
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    private final UserService userService;
-
-    public AuthController(UserService userService) {
+    public AuthController(@Autowired UserService userService,
+                          @Autowired OathService oathService) {
         this.userService = userService;
+        this.oathService = oathService;
     }
 
     @Operation(summary = "This is to  login to system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login to the system", content = {
-                    @Content(mediaType = "application/json") }),
+                    @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
 
@@ -48,7 +51,7 @@ public class AuthController {
             String password = (String) UserMap.get("password");
             User user = userService.validateUser(email, password);
             if (user != null) {
-                data = new HashMap<>(generateJWTToken(user));
+                data = new HashMap<>(oathService.generateJWTToken(user));
                 return ResponseEntity.ok().body(data);
             } else {
                 Map<String, String> response = new HashMap<>();
@@ -67,11 +70,11 @@ public class AuthController {
     @Operation(summary = "This is to  register into the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "signup to the system", content = {
-                    @Content(mediaType = "application/json") }),
+                    @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody @Validated User user)
+    public ResponseEntity<Object> signup(@RequestBody User user)
             throws jakarta.security.auth.message.AuthException {
         System.out.println("User: " + user.getEmail());
         User UserCreated = userService.registerUser(user);
@@ -97,17 +100,18 @@ public class AuthController {
     }
 
     @PostMapping("/auth/reset-password")
-    public ResponseEntity<Object> resetPassword() {
-        // TODO: Implementation here
-
-        return ResponseEntity.ok().body("{\"message\": \"Password is reset\"}");
+    public ResponseEntity<Object> resetPassword(@RequestParam("token") String token,
+                                                @RequestBody Map<String, Object> body) throws jakarta.security.auth.message.AuthException {
+        String password = (String) body.get("password");
+        userService.resetPassword(token, password);
+        return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset successfully")));
     }
 
     @PostMapping("/auth/forgot-password")
-    public ResponseEntity<Object> forgotPassword() {
-        // TODO: Implement
-
-        return ResponseEntity.ok().body("{\"message\": \"Reset link is sent\"}");
+    public ResponseEntity<Object> forgotPassword(@RequestBody Map<String, Object> body) throws MessagingException, jakarta.security.auth.message.AuthException {
+        String email = (String) body.get("email");
+        userService.forgotPassword(email);
+        return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset link sent to email")));
     }
 
     @PostMapping("/auth/two-factor")
