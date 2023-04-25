@@ -2,6 +2,7 @@ package com.urutare.stockm.service;
 
 import com.urutare.stockm.constants.Properties;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,9 +19,11 @@ import java.io.IOException;
 @Component
 public class AuthFilter extends GenericFilterBean {
     private final Properties properties;
+    private final UserService userService;
 
-    public AuthFilter(Properties properties) {
+    public AuthFilter(Properties properties,UserService userService) {
         this.properties = properties;
+        this.userService=userService;
     }
 
 
@@ -39,9 +42,18 @@ public class AuthFilter extends GenericFilterBean {
                     Claims claims = Jwts.parser().setSigningKey(properties.getAPI_SECRET_KEY())
                             .parseClaimsJws(token).getBody();
 
+                    boolean isActive = (Boolean)  claims.get("isActive");
+                    if (!isActive) {
+                        throw new JwtException("Token is no longer active");
+                    }
+                    String userId = claims.get("id").toString();
+                    isActive=userService.isActive(userId);
+
+                    if(!isActive){
+                        throw new JwtException("Token is no longer active");
+                    }
                     String userEmail = claims.get("email").toString();
-                    String fullNames = claims.get("fullNames").toString();
-                    String userId = claims.get("userId").toString();
+                    String fullNames = claims.get("fullName").toString();
                     httpRequest.setAttribute("userId", Long.parseLong(userId));
                     httpRequest.setAttribute("email", userEmail);
                     httpRequest.setAttribute("fullName", fullNames);

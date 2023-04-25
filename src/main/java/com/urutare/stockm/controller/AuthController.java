@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,7 @@ public class AuthController {
             User user = userService.validateUser(email, password);
             if (user != null) {
                 data = new HashMap<>(oathService.generateJWTToken(user));
+                userService.activateUser(String.valueOf(user.getId()));
                 return ResponseEntity.ok().body(data);
             } else {
                 Map<String, String> response = new HashMap<>();
@@ -85,17 +88,34 @@ public class AuthController {
 
     }
 
+    @Operation(summary = "This is to  logout from the system", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "logout from the system", content = {
+                    @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden, Authorization token must be provided", content = @Content) })
+    @SecurityRequirement(name = "bearerAuth")
+
+
     @PostMapping("/auth/logout")
     public ResponseEntity<Object> logout(HttpServletRequest request) {
-        // TODO: Implement logout
-
-        return ResponseEntity.ok().body("{\"message\": \"Logged out\"}");
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        // set isActive field to false in the token
+        String token = request.getHeader("Authorization").substring(7);
+        Map<String, Object> tokenData = oathService.decodeJWTToken(token);
+        userService.logoutUser(tokenData.get("id").toString());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Logged out successfully");
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/auth/activate-account")
-    public ResponseEntity<Object> activateAccount() {
-        // TODO: Implement activate account
-
+    public ResponseEntity<Object> activateAccount(HttpServletRequest request) {
+        String userId = request.getAttribute("userId").toString();
+        userService.activateUser(userId);
         return ResponseEntity.ok().body("{\"message\": \"Account is activated\"}");
     }
 

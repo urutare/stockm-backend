@@ -1,6 +1,7 @@
 package com.urutare.stockm.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -21,4 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT new com.urutare.stockm.dto.UserDto(u) FROM User u WHERE u.id=?1")
     UserDto findUserDtoById(String id);
 
+    @Modifying
+    @Query("UPDATE User u SET u.isActive = :isActive WHERE u.id = :userId")
+    void updateIsActive(@Param("userId") String userId, @Param("isActive") boolean isActive);
+    @Query("SELECT u.isActive FROM User u WHERE u.id=?1")
+    boolean getIsActiveById(String id);
 }

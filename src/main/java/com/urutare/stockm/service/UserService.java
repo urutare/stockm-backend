@@ -60,21 +60,28 @@ public class UserService {
 
     public List<PublicUser> getAllUsers() {
         List<User> users = userRepository.findAll();
-        List<PublicUser> publicUsers = users.stream()
+        return users.stream()
                 .map(user -> new PublicUser(user.getId(), user.getEmail(), user.getFullName()))
                 .collect(Collectors.toList());
-        return publicUsers;
+    }
+
+    private void validateEmail(String email) throws AuthException {
+        Pattern pattern = Pattern.compile("^(.+)@(.+)$");
+        if (email == null){
+            throw new AuthException("Email is required");
+        }
+        email = email.toLowerCase();
+        if (!pattern.matcher(email).matches()){
+            throw new AuthException("Invalid email format");
+        }
     }
 
     public User registerUser(User user) throws AuthException {
-        Pattern pattern = Pattern.compile("^(.+)@(.+)$");
         String email = user.getEmail();
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(10));
         user.setPassword(hashedPassword);
-        if (email != null)
-            email = email.toLowerCase();
-        if (!pattern.matcher(email).matches())
-            throw new AuthException("Invalid email format");
+        user.setActive(false);
+        validateEmail(email);
         long count = userRepository.getCountByEmail(email);
         if (count > 0)
             throw new AuthException("Email already in use");
@@ -124,6 +131,31 @@ public class UserService {
     }
 
     public record PublicUser(Long id, String email, String fullName) {
+    }
+    public void logoutUser(String userId) {
+        userRepository.updateIsActive(userId, false);
+    }
+    public void activateUser(String userId){
+        userRepository.updateIsActive(userId, true);
+    }
+    public Boolean isActive(String userId){
+        return userRepository.getIsActiveById(userId);
+    }
+    public void updateEmail(String userId, String newEmail) throws AuthException {
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        validateEmail(newEmail);
+        long count = userRepository.getCountByEmail(newEmail);
+        if (count > 0){
+            throw new AuthException("Email already in use");
+        }
+
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        emailService.sendEmail(newEmail, "Welcome to Urutare Inc!", "Dear " + user.getFullName() + ",\n\nWe are thrilled to welcome you to Urutare Inc with your new email address! .\n\n feel free to request an exceptional  support whenever you need. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+
     }
 
 }

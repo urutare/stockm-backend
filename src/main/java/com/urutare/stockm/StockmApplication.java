@@ -36,8 +36,7 @@ public class StockmApplication {
         registrationBean.setFilter(authFilter);
         registrationBean.addUrlPatterns(
                 "/api/auth/logout",
-                "/api/users/*",
-                "/api/user/*"
+                "/api/users/*"
         );
         return registrationBean;
     }
