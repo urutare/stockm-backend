@@ -2,6 +2,7 @@ package com.urutare.stockm.controller;
 
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
+import com.urutare.stockm.models.ChangePasswordRequest;
 import com.urutare.stockm.service.OathService;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JsonUtils;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -163,9 +165,19 @@ public class AuthController {
     }
 
     @PatchMapping("/auth/change-password")
-    public ResponseEntity<Object> changePassword() {
-        // TODO: Implement
-
-        return ResponseEntity.ok().body("{\"message\": \"Change password\"}");
+    public ResponseEntity<Object> changePassword(@RequestBody @Validated ChangePasswordRequest changePasswordRequest,
+                                                 HttpServletRequest request) {
+        try {
+            String userId = request.getAttribute("userId").toString();
+            String oldPassword = changePasswordRequest.getOldPassword();
+            String newPassword = changePasswordRequest.getNewPassword();
+            userService.changePassword(userId, oldPassword, newPassword);
+            return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            Map<String, String> response = new HashMap<>();
+            response.put("message", exception.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

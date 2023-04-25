@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
 
     private final UserService userService;
@@ -28,13 +28,13 @@ public class UserController {
 
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @GetMapping("")
+    @GetMapping("users")
     public ResponseEntity<Object> getAllUsers() {
         List<UserService.PublicUser> users = userService.getAllUsers();
         return ResponseEntity.ok().body(users);
     }
 
-    @GetMapping("user")
+    @GetMapping("users/user")
     public ResponseEntity<Object> authenticatedUser(HttpServletRequest request) {
         String userId = request.getAttribute("userId").toString();
         logger.info("Authenticated user id: {}", userId);
@@ -53,22 +53,35 @@ public class UserController {
     public ResponseEntity<Object> activateUser() {
         return ResponseEntity.ok().body("{\"message\": \"user is activated\"}");
     }
-    @PatchMapping("update-email")
-    public ResponseEntity<Object> updateEmail(@RequestBody @Validated UpdateEmailRequest updateEmailRequest,
-                                              HttpServletRequest request){
+    @PatchMapping("users/user-update-email")
+    public ResponseEntity<Object> updateEmailByUser(@RequestBody @Validated UpdateEmailRequest updateEmailRequest,
+                                                    HttpServletRequest request){
         try {
             String userId = request.getAttribute("userId").toString();
             String newEmail = updateEmailRequest.getNewEmail();
-            userService.updateEmail(userId, newEmail);
+            userService.updateEmailForUser(userId, newEmail);
             return ResponseEntity.ok().body("{\"message\": \"Email updated successfully\"}");
+        } catch (Exception exception) {
+            return handleException(exception);
         }
-        catch (Exception exception){
-            exception.printStackTrace();
-            Map<String, String> response = new HashMap<>();
-            response.put("message", exception.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    }
 
+    @PatchMapping("update-email")
+    public ResponseEntity<Object> updateEmail(@RequestBody @Validated UpdateEmailRequest updateEmailRequest){
+        try {
+            String newEmail = updateEmailRequest.getNewEmail();
+            userService.updateEmail(updateEmailRequest.getOldEmail(), newEmail);
+            return ResponseEntity.ok().body("{\"message\": \"Email updated successfully\"}");
+        } catch (Exception exception) {
+            return handleException(exception);
+        }
+    }
+
+    private ResponseEntity<Object> handleException(Exception exception) {
+        exception.printStackTrace();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
 

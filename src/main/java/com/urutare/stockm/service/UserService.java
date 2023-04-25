@@ -141,11 +141,24 @@ public class UserService {
     public Boolean isActive(String userId){
         return userRepository.getIsActiveById(userId);
     }
-    public void updateEmail(String userId, String newEmail) throws AuthException {
+    public void updateEmailForUser(String userId, String newEmail) throws AuthException {
         User user = userRepository.findById(userId);
+        if (user != null) {
+            updateEmail(user, newEmail);
+        } else {
+            throw new ResourceNotFoundException("User not found");
+        }
+    }
+
+    public void updateEmail(String oldEmail, String newEmail) throws AuthException {
+        User user = userRepository.findByEmailAddress(oldEmail);
         if (user == null) {
             throw new ResourceNotFoundException("User not found");
         }
+        updateEmail(user, newEmail);
+    }
+
+    private void updateEmail(User user, String newEmail) throws AuthException {
         validateEmail(newEmail);
         long count = userRepository.getCountByEmail(newEmail);
         if (count > 0){
@@ -154,8 +167,19 @@ public class UserService {
 
         user.setEmail(newEmail);
         userRepository.save(user);
-        emailService.sendEmail(newEmail, "Welcome to Urutare Inc!", "Dear " + user.getFullName() + ",\n\nWe are thrilled to welcome you to Urutare Inc with your new email address! .\n\n feel free to request an exceptional  support whenever you need. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+
+        emailService.sendEmail(newEmail, "Urutare Inc account Email change!", "Dear " + user.getFullName() + ",\n\nWe are thrilled to welcome you to Urutare Inc with your new email address! .\n\n feel free to request an exceptional  support whenever you need. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
 
     }
 
+    public void changePassword(String userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId);
+        if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("The old password is incorrect");
+        }
+        String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
+        user.setPassword(hashedPassword);
+        userRepository.save(user);
+        emailService.sendEmail(user.getEmail(), "Password change!", "Dear " + user.getFullName() + ",\n\n Your password has been successfully changed to '"+newPassword+"'  .\n\n feel free to request an exceptional  support whenever you need. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+    }
 }
