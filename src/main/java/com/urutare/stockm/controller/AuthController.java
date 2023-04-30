@@ -1,5 +1,8 @@
 package com.urutare.stockm.controller;
 
+import com.urutare.stockm.dto.request.ForgotPasswordRequestBody;
+import com.urutare.stockm.dto.request.LoginRequestBody;
+import com.urutare.stockm.dto.request.ResetPasswordRequestBody;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
 import com.urutare.stockm.service.OathService;
@@ -43,15 +46,12 @@ public class AuthController {
     })
 
     @PostMapping("/auth/login")
-    public ResponseEntity<Object> login(@RequestBody Map<String, Object> UserMap) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequestBody body) {
 
-        Map<String, Object> data;
         try {
-            String email = (String) UserMap.get("email");
-            String password = (String) UserMap.get("password");
-            User user = userService.validateUser(email, password);
+            User user = userService.validateUser(body.getEmail(), body.getPassword());
             if (user != null) {
-                data = new HashMap<>(oathService.generateJWTToken(user));
+                Map<String, Object> data = new HashMap<>(oathService.generateJWTToken(user));
                 return ResponseEntity.ok().body(data);
             } else {
                 Map<String, String> response = new HashMap<>();
@@ -101,16 +101,15 @@ public class AuthController {
 
     @PostMapping("/auth/reset-password")
     public ResponseEntity<Object> resetPassword(@RequestParam("token") String token,
-                                                @RequestBody Map<String, Object> body) throws jakarta.security.auth.message.AuthException {
-        String password = (String) body.get("password");
+                                                @RequestBody ResetPasswordRequestBody body) throws jakarta.security.auth.message.AuthException {
+        String password = body.getPassword();
         userService.resetPassword(token, password);
         return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset successfully")));
     }
 
     @PostMapping("/auth/forgot-password")
-    public ResponseEntity<Object> forgotPassword(@RequestBody Map<String, Object> body) throws MessagingException, jakarta.security.auth.message.AuthException {
-        String email = (String) body.get("email");
-        userService.forgotPassword(email);
+    public ResponseEntity<Object> forgotPassword(@RequestBody ForgotPasswordRequestBody body) throws MessagingException, jakarta.security.auth.message.AuthException {
+        userService.forgotPassword(body.getEmail());
         return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset link sent to email")));
     }
 

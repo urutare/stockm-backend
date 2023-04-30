@@ -1,10 +1,6 @@
 package com.urutare.stockm;
 
 import com.urutare.stockm.service.AuthFilter;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,7 +20,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 @EnableMongoRepositories
 @EnableJpaAuditing
 @ConfigurationPropertiesScan
-@OpenAPIDefinition(info = @Info(title = "My Stock Application", version = "1.0", description = "My Stock Application API", license = @License(name = "MIT License", url = "https://opensource.org/licenses/MIT"), contact = @Contact(url = "https://mycompany.com/contact", name = "My Company", email = "support@mycompany.com")))
 public class StockmApplication {
     public static void main(String[] args) {
         SpringApplication.run(StockmApplication.class, args);
