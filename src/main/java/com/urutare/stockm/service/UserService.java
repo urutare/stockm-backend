@@ -48,6 +48,7 @@ public class UserService {
             email = email.toLowerCase();
         try {
             User userFound = userRepository.findByEmailAddress(email);
+            System.out.println("User found: "+userFound.toString());
             if (!BCrypt.checkpw(password, userFound.getPassword())) {
                 throw new AuthException("Invalid email or password");
             }
@@ -76,7 +77,7 @@ public class UserService {
         }
     }
 
-    public User registerUser(User user) throws AuthException {
+    public User registerUser(User user) throws AuthException, MessagingException {
         String email = user.getEmail();
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(10));
         user.setPassword(hashedPassword);
@@ -85,7 +86,7 @@ public class UserService {
         long count = userRepository.getCountByEmail(email);
         if (count > 0)
             throw new AuthException("Email already in use");
-        emailService.sendEmail(email, "Welcome to Urutare Inc!", "Dear " + user.getFullName() + ",\n\nWe are thrilled to welcome you to Urutare Inc! Thank you for creating an account with our stock management app. We're confident that you'll find our app to be a powerful tool for managing your inventory and streamlining your business operations.\n\nAs a new member of our community, you can expect exceptional customer support and ongoing improvements to our app. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+        sendEmailWithContext(user,email,"Welcome to Urutare Inc!","signup_email.html");
 
         return userRepository.save(user);
     }
@@ -141,7 +142,7 @@ public class UserService {
     public Boolean isActive(String userId){
         return userRepository.getIsActiveById(userId);
     }
-    public void updateEmailForUser(String userId, String newEmail) throws AuthException {
+    public void updateEmailForUser(String userId, String newEmail) throws AuthException, MessagingException {
         User user = userRepository.findById(userId);
         if (user != null) {
             updateEmail(user, newEmail);
@@ -150,7 +151,7 @@ public class UserService {
         }
     }
 
-    public void updateEmail(String oldEmail, String newEmail) throws AuthException {
+    public void updateEmail(String oldEmail, String newEmail) throws AuthException, MessagingException {
         User user = userRepository.findByEmailAddress(oldEmail);
         if (user == null) {
             throw new ResourceNotFoundException("User not found");
@@ -158,7 +159,7 @@ public class UserService {
         updateEmail(user, newEmail);
     }
 
-    private void updateEmail(User user, String newEmail) throws AuthException {
+    private void updateEmail(User user, String newEmail) throws AuthException, MessagingException {
         validateEmail(newEmail);
         long count = userRepository.getCountByEmail(newEmail);
         if (count > 0){
@@ -167,8 +168,18 @@ public class UserService {
 
         user.setEmail(newEmail);
         userRepository.save(user);
+        sendEmailWithContext(user,newEmail,"Urutare Inc account Email change!","update_user_email.html");
 
-        emailService.sendEmail(newEmail, "Urutare Inc account Email change!", "Dear " + user.getFullName() + ",\n\nWe are thrilled to welcome you to Urutare Inc with your new email address! .\n\n feel free to request an exceptional  support whenever you need. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+    }
+    private void sendEmailWithContext(User user,String email,String subject,String templateFile) throws MessagingException {
+        Context context = new Context();
+        context.setVariable("fullName", user.getFullName());
+        context.setVariable("login_link", properties.getBASE_URL() +"/api/auth/login");
+        context.setVariable("supportEmail","info@urutare.rw");
+        context.setVariable("supportPhone", "+250 7888888");
+        context.setVariable("email",email);
+        context.setVariable("welcome_image","/images/celebrate.png");
+        emailService.sendEmail(email,subject,context,templateFile);
 
     }
 

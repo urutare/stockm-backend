@@ -19,6 +19,7 @@ logs.log
 *.iml
 *.ipr
 
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -34,3 +35,5 @@ build/
 
 /src/main/resources/application.properties
 
+#Logs
+*.gz

@@ -80,7 +80,7 @@ public class AuthController {
     })
     @PostMapping("/auth/signup")
     public ResponseEntity<Object> signup(@RequestBody User user)
-            throws jakarta.security.auth.message.AuthException {
+            throws jakarta.security.auth.message.AuthException, MessagingException {
         System.out.println("User: " + user.getEmail());
         User UserCreated = userService.registerUser(user);
         Map<String, Object> data = new HashMap<>();
