@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  stockm-user-service:
+    build: ./
+    ports:
+      - "8080:8080"
+    networks:
+      - stockm-network
+
+networks:
+  stockm-network:
+    driver: bridge
