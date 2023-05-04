@@ -1,15 +1,14 @@
 package com.urutare.stockm.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.User;
 
-@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     User findById(String userId);
 
@@ -27,4 +26,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void updateIsActive(@Param("userId") String userId, @Param("isActive") boolean isActive);
     @Query("SELECT u.isActive FROM User u WHERE u.id=?1")
     boolean getIsActiveById(String id);
+    Optional<User> findByEmail(String email);
 }

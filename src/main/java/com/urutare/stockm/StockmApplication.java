@@ -4,6 +4,7 @@ import com.urutare.stockm.service.AuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +16,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 @EnableJpaAuditing
 @ConfigurationPropertiesScan
 public class StockmApplication {
@@ -29,9 +30,10 @@ public class StockmApplication {
         registrationBean.setFilter(authFilter);
         registrationBean.addUrlPatterns(
                 "/api/auth/logout",
-                "/api/auth/change-password",
-                "/api/users/*"
-        );
+                "/api/auth/auth-token",
+                "/api/auth/refresh-token",
+                "/api/users/*",
+                "/api/user/*");
         return registrationBean;
     }
 
@@ -63,5 +65,3 @@ public class StockmApplication {
 
     }
 }
-
-
