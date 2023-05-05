@@ -1,8 +1,10 @@
 package com.urutare.stockm.controller;
 
+import com.urutare.stockm.dto.request.LoginRequestBody;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
 import com.urutare.stockm.models.ChangePasswordRequest;
+import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.service.OathService;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JsonUtils;
@@ -47,12 +49,12 @@ public class AuthController {
     })
 
     @PostMapping("/auth/login")
-    public ResponseEntity<Object> login(@RequestBody Map<String, Object> UserMap) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequestBody loginRequestBody) {
 
         Map<String, Object> data;
         try {
-            String email = (String) UserMap.get("email");
-            String password = (String) UserMap.get("password");
+            String email =loginRequestBody.getEmail();
+            String password = loginRequestBody.getPassword();
             User user = userService.validateUser(email, password);
             if (user != null) {
                 data = new HashMap<>(oathService.generateJWTToken(user));
@@ -80,10 +82,10 @@ public class AuthController {
     })
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody Map<String, Object> UserMap)
+    public ResponseEntity<Object> signup(@RequestBody SignupRequestBody userData)
             throws jakarta.security.auth.message.AuthException, MessagingException {
         try {
-            User UserCreated = userService.registerUser(UserMap);
+            User UserCreated = userService.registerUser(userData);
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Account created");
             data.put("User id", UserCreated.getId());

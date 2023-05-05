@@ -1,6 +1,6 @@
 package com.urutare.stockm.controllerTests;
 
-import com.urutare.stockm.entity.User;
+import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +38,8 @@ public class AuthControllerTest {
         userMap.put("password", "testpassword");
         userMap.put("fullName","Test User");
         userMap.put("phoneNumber","0789728209");
-
-        userService.registerUser(userMap);
+        SignupRequestBody signupRequestBody=new SignupRequestBody("testingemail@example.com","testpassword","Test User");
+        userService.registerUser(signupRequestBody);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

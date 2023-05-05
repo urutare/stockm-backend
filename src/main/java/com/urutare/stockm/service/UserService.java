@@ -5,6 +5,7 @@ import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.ResourceNotFoundException;
+import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.repository.ResetRepository;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -16,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -78,15 +78,15 @@ public class UserService {
         }
     }
 
-    public User registerUser(Map<String, Object> userMap) throws AuthException, MessagingException {
-        String email = (String) userMap.get("email");
+    public User registerUser( SignupRequestBody userData) throws AuthException, MessagingException {
+        String email =  userData.getEmail();
         validateEmail(email);
         long count = userRepository.getCountByEmail(email);
         if (count > 0)
             throw new AuthException("Email already in use");
-        String password = (String) userMap.get("password");
-        String fullName = (String) userMap.get("fullName");
-        String phoneNumber = (String) userMap.get("phoneNumber");
+        String password =  userData.getPassword();
+        String fullName =  userData.getFullName();
+        String phoneNumber = userData.getPhoneNumber();
         if (password == null) {
             throw new AuthException("password field is required");
         }
