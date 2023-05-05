@@ -34,16 +34,12 @@ public class AuthControllerTest {
     public void testSignup() throws Exception {
         // create a mock userMap for the request body
         Map<String, Object> userMap = new HashMap<>();
-        userMap.put("email", "test@example.com");
+        userMap.put("email", "testingemail@example.com");
         userMap.put("password", "testpassword");
+        userMap.put("fullName","Test User");
+        userMap.put("phoneNumber","0789728209");
 
-        // create a mock User object for the response
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
-        user.setFullName("Test User");
-
-        userService.registerUser(user);
+        userService.registerUser(userMap);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

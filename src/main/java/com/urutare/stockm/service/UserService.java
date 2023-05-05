@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -77,19 +78,32 @@ public class UserService {
         }
     }
 
-    public User registerUser(User user) throws AuthException, MessagingException {
-        String email = user.getEmail();
-        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(10));
-        user.setPassword(hashedPassword);
-        user.setActive(false);
+    public User registerUser(Map<String, Object> userMap) throws AuthException, MessagingException {
+        String email = (String) userMap.get("email");
         validateEmail(email);
         long count = userRepository.getCountByEmail(email);
         if (count > 0)
             throw new AuthException("Email already in use");
-        sendEmailWithContext(user,email,"Welcome to Urutare Inc!","signup_email.html");
-
+        String password = (String) userMap.get("password");
+        String fullName = (String) userMap.get("fullName");
+        String phoneNumber = (String) userMap.get("phoneNumber");
+        if (password == null) {
+            throw new AuthException("password field is required");
+        }
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+        User user = new User(email, hashedPassword);
+        user.setActive(false);
+        if (fullName == null) {
+            throw new AuthException("fullName field is required");
+        }
+        if (phoneNumber != null) {
+            user.setPhoneNumber(phoneNumber);
+        }
+        user.setFullName(fullName);
+        sendEmailWithContext(user, email, "Welcome to Urutare Inc!", "signup_email.html");
         return userRepository.save(user);
     }
+
 
     public UserDto findById(String userId) throws ResourceNotFoundException {
         UserDto userDto = userRepository.findUserDtoById(userId);

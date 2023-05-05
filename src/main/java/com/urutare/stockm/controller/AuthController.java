@@ -78,15 +78,23 @@ public class AuthController {
                     @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
+
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody User user)
+    public ResponseEntity<Object> signup(@RequestBody Map<String, Object> UserMap)
             throws jakarta.security.auth.message.AuthException, MessagingException {
-        System.out.println("User: " + user.getEmail());
-        User UserCreated = userService.registerUser(user);
-        Map<String, Object> data = new HashMap<>();
-        data.put("message", "Account created");
-        data.put("User id", UserCreated.getId());
-        return ResponseEntity.ok().body(data);
+        try {
+            User UserCreated = userService.registerUser(UserMap);
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", "Account created");
+            data.put("User id", UserCreated.getId());
+            return ResponseEntity.ok().body(data);
+        }
+        catch (AuthException e){
+            logger.error("An error occurred while signup", e);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
 
     }
 
