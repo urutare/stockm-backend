@@ -66,12 +66,7 @@ public class OathService {
         return Jwts.parser().setSigningKey(properties.getAPI_SECRET_KEY()).parseClaimsJws(token).getBody();
     }
     public Map<String, Object> decodeJWTToken(String token) {
-        Map<String, Object> tokenData = getClaimsFromToken(token);
-        boolean isActive = (Boolean) tokenData.get("isActive");
-        if (!isActive) {
-            throw new JwtException("Token is no longer active");
-        }
-        return tokenData;
+        return getClaimsFromToken(token);
     }
 
 

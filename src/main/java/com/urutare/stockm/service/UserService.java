@@ -197,7 +197,7 @@ public class UserService {
 
     }
 
-    public void changePassword(String userId, String oldPassword, String newPassword) {
+    public void changePassword(String userId, String oldPassword, String newPassword) throws MessagingException {
         User user = userRepository.findById(userId);
         if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
             throw new IllegalArgumentException("The old password is incorrect");
@@ -205,6 +205,7 @@ public class UserService {
         String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
         user.setPassword(hashedPassword);
         userRepository.save(user);
-        emailService.sendEmail(user.getEmail(), "Password change!", "Dear " + user.getFullName() + ",\n\n Your password has been successfully changed to '"+newPassword+"'  .\n\n feel free to request an exceptional  support whenever you need. We're committed to providing you with the best possible experience.\n\nIf you have any questions or concerns, please don't hesitate to reach out to our support team at info@urutare.rw.\n\nThank you again for choosing Urutare Inc. We look forward to helping your business thrive!\n\nBest regards,\nUrutare Inc.");
+        sendEmailWithContext(user,user.getEmail(),"Urutare Inc account password change!","change_password_email.html");
+
     }
 }
