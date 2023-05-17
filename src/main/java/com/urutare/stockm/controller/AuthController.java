@@ -59,6 +59,7 @@ public class AuthController {
             String password = loginRequestBody.getPassword();
             User user = userService.validateUser(email, password);
             if (user != null) {
+                user.setActive(true);
                 data = new HashMap<>(oathService.generateJWTToken(user));
                 userService.activateUser(String.valueOf(user.getId()));
                 return ResponseEntity.ok().body(data);
@@ -117,9 +118,8 @@ public class AuthController {
         if (session != null) {
             session.invalidate();
         }
-        // set isActive field to false in the token
         String token = request.getHeader("Authorization").substring(7);
-        Map<String, Object> tokenData = oathService.decodeJWTToken(token);
+        Map<String, Object> tokenData = oathService.getClaimsFromToken(token);
         userService.logoutUser(tokenData.get("id").toString());
         Map<String, String> response = new HashMap<>();
         response.put("message", "Logged out successfully");

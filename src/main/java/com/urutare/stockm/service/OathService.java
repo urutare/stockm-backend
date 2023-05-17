@@ -2,8 +2,6 @@ package com.urutare.stockm.service;
 
 import com.urutare.stockm.constants.Properties;
 import com.urutare.stockm.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.security.auth.message.AuthException;
@@ -22,7 +20,7 @@ public class OathService {
     }
 
     public Map<String, String> generateJWTToken(User user) {
-        String token = generateToken(user);
+        String token = generateToken(user.toMap(false));
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
         map.put("message", "You are logged in");
@@ -30,9 +28,6 @@ public class OathService {
         return map;
     }
 
-    public String generateToken(User user) {
-        return generateToken(user.toMap(true));
-    }
 
     public String generateResetPasswordToken(User user) {
         Map<String, Object> map = user.toMap(true);
@@ -42,9 +37,6 @@ public class OathService {
 
     private String generateToken(Map<String, Object> data) {
         long timestamp = System.currentTimeMillis();
-        Object isActiveObj = data.get("isActive");
-        boolean isActive = isActiveObj != null && (Boolean) isActiveObj;
-        data.put("isActive", !isActive);
         var build = Jwts.builder()
                 .signWith(SignatureAlgorithm.HS256, properties.getAPI_SECRET_KEY())
                 .setIssuedAt(new Date(timestamp))
@@ -65,9 +57,7 @@ public class OathService {
     public Map<String, Object> getClaimsFromToken(String token) {
         return Jwts.parser().setSigningKey(properties.getAPI_SECRET_KEY()).parseClaimsJws(token).getBody();
     }
-    public Map<String, Object> decodeJWTToken(String token) {
-        return getClaimsFromToken(token);
-    }
+
 
 
 }

@@ -41,7 +41,7 @@ public class AuthFilter extends GenericFilterBean {
                 try {
                     Claims claims = Jwts.parser().setSigningKey(properties.getAPI_SECRET_KEY())
                             .parseClaimsJws(token).getBody();
-
+                    System.out.println(claims);
                     boolean isActive = (Boolean)  claims.get("isActive");
                     if (!isActive) {
                         throw new JwtException("Token is no longer active");
