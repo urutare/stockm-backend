@@ -1,4 +1,4 @@
-name: Build and Test
+name: StockM User Service CI/CD
 on:
   push:
     branches: [develop]
@@ -42,6 +42,9 @@ jobs:
       STOCKM_API_SECRET_KEY: ${{ secrets.STOCKM_API_SECRET_KEY }}
       STOCKM_TOKEN_VALIDITY: 86400000
       STOCKM_BASE_URL: http://localhost:8080
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_TOKEN_VALIDITY: 86400000
+      JWT_REFRESH_TOKEN_VALIDITY: 86400000
     strategy:
       matrix:
         java-version: [17]

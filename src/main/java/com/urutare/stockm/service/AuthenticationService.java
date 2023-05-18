@@ -28,7 +28,7 @@ public class AuthenticationService {
     @Value("${jwt.token.validity}")
     private long tokenValidity;
 
-    @Value("${jwt.refresh-token.validity}")
+    @Value("${jwt.refresh.token.validity}")
     private long refreshTokenValidity;
 
     @Value("${jwt.secret}")
