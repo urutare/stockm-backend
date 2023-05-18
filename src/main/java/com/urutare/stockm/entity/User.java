@@ -1,12 +1,17 @@
 package com.urutare.stockm.entity;
 
-import com.urutare.stockm.models.Role;
 import com.urutare.stockm.utils.MapUtils;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -18,20 +23,35 @@ public class User {
     private long id;
 
     @Column(nullable = false, unique = true)
+    @NotBlank
+    @Size(max = 50)
+    @Email
     private String email;
 
+    @Column(nullable = false, unique = true)
+    @NotBlank
+    @Size(max = 20)
+    private String username;
+
     @Column(nullable = false)
+    @NotBlank
+    @Size(max = 120)
     private String password;
 
+    @NotBlank
+    @Size(max = 150)
     private String fullName;
 
+    @Size(max = 13)
     private String phoneNumber;
 
     @Column
     private String gender;
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Role role;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
     @Column
     private boolean isEnabled;
     /**
@@ -47,20 +67,27 @@ public class User {
     private Date lastTimePasswordUpdated;
     @Column
     private String birthdate;
-    //    private List<String> Permissions;
+    // private List<String> Permissions;
     @Column
     private Date lastLogin;
-
 
     public User() {
     }
 
     public User(String email, String password, String fullName,
-                String phoneNumber) {
+            String phoneNumber) {
         this.email = email;
         this.password = password;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
+    }
+    public User(String username, String email, String password, String fullName,
+            String phoneNumber) {
+        this.email = email;
+        this.password = password;
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+        this.username = username;
     }
     public User(String email, String password) {
         this.email = email;
@@ -72,7 +99,7 @@ public class User {
         this.password = password;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
-        this.role = role;
+        this.roles.add(role);
     }
 
     public static User fromMap(Map<String, Object> map) {

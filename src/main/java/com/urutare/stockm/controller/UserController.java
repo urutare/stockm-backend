@@ -5,6 +5,9 @@ import com.urutare.stockm.models.UpdateEmailRequest;
 import com.urutare.stockm.service.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,18 +19,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Users")
 public class UserController {
 
     private final UserService userService;
+    Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    Logger logger = LoggerFactory.getLogger(UserController.class);
-
-    @GetMapping("users")
-    public ResponseEntity<Object> getAllUsers() {
+    @GetMapping("/users")
+    @Operation(summary = "Get all users", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Object> getAllUsers(HttpServletRequest request) {
         List<UserService.PublicUser> users = userService.getAllUsers();
         return ResponseEntity.ok().body(users);
     }

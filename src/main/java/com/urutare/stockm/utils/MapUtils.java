@@ -19,7 +19,7 @@ public enum MapUtils {
         map.put("fullName", user.getFullName());
         if (!simplified) {
             map.put("phoneNumber", user.getPhoneNumber());
-            map.put("role", user.getRole());
+            map.put("roles", user.getRoles().toString());
             map.put("isActive", user.isActive());
             map.put("avatar", user.getAvatar());
             map.put("verified", user.isVerified());
