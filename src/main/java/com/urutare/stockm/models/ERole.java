@@ -1,10 +1,10 @@
 package com.urutare.stockm.models;
 
-public enum Role {
+public enum ERole {
     admin("Admin"), seller("Seller"), buyer("Buyer");
     private final String displayName;
 
-    Role(String displayName) {
+    ERole(String displayName) {
         this.displayName = displayName;
     }
 

@@ -27,4 +27,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.isActive FROM User u WHERE u.id=?1")
     boolean getIsActiveById(String id);
     Optional<User> findByEmail(String email);
+
+    Optional<User> findByEmailOrUsername(String email, String username);
+
+    Boolean existsByUsername(String username);
+
+    Boolean existsByEmail(String email);
+
 }

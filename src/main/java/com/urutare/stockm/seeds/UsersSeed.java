@@ -1,7 +1,6 @@
 package com.urutare.stockm.seeds;
 
 import com.urutare.stockm.entity.User;
-import com.urutare.stockm.models.Role;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.mindrot.jbcrypt.BCrypt;

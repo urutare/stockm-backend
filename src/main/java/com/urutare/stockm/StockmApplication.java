@@ -1,40 +1,20 @@
 package com.urutare.stockm;
 
-import com.urutare.stockm.service.AuthFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+@SpringBootApplication
 @EnableJpaAuditing
 @ConfigurationPropertiesScan
 public class StockmApplication {
     public static void main(String[] args) {
         SpringApplication.run(StockmApplication.class, args);
-    }
-
-    @Bean
-    public FilterRegistrationBean<AuthFilter> filterRegistrationBean(@Autowired AuthFilter authFilter) {
-        FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(authFilter);
-        registrationBean.addUrlPatterns(
-                "/api/auth/logout",
-                "/api/auth/auth-token",
-                "/api/auth/refresh-token",
-                "/api/users/*",
-                "/api/user/*");
-        return registrationBean;
     }
 
     @Bean
@@ -52,16 +32,5 @@ public class StockmApplication {
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setCharacterEncoding("UTF-8");
         return templateResolver;
-    }
-
-    @Configuration
-    public static class CorsConfig implements WebMvcConfigurer {
-        @Override
-        public void addCorsMappings(CorsRegistry registry) {
-            registry.addMapping("/**")
-                    .allowedMethods("*")
-                    .allowedOrigins("*");
-        }
-
     }
 }
