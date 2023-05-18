@@ -5,6 +5,8 @@ import com.urutare.stockm.dto.request.LoginRequestBody;
 import com.urutare.stockm.dto.request.ResetPasswordRequestBody;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
+import com.urutare.stockm.models.ChangePasswordRequest;
+import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.service.OathService;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JsonUtils;
@@ -12,13 +14,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -46,12 +51,17 @@ public class AuthController {
     })
 
     @PostMapping("/auth/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequestBody body) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequestBody loginRequestBody) throws AuthException, jakarta.security.auth.message.AuthException {
 
-        try {
-            User user = userService.validateUser(body.getEmail(), body.getPassword());
+        Map<String, Object> data;
+
+            String email =loginRequestBody.getEmail();
+            String password = loginRequestBody.getPassword();
+            User user = userService.validateUser(email, password);
             if (user != null) {
-                Map<String, Object> data = new HashMap<>(oathService.generateJWTToken(user));
+                user.setActive(true);
+                data = new HashMap<>(oathService.generateJWTToken(user));
+                userService.activateUser(String.valueOf(user.getId()));
                 return ResponseEntity.ok().body(data);
             } else {
                 Map<String, String> response = new HashMap<>();
@@ -59,12 +69,7 @@ public class AuthController {
                 return ResponseEntity.status(403).body(response);
             }
 
-        } catch (AuthException | jakarta.security.auth.message.AuthException e) {
-            logger.error("An error occurred while login", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+
     }
 
     @Operation(summary = "This is to  register into the system")
@@ -73,29 +78,47 @@ public class AuthController {
                     @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
+
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody User user)
-            throws jakarta.security.auth.message.AuthException {
-        System.out.println("User: " + user.getEmail());
-        User UserCreated = userService.registerUser(user);
-        Map<String, Object> data = new HashMap<>();
-        data.put("message", "Account created");
-        data.put("User id", UserCreated.getId());
-        return ResponseEntity.ok().body(data);
+    public ResponseEntity<Object> signup(@RequestBody SignupRequestBody userData)
+            throws jakarta.security.auth.message.AuthException, MessagingException {
+
+            User UserCreated = userService.registerUser(userData);
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", "Account created");
+            data.put("User id", UserCreated.getId());
+            return ResponseEntity.ok().body(data);
+
 
     }
+
+    @Operation(summary = "This is to  logout from the system", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "logout from the system", content = {
+                    @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden, Authorization token must be provided", content = @Content) })
+    @SecurityRequirement(name = "bearerAuth")
+
 
     @PostMapping("/auth/logout")
     public ResponseEntity<Object> logout(HttpServletRequest request) {
-        // TODO: Implement logout
-
-        return ResponseEntity.ok().body("{\"message\": \"Logged out\"}");
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        String token = request.getHeader("Authorization").substring(7);
+        Map<String, Object> tokenData = oathService.getClaimsFromToken(token);
+        userService.logoutUser(tokenData.get("id").toString());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Logged out successfully");
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/auth/activate-account")
-    public ResponseEntity<Object> activateAccount() {
-        // TODO: Implement activate account
-
+    public ResponseEntity<Object> activateAccount(HttpServletRequest request) {
+        String userId = request.getAttribute("userId").toString();
+        userService.activateUser(userId);
         return ResponseEntity.ok().body("{\"message\": \"Account is activated\"}");
     }
 
@@ -142,9 +165,16 @@ public class AuthController {
     }
 
     @PatchMapping("/auth/change-password")
-    public ResponseEntity<Object> changePassword() {
-        // TODO: Implement
+    public ResponseEntity<Object> changePassword(
+            @RequestBody @Validated ChangePasswordRequest changePasswordRequest,
+                                                 HttpServletRequest request
+    ) throws MessagingException {
 
-        return ResponseEntity.ok().body("{\"message\": \"Change password\"}");
+            String userId = request.getAttribute("userId").toString();
+            String oldPassword = changePasswordRequest.getOldPassword();
+            String newPassword = changePasswordRequest.getNewPassword();
+            userService.changePassword(userId, oldPassword, newPassword);
+            return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
+
     }
 }

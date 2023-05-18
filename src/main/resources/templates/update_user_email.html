@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <!--[if mso]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+    </xml><![endif]-->
+    <title>Welcome to Urutare Inc</title>
+    <style>
+        .email-wrapper {
+            background-color: rgba(255, 255, 255, 0.8);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333333;
+            font-size: 28px;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        p {
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: block;
+            background-color: #2196f3;
+            color: #ffffff;
+            border-radius: 3px;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px 20px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #0c7cd5;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 200px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .banner {
+            display: block;
+            margin: 0 auto;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .login-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: #ffffff;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+
+        .login-button:hover {
+            background-color: #0c7cd5;
+        }
+
+    </style>
+</head>
+<body>
+<table class="email-wrapper">
+    <tr>
+        <td>
+            <img class="logo" src="company_logo.png" alt="Company Logo">
+            <img class="banner" src="https://asset.cloudinary.com/dhw5h8j3v/330aa83e15dfef9822babf824a40c4c6"  alt="Welcome Image">
+
+            <!--            th:src="${welcome_image}-->
+            <h1>Welcome to Urutare Inc</h1>
+            <p>Dear [[${fullName}]],</p>
+            <p>We are thrilled to welcome you to Urutare Inc with your new email address! Feel free to request any
+                information or support that you need.</p>
+            <p>Here are a few important details:</p>
+            <ul>
+                <li>Your email address: [[${email}]]</li>
+            </ul>
+
+            <p>Please log in to the platform using your new email and the password you had or request change
+                password.</p>
+            <p>If you have any questions or issues, please do not hesitate to contact our support team at
+                [[${supportEmail}]] or by phone at [[${supportPhone}]].</p>
+            <a href="#" th:href="${login_link}" class="login-button">Get started</a>
+            <p>Thank you,</p>
+            <p>Urutare Inc Team</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

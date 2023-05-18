@@ -5,6 +5,7 @@ import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.ResourceNotFoundException;
+import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.repository.ResetRepository;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -48,6 +49,7 @@ public class UserService {
             email = email.toLowerCase();
         try {
             User userFound = userRepository.findByEmailAddress(email);
+
             if (!BCrypt.checkpw(password, userFound.getPassword())) {
                 throw new AuthException("Invalid email or password");
             }
@@ -60,26 +62,48 @@ public class UserService {
 
     public List<PublicUser> getAllUsers() {
         List<User> users = userRepository.findAll();
-        List<PublicUser> publicUsers = users.stream()
+        return users.stream()
                 .map(user -> new PublicUser(user.getId(), user.getEmail(), user.getFullName()))
                 .collect(Collectors.toList());
-        return publicUsers;
     }
 
-    public User registerUser(User user) throws AuthException {
+    private void validateEmail(String email) throws AuthException {
         Pattern pattern = Pattern.compile("^(.+)@(.+)$");
-        String email = user.getEmail();
-        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(10));
-        user.setPassword(hashedPassword);
-        if (email != null)
-            email = email.toLowerCase();
-        if (!pattern.matcher(email).matches())
+        if (email == null){
+            throw new AuthException("Email is required");
+        }
+        email = email.toLowerCase();
+        if (!pattern.matcher(email).matches()){
             throw new AuthException("Invalid email format");
+        }
+    }
+
+    public User registerUser( SignupRequestBody userData) throws AuthException, MessagingException {
+        String email =  userData.getEmail();
+        validateEmail(email);
         long count = userRepository.getCountByEmail(email);
         if (count > 0)
             throw new AuthException("Email already in use");
+        String password =  userData.getPassword();
+        String fullName =  userData.getFullName();
+        String phoneNumber = userData.getPhoneNumber();
+        if (password == null) {
+            throw new AuthException("password field is required");
+        }
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+        User user = new User(email, hashedPassword);
+        user.setActive(false);
+        if (fullName == null) {
+            throw new AuthException("fullName field is required");
+        }
+        if (phoneNumber != null) {
+            user.setPhoneNumber(phoneNumber);
+        }
+        user.setFullName(fullName);
+        sendEmailWithContext(user, email, "Welcome to Urutare Inc!", "signup_email.html");
         return userRepository.save(user);
     }
+
 
     public UserDto findById(String userId) throws ResourceNotFoundException {
         UserDto userDto = userRepository.findUserDtoById(userId);
@@ -123,5 +147,65 @@ public class UserService {
 
     public record PublicUser(Long id, String email, String fullName) {
     }
+    public void logoutUser(String userId) {
+        userRepository.updateIsActive(userId, false);
+    }
+    public void activateUser(String userId){
+        userRepository.updateIsActive(userId, true);
+    }
+    public Boolean isActive(String userId){
+        return userRepository.getIsActiveById(userId);
+    }
+    public void updateEmailForUser(String userId, String newEmail) throws AuthException, MessagingException {
+        User user = userRepository.findById(userId);
+        if (user != null) {
+            updateEmail(user, newEmail);
+        } else {
+            throw new ResourceNotFoundException("User not found");
+        }
+    }
 
+    public void updateEmail(String oldEmail, String newEmail) throws AuthException, MessagingException {
+        User user = userRepository.findByEmailAddress(oldEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        updateEmail(user, newEmail);
+    }
+
+    private void updateEmail(User user, String newEmail) throws AuthException, MessagingException {
+        validateEmail(newEmail);
+        long count = userRepository.getCountByEmail(newEmail);
+        if (count > 0){
+            throw new AuthException("Email already in use");
+        }
+
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        sendEmailWithContext(user,newEmail,"Urutare Inc account Email change!","update_user_email.html");
+
+    }
+    private void sendEmailWithContext(User user,String email,String subject,String templateFile) throws MessagingException {
+        Context context = new Context();
+        context.setVariable("fullName", user.getFullName());
+        context.setVariable("login_link", properties.getBASE_URL() +"/api/auth/login");
+        context.setVariable("supportEmail","info@urutare.rw");
+        context.setVariable("supportPhone", "+250 7888888");
+        context.setVariable("email",email);
+        context.setVariable("welcome_image","/images/celebrate.png");
+        emailService.sendEmail(email,subject,context,templateFile);
+
+    }
+
+    public void changePassword(String userId, String oldPassword, String newPassword) throws MessagingException {
+        User user = userRepository.findById(userId);
+        if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("The old password is incorrect");
+        }
+        String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
+        user.setPassword(hashedPassword);
+        userRepository.save(user);
+        sendEmailWithContext(user,user.getEmail(),"Urutare Inc account password change!","change_password_email.html");
+
+    }
 }

@@ -62,6 +62,10 @@ public class User {
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
     }
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
 
     public User(String email, String password, String fullName, String phoneNumber, Role role) {
         this.email = email;

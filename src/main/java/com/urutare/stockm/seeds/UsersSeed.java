@@ -17,11 +17,11 @@ public class UsersSeed {
         this.userRepository = userRepository;
     }
 
-    @PostConstruct
-    public void loadData() {
-        userRepository.saveAll(List.of(
-                new User("paterne@gmail.com", BCrypt.hashpw("password", BCrypt.gensalt(10)),
-                        "NDATUMUREMYI  Paterne", "0786388768", Role.admin)
-        ));
-    }
+//    @PostConstruct
+//    public void loadData() {
+//        userRepository.saveAll(List.of(
+//                new User("paterne@gmail.com", BCrypt.hashpw("password", BCrypt.gensalt(10)),
+//                        "NDATUMUREMYI  Paterne", "0786388768", Role.admin)
+//        ));
+//    }
 }

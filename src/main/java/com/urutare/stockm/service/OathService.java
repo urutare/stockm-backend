@@ -20,16 +20,14 @@ public class OathService {
     }
 
     public Map<String, String> generateJWTToken(User user) {
-        String token = generateToken(user);
+        String token = generateToken(user.toMap(false));
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
         map.put("message", "You are logged in");
+
         return map;
     }
 
-    public String generateToken(User user) {
-        return generateToken(user.toMap(true));
-    }
 
     public String generateResetPasswordToken(User user) {
         Map<String, Object> map = user.toMap(true);
@@ -39,13 +37,14 @@ public class OathService {
 
     private String generateToken(Map<String, Object> data) {
         long timestamp = System.currentTimeMillis();
-        var build = Jwts.builder().signWith(SignatureAlgorithm.HS256,
-                        properties.getAPI_SECRET_KEY())
+        var build = Jwts.builder()
+                .signWith(SignatureAlgorithm.HS256, properties.getAPI_SECRET_KEY())
                 .setIssuedAt(new Date(timestamp))
                 .setExpiration(new Date(timestamp + properties.getTOKEN_VALIDITY()));
         data.forEach(build::claim);
         return build.compact();
     }
+
 
     public User getUserFromTokenWhenResetPassword(String token) throws AuthException {
         var claims = getClaimsFromToken(token);
@@ -58,4 +57,7 @@ public class OathService {
     public Map<String, Object> getClaimsFromToken(String token) {
         return Jwts.parser().setSigningKey(properties.getAPI_SECRET_KEY()).parseClaimsJws(token).getBody();
     }
+
+
+
 }
