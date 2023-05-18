@@ -51,10 +51,10 @@ public class AuthController {
     })
 
     @PostMapping("/auth/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequestBody loginRequestBody) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequestBody loginRequestBody) throws AuthException, jakarta.security.auth.message.AuthException {
 
         Map<String, Object> data;
-        try {
+
             String email =loginRequestBody.getEmail();
             String password = loginRequestBody.getPassword();
             User user = userService.validateUser(email, password);
@@ -69,12 +69,7 @@ public class AuthController {
                 return ResponseEntity.status(403).body(response);
             }
 
-        } catch (AuthException | jakarta.security.auth.message.AuthException e) {
-            logger.error("An error occurred while login", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+
     }
 
     @Operation(summary = "This is to  register into the system")
@@ -87,19 +82,13 @@ public class AuthController {
     @PostMapping("/auth/signup")
     public ResponseEntity<Object> signup(@RequestBody SignupRequestBody userData)
             throws jakarta.security.auth.message.AuthException, MessagingException {
-        try {
+
             User UserCreated = userService.registerUser(userData);
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Account created");
             data.put("User id", UserCreated.getId());
             return ResponseEntity.ok().body(data);
-        }
-        catch (AuthException e){
-            logger.error("An error occurred while signup", e);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+
 
     }
 

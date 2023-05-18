@@ -1,7 +1,6 @@
 package com.urutare.stockm.controller;
 
 import com.urutare.stockm.dto.UserDto;
-import com.urutare.stockm.exception.ResourceNotFoundException;
 import com.urutare.stockm.models.UpdateEmailRequest;
 import com.urutare.stockm.service.UserService;
 import jakarta.mail.MessagingException;
@@ -9,14 +8,11 @@ import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")

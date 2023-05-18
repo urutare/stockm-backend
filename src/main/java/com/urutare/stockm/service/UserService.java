@@ -49,7 +49,7 @@ public class UserService {
             email = email.toLowerCase();
         try {
             User userFound = userRepository.findByEmailAddress(email);
-            System.out.println("User found: "+userFound.toString());
+
             if (!BCrypt.checkpw(password, userFound.getPassword())) {
                 throw new AuthException("Invalid email or password");
             }
