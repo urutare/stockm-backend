@@ -1,5 +1,10 @@
 package com.urutare.stockm.controller;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.urutare.stockm.dto.request.ForgotPasswordRequestBody;
 import com.urutare.stockm.dto.request.LoginRequestBody;
 import com.urutare.stockm.dto.request.RefreshTokenRequest;
@@ -8,11 +13,15 @@ import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
 import com.urutare.stockm.models.ChangePasswordRequest;
 import com.urutare.stockm.dto.request.SignupRequestBody;
+import com.urutare.stockm.dto.response.JwtResponse;
 import com.urutare.stockm.service.AuthenticationService;
 import com.urutare.stockm.service.OathService;
+import com.urutare.stockm.service.UserDetailsImpl;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.AuthenticationResponse;
 import com.urutare.stockm.utils.JsonUtils;
+import com.urutare.stockm.utils.JwtTokenUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +34,6 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +41,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,16 +53,23 @@ import javax.validation.Valid;
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
 
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    private final JwtTokenUtil jwtUtils;
+
     private final UserService userService;
     private final OathService oathService;
     private final AuthenticationService authenticationService;
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public AuthController(@Autowired UserService userService,
+            JwtTokenUtil jwtUtils,
             @Autowired OathService oathService, AuthenticationService authenticationService) {
         this.userService = userService;
         this.oathService = oathService;
         this.authenticationService = authenticationService;
+        this.jwtUtils = jwtUtils;
     }
 
     @Operation(summary = "This is to  login to system")
@@ -64,24 +80,25 @@ public class AuthController {
     })
 
     @PostMapping("/auth/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequestBody loginRequestBody) throws AuthException, jakarta.security.auth.message.AuthException {
+    public ResponseEntity<?> login(@RequestBody LoginRequestBody loginRequest)
+            throws AuthException, jakarta.security.auth.message.AuthException {
 
-        Map<String, Object> data;
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-            String email =loginRequestBody.getEmail();
-            String password = loginRequestBody.getPassword();
-            User user = userService.validateUser(email, password);
-            if (user != null) {
-                user.setActive(true);
-                data = new HashMap<>(oathService.generateJWTToken(user));
-                userService.activateUser(String.valueOf(user.getId()));
-                return ResponseEntity.ok().body(data);
-            } else {
-                Map<String, String> response = new HashMap<>();
-                response.put("message", "Invalid email or password");
-                return ResponseEntity.status(403).body(response);
-            }
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
 
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles));
 
     }
 
@@ -93,15 +110,14 @@ public class AuthController {
     })
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@RequestBody SignupRequestBody userData)
+    public ResponseEntity<Object> signup(@Valid @RequestBody SignupRequestBody userData)
             throws jakarta.security.auth.message.AuthException, MessagingException {
 
-            User UserCreated = userService.registerUser(userData);
-            Map<String, Object> data = new HashMap<>();
-            data.put("message", "Account created");
-            data.put("User id", UserCreated.getId());
-            return ResponseEntity.ok().body(data);
-
+        User userCreated = userService.registerUser(userData);
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", "Account created");
+        data.put("userId", userCreated.getId());
+        return ResponseEntity.ok().body(data);
 
     }
 
@@ -112,7 +128,6 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden, Authorization token must be provided", content = @Content) })
     @SecurityRequirement(name = "bearerAuth")
-
 
     @PostMapping("/auth/logout")
     public ResponseEntity<Object> logout(HttpServletRequest request) {
@@ -186,14 +201,13 @@ public class AuthController {
     @PatchMapping("/auth/change-password")
     public ResponseEntity<Object> changePassword(
             @RequestBody @Validated ChangePasswordRequest changePasswordRequest,
-                                                 HttpServletRequest request
-    ) throws MessagingException {
+            HttpServletRequest request) throws MessagingException {
 
-            String userId = request.getAttribute("userId").toString();
-            String oldPassword = changePasswordRequest.getOldPassword();
-            String newPassword = changePasswordRequest.getNewPassword();
-            userService.changePassword(userId, oldPassword, newPassword);
-            return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
+        String userId = request.getAttribute("userId").toString();
+        String oldPassword = changePasswordRequest.getOldPassword();
+        String newPassword = changePasswordRequest.getNewPassword();
+        userService.changePassword(userId, oldPassword, newPassword);
+        return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
 
     }
 }

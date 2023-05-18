@@ -3,45 +3,55 @@ package com.urutare.stockm.service;
 import com.urutare.stockm.constants.Properties;
 import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.ResetPasswordToken;
+import com.urutare.stockm.entity.Role;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.ResourceNotFoundException;
+import com.urutare.stockm.models.ERole;
 import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.repository.ResetRepository;
+import com.urutare.stockm.repository.RoleRepository;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 
 @Service
 @Transactional
 public class UserService {
+
+    @Autowired
+    PasswordEncoder encoder;
 
     private final EmailService emailService;
     private final OathService oathService;
     private final Properties properties;
     private final UserRepository userRepository;
     private final ResetRepository resetRepository;
-
+    private final RoleRepository roleRepository;
 
     public UserService(@Autowired UserRepository userRepository,
-                       @Autowired EmailService emailService,
-                       @Autowired OathService oathService,
-                       @Autowired Properties properties,
-                       @Autowired ResetRepository resetRepository) {
+            @Autowired EmailService emailService,
+            @Autowired OathService oathService,
+            @Autowired Properties properties,
+            @Autowired ResetRepository resetRepository,
+            RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.oathService = oathService;
         this.properties = properties;
         this.resetRepository = resetRepository;
+        this.roleRepository = roleRepository;
     }
 
     public User validateUser(String email, String password) throws AuthException {
@@ -69,41 +79,72 @@ public class UserService {
 
     private void validateEmail(String email) throws AuthException {
         Pattern pattern = Pattern.compile("^(.+)@(.+)$");
-        if (email == null){
+        if (email == null) {
             throw new AuthException("Email is required");
         }
         email = email.toLowerCase();
-        if (!pattern.matcher(email).matches()){
+        if (!pattern.matcher(email).matches()) {
             throw new AuthException("Invalid email format");
         }
     }
 
-    public User registerUser( SignupRequestBody userData) throws AuthException, MessagingException {
-        String email =  userData.getEmail();
-        validateEmail(email);
-        long count = userRepository.getCountByEmail(email);
-        if (count > 0)
-            throw new AuthException("Email already in use");
-        String password =  userData.getPassword();
-        String fullName =  userData.getFullName();
-        String phoneNumber = userData.getPhoneNumber();
-        if (password == null) {
-            throw new AuthException("password field is required");
+    public User registerUser(SignupRequestBody userData) throws AuthException, MessagingException {
+        if (userData.getEmail() != null) {
+            userData.setEmail(userData.getEmail().toLowerCase());
         }
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
-        User user = new User(email, hashedPassword);
-        user.setActive(false);
-        if (fullName == null) {
-            throw new AuthException("fullName field is required");
+        if (userData.getUsername() == null) {
+            userData.setUsername(userData.getEmail());
         }
-        if (phoneNumber != null) {
-            user.setPhoneNumber(phoneNumber);
+        if (userRepository.existsByUsername(userData.getUsername())) {
+            throw new AuthException("Error: Username is already taken!");
         }
-        user.setFullName(fullName);
-        sendEmailWithContext(user, email, "Welcome to Urutare Inc!", "signup_email.html");
-        return userRepository.save(user);
-    }
 
+        if (userRepository.existsByEmail(userData.getEmail())) {
+            throw new AuthException("Error: Email is already in use!");
+        }
+
+        // Create new user's account
+        User user = new User(userData.getUsername(),
+                userData.getEmail(),
+                encoder.encode(userData.getPassword()),
+                userData.getFullName(),
+                userData.getPhoneNumber());
+
+        Set<String> strRoles = userData.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(ERole.user)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "Admin":
+                        Role adminRole = roleRepository.findByName(ERole.admin)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+
+                        break;
+                    case "Manager":
+                        Role modRole = roleRepository.findByName(ERole.manager)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(modRole);
+
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByName(ERole.user)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
+            });
+        }
+
+        user.setRoles(roles);
+        User newUser = userRepository.save(user);
+        sendEmailWithContext(newUser, newUser.getEmail(), "Welcome to Urutare Inc!", "signup_email.html");
+        return newUser;
+    }
 
     public UserDto findById(String userId) throws ResourceNotFoundException {
         UserDto userDto = userRepository.findUserDtoById(userId);
@@ -147,15 +188,19 @@ public class UserService {
 
     public record PublicUser(Long id, String email, String fullName) {
     }
+
     public void logoutUser(String userId) {
         userRepository.updateIsActive(userId, false);
     }
-    public void activateUser(String userId){
+
+    public void activateUser(String userId) {
         userRepository.updateIsActive(userId, true);
     }
-    public Boolean isActive(String userId){
+
+    public Boolean isActive(String userId) {
         return userRepository.getIsActiveById(userId);
     }
+
     public void updateEmailForUser(String userId, String newEmail) throws AuthException, MessagingException {
         User user = userRepository.findById(userId);
         if (user != null) {
@@ -176,24 +221,26 @@ public class UserService {
     private void updateEmail(User user, String newEmail) throws AuthException, MessagingException {
         validateEmail(newEmail);
         long count = userRepository.getCountByEmail(newEmail);
-        if (count > 0){
+        if (count > 0) {
             throw new AuthException("Email already in use");
         }
 
         user.setEmail(newEmail);
         userRepository.save(user);
-        sendEmailWithContext(user,newEmail,"Urutare Inc account Email change!","update_user_email.html");
+        sendEmailWithContext(user, newEmail, "Urutare Inc account Email change!", "update_user_email.html");
 
     }
-    private void sendEmailWithContext(User user,String email,String subject,String templateFile) throws MessagingException {
+
+    private void sendEmailWithContext(User user, String email, String subject, String templateFile)
+            throws MessagingException {
         Context context = new Context();
         context.setVariable("fullName", user.getFullName());
-        context.setVariable("login_link", properties.getBASE_URL() +"/api/auth/login");
-        context.setVariable("supportEmail","info@urutare.rw");
+        context.setVariable("login_link", properties.getBASE_URL() + "/api/auth/login");
+        context.setVariable("supportEmail", "info@urutare.rw");
         context.setVariable("supportPhone", "+250 7888888");
-        context.setVariable("email",email);
-        context.setVariable("welcome_image","/images/celebrate.png");
-        emailService.sendEmail(email,subject,context,templateFile);
+        context.setVariable("email", email);
+        context.setVariable("welcome_image", "/images/celebrate.png");
+        emailService.sendEmail(email, subject, context, templateFile);
 
     }
 
@@ -205,7 +252,8 @@ public class UserService {
         String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
         user.setPassword(hashedPassword);
         userRepository.save(user);
-        sendEmailWithContext(user,user.getEmail(),"Urutare Inc account password change!","change_password_email.html");
+        sendEmailWithContext(user, user.getEmail(), "Urutare Inc account password change!",
+                "change_password_email.html");
 
     }
 }
