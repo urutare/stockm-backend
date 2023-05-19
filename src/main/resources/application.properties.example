@@ -16,3 +16,8 @@ spring.mail.username=youremail@gmail.com
 spring.mail.password=yourpassword
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
+
+## JWT
+jwt.secret=UrutareIncStockM
+jwt.token.validity=86400000
+jwt.refresh.token.validity=86400000
