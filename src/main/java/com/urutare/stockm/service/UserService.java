@@ -2,12 +2,13 @@ package com.urutare.stockm.service;
 
 import com.urutare.stockm.constants.Properties;
 import com.urutare.stockm.dto.UserDto;
+import com.urutare.stockm.entity.BlockedToken;
 import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.Role;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.ResourceNotFoundException;
 import com.urutare.stockm.models.ERole;
-import com.urutare.stockm.dto.request.SignupRequestBody;
+import com.urutare.stockm.repository.BlockedTokenRepository;
 import com.urutare.stockm.repository.ResetRepository;
 import com.urutare.stockm.repository.RoleRepository;
 import com.urutare.stockm.repository.UserRepository;
@@ -15,7 +16,9 @@ import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -28,30 +31,38 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class UserService {
-
-    @Autowired
-    PasswordEncoder encoder;
-
+public class UserService implements UserDetailsService {
     private final EmailService emailService;
     private final OathService oathService;
     private final Properties properties;
     private final UserRepository userRepository;
     private final ResetRepository resetRepository;
     private final RoleRepository roleRepository;
+    private final BlockedTokenRepository blockedTokenRepository;
 
     public UserService(@Autowired UserRepository userRepository,
             @Autowired EmailService emailService,
             @Autowired OathService oathService,
             @Autowired Properties properties,
             @Autowired ResetRepository resetRepository,
-            RoleRepository roleRepository) {
+            RoleRepository roleRepository,
+            BlockedTokenRepository blockedTokenRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.oathService = oathService;
         this.properties = properties;
         this.resetRepository = resetRepository;
         this.roleRepository = roleRepository;
+        this.blockedTokenRepository = blockedTokenRepository;
+    }
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByEmailOrUsername(username, username)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+
+        return UserDetailsImpl.build(user);
     }
 
     public User validateUser(String email, String password) throws AuthException {
@@ -88,29 +99,21 @@ public class UserService {
         }
     }
 
-    public User registerUser(SignupRequestBody userData) throws AuthException, MessagingException {
-        if (userData.getEmail() != null) {
-            userData.setEmail(userData.getEmail().toLowerCase());
+    public User registerUser(User user, Set<String> strRoles) throws AuthException, MessagingException {
+        if (user.getEmail() != null) {
+            user.setEmail(user.getEmail().toLowerCase());
         }
-        if (userData.getUsername() == null) {
-            userData.setUsername(userData.getEmail());
+        if (user.getUsername() == null) {
+            user.setUsername(user.getEmail());
         }
-        if (userRepository.existsByUsername(userData.getUsername())) {
+        if (userRepository.existsByUsername(user.getUsername())) {
             throw new AuthException("Error: Username is already taken!");
         }
 
-        if (userRepository.existsByEmail(userData.getEmail())) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new AuthException("Error: Email is already in use!");
         }
 
-        // Create new user's account
-        User user = new User(userData.getUsername(),
-                userData.getEmail(),
-                encoder.encode(userData.getPassword()),
-                userData.getFullName(),
-                userData.getPhoneNumber());
-
-        Set<String> strRoles = userData.getRole();
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
@@ -255,5 +258,23 @@ public class UserService {
         sendEmailWithContext(user, user.getEmail(), "Urutare Inc account password change!",
                 "change_password_email.html");
 
+    }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+    }
+
+    public User findUserByBlockedToken(String token) {
+        BlockedToken blockedToken = blockedTokenRepository.findByToken(token);
+
+        if (blockedToken == null) {
+            return null;
+        }
+        return blockedToken.getUser();
+    }
+
+    public void blockUser(BlockedToken blockedToken) {
+        blockedTokenRepository.save(blockedToken);
     }
 }

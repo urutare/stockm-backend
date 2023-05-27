@@ -4,21 +4,20 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.urutare.stockm.dto.request.ForgotPasswordRequestBody;
 import com.urutare.stockm.dto.request.LoginRequestBody;
-import com.urutare.stockm.dto.request.RefreshTokenRequest;
 import com.urutare.stockm.dto.request.ResetPasswordRequestBody;
-import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.AuthException;
+import com.urutare.stockm.exception.ForbiddenException;
 import com.urutare.stockm.models.ChangePasswordRequest;
 import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.dto.response.JwtResponse;
-import com.urutare.stockm.service.AuthenticationService;
-import com.urutare.stockm.service.OathService;
+import com.urutare.stockm.entity.BlockedToken;
+import com.urutare.stockm.entity.User;
 import com.urutare.stockm.service.UserDetailsImpl;
 import com.urutare.stockm.service.UserService;
-import com.urutare.stockm.utils.AuthenticationResponse;
 import com.urutare.stockm.utils.JsonUtils;
 import com.urutare.stockm.utils.JwtTokenUtil;
 
@@ -30,16 +29,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,46 +45,50 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final PasswordEncoder encoder;
+
+    private final AuthenticationManager authenticationManager;
 
     private final JwtTokenUtil jwtUtils;
 
     private final UserService userService;
-    private final OathService oathService;
-    private final AuthenticationService authenticationService;
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public AuthController(@Autowired UserService userService,
             JwtTokenUtil jwtUtils,
-            @Autowired OathService oathService, AuthenticationService authenticationService) {
+            AuthenticationManager authenticationManager,
+            PasswordEncoder encoder) {
         this.userService = userService;
-        this.oathService = oathService;
-        this.authenticationService = authenticationService;
         this.jwtUtils = jwtUtils;
+        this.authenticationManager = authenticationManager;
+        this.encoder = encoder;
     }
 
+    @PostMapping("/auth/login")
     @Operation(summary = "This is to  login to system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login to the system", content = {
                     @Content(mediaType = "application/json") }),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
-
-    @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestBody loginRequest)
             throws AuthException, jakarta.security.auth.message.AuthException {
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                        loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        String jwt = jwtUtils.generateJwtAccessToken(authentication);
+        String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
@@ -95,6 +96,7 @@ public class AuthController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new JwtResponse(jwt,
+                jwtRefreshToken,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
@@ -102,25 +104,62 @@ public class AuthController {
 
     }
 
+    @PostMapping("/auth/signup")
     @Operation(summary = "This is to  register into the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "signup to the system", content = {
                     @Content(mediaType = "application/json") }),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
-
-    @PostMapping("/auth/signup")
-    public ResponseEntity<Object> signup(@Valid @RequestBody SignupRequestBody userData)
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestBody userData)
             throws jakarta.security.auth.message.AuthException, MessagingException {
+        Set<String> strRoles = userData.getRole();
 
-        User userCreated = userService.registerUser(userData);
+        if (strRoles.contains("ADMIN")) {
+            throw new ForbiddenException("Admin role is not allowed to be set by the user");
+        }
+
+        // Create new user's account
+        User user = new User(userData.getUsername(),
+                userData.getEmail(),
+                encoder.encode(userData.getPassword()),
+                userData.getFullName(),
+                userData.getPhoneNumber());
+
+        userService.registerUser(user, userData.getRole());
         Map<String, Object> data = new HashMap<>();
         data.put("message", "Account created");
-        data.put("userId", userCreated.getId());
         return ResponseEntity.ok().body(data);
 
     }
 
+    @PostMapping("/auth/tokens/refresh")
+    @Operation(summary = "This is to refresh token", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> refreshToken(HttpServletRequest request)
+            throws jakarta.security.auth.message.AuthException {
+        String authorization = request.getHeader("Authorization");
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new jakarta.security.auth.message.AuthException("Invalid refresh token");
+        }
+
+        String token = authorization.substring(7);
+
+        if (!jwtUtils.validateToken(token, jwtSecret)) {
+            throw new jakarta.security.auth.message.AuthException("Invalid JWT token");
+        }
+
+        if (!jwtUtils.isJwtRefreshToken(token)) {
+            throw new jakarta.security.auth.message.AuthException("Invalid JWT refresh token");
+        }
+
+        User user = userService.findUserByUsername(jwtUtils.getUserNameFromJwtToken(token));
+
+        Map<String, String> data = jwtUtils.refreshUserTokens(user);
+        return ResponseEntity.ok().body(data);
+    }
+
+    @PostMapping("/auth/logout")
     @Operation(summary = "This is to  logout from the system", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "logout from the system", content = {
@@ -128,16 +167,32 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden, Authorization token must be provided", content = @Content) })
     @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Object> logout(HttpServletRequest request)
+            throws jakarta.security.auth.message.AuthException {
+        String authorization = request.getHeader("Authorization");
 
-    @PostMapping("/auth/logout")
-    public ResponseEntity<Object> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new jakarta.security.auth.message.AuthException("Invalid refresh token");
         }
-        String token = request.getHeader("Authorization").substring(7);
-        Map<String, Object> tokenData = oathService.getClaimsFromToken(token);
-        userService.logoutUser(tokenData.get("id").toString());
+
+        String token = authorization.substring(7);
+
+        if (!jwtUtils.validateToken(token, jwtSecret)) {
+            throw new jakarta.security.auth.message.AuthException("Invalid JWT token");
+        }
+
+        if (!jwtUtils.isJwtAccessToken(token)) {
+            throw new jakarta.security.auth.message.AuthException("Invalid JWT access token");
+        }
+
+        User user = userService.findUserByUsername(jwtUtils.getUserNameFromJwtToken(token));
+
+        BlockedToken blockedToken = new BlockedToken();
+        blockedToken.setToken(token);
+        blockedToken.setUser(user);
+
+        userService.blockUser(blockedToken);
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "Logged out successfully");
         return ResponseEntity.ok().body(response);
@@ -170,25 +225,6 @@ public class AuthController {
         // TODO: Implement
 
         return ResponseEntity.ok().body("{\"message\": \"Two factor\"}");
-    }
-
-    @PostMapping("/auth/auth-token")
-    @Operation(security = @SecurityRequirement(name = "bearerAuth"), summary = "This is to  generate token to the system", description = "This is to  generate token to the system")
-    public ResponseEntity<?> authToken(HttpServletRequest request,
-            @Valid @RequestParam("scopes") String scopesRequest) {
-        String scopeArray[] = scopesRequest.trim().split(",");
-        Set<String> scopes = scopeArray.length > 0
-                ? Arrays.stream(scopeArray).collect(Collectors.toSet())
-                : Collections.emptySet();
-        Long userId = Long.parseLong(request.getAttribute("userId").toString());
-        AuthenticationResponse response = authenticationService.generateToken(userId, scopes);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/auth/refresh-token")
-    public ResponseEntity<Object> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        AuthenticationResponse response = authenticationService.refreshToken(refreshTokenRequest.getToken());
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/verify-phone")
