@@ -22,7 +22,7 @@ public class StockmApplication {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
         return templateEngine;
-    }
+    } 
 
     @Bean
     public SpringResourceTemplateResolver templateResolver() {

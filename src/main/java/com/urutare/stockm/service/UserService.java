@@ -1,10 +1,14 @@
 package com.urutare.stockm.service;
 
 import com.urutare.stockm.constants.Properties;
+import com.urutare.stockm.dto.request.AddRoleBody;
+import com.urutare.stockm.dto.request.AssignRoleBody;
 import com.urutare.stockm.entity.BlockedToken;
 import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.Role;
 import com.urutare.stockm.entity.User;
+import com.urutare.stockm.exception.ConflictException;
+import com.urutare.stockm.exception.ForbiddenException;
 import com.urutare.stockm.exception.ResourceNotFoundException;
 import com.urutare.stockm.models.ERole;
 import com.urutare.stockm.repository.BlockedTokenRepository;
@@ -24,6 +28,7 @@ import org.thymeleaf.context.Context;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -270,5 +275,55 @@ public class UserService implements UserDetailsService {
 
     public void blockUser(BlockedToken blockedToken) {
         blockedTokenRepository.save(blockedToken);
+    }
+
+    public void CreateRole(Long loggedInUserId, AddRoleBody roleBody) throws ConflictException {
+        roleAuthorize(loggedInUserId, "add role");
+        if (roleRepository.existsByName(roleBody.getName().name())) {
+            throw new ConflictException("Error: Role is already registered!");
+        }
+        Role role = new Role();
+        role.setName(roleBody.getName());
+        roleRepository.save(role);
+    }
+
+    public void assignRole(Long loggedInUserId, AssignRoleBody roleBody)
+            throws ConflictException, ResourceNotFoundException {
+        roleAuthorize(loggedInUserId, "assign user role");
+        Optional<Role> roleOptional = roleRepository.findByName(roleBody.getName());
+
+        if (roleOptional.isEmpty()) {
+            throw new ResourceNotFoundException("Error: Role is not registered!");
+        }
+
+        Optional<User> userOptional = userRepository.findById(roleBody.getUserId());
+
+        if (userOptional.isEmpty()) {
+            throw new ResourceNotFoundException("Error: user with id" + roleBody.getUserId() + "   is not registered!");
+        }
+        User user = userOptional.get();
+        Set<Role> userRoles = user.getRoles();
+        if (userRoles.contains(roleOptional.get())) {
+            throw new ConflictException("Error: Role is already assigned to the user!");
+        }
+        userRoles.add(roleOptional.get());
+        user.setRoles(userRoles);
+        userRepository.save(user);
+    }
+
+    private void roleAuthorize(Long userId, String action)
+            throws ConflictException, ResourceNotFoundException, ForbiddenException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<Role> adminRoleOptional = roleRepository.findByName(ERole.ADMIN);
+        if (adminRoleOptional.isEmpty()) {
+            throw new ResourceNotFoundException("Error: Admin role not yet found");
+        }
+        if (userOptional.isEmpty()) {
+            throw new ResourceNotFoundException("Error: User not found");
+        }
+        Boolean userAllowed = userOptional.get().getRoles().contains(adminRoleOptional.get());
+        if (!userAllowed) {
+            throw new ForbiddenException("You are not allowed to " + action);
+        }
     }
 }

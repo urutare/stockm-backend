@@ -9,4 +9,6 @@ import com.urutare.stockm.models.ERole;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findByName(ERole name);
+    Boolean existsByName(String name);
+
 }

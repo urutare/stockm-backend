@@ -1,6 +1,10 @@
 package com.urutare.stockm.controller;
 
 import com.urutare.stockm.entity.User;
+import com.urutare.stockm.dto.UserDto;
+import com.urutare.stockm.dto.request.AddRoleBody;
+import com.urutare.stockm.dto.request.AssignRoleBody;
+import com.urutare.stockm.entity.Role;
 import com.urutare.stockm.models.UpdateEmailRequest;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JwtTokenUtil;
@@ -84,6 +88,21 @@ public class UserController {
         userService.updateEmail(updateEmailRequest.getOldEmail(), newEmail);
         return ResponseEntity.ok().body("{\"message\": \"Email updated successfully\"}");
 
+    }
+
+    @PostMapping("users/add-role")
+    @Operation(summary = "Add role", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Object> addRole(HttpServletRequest request, @RequestBody @Validated AddRoleBody roleBody){
+        String userId = request.getAttribute("userId").toString();
+         userService.CreateRole(Long.valueOf(userId),roleBody);
+        return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
+    }
+    @PostMapping("users/assign-role")
+    @Operation(summary = "Assign role", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Object> assignRole(HttpServletRequest request, @RequestBody @Validated AssignRoleBody roleBody){
+        String userId = request.getAttribute("userId").toString();
+        userService.assignRole(Long.valueOf(userId),roleBody);
+        return ResponseEntity.ok().body("{\"message\": \"role assigned successfully\"}");
     }
 
 }
