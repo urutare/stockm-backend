@@ -28,13 +28,13 @@ public class JwtTokenUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenUtil.class);
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:nIrXqpiKwj}")
     private String jwtSecret;
 
-    @Value("${jwt.access.token.expirationInMs}")
+    @Value("${jwt.access.token.expirationInMs:3600000}")
     private int jwtExpirationMs;
 
-    @Value("${jwt.refresh.token.expirationInMs}")
+    @Value("${jwt.refresh.token.expirationInMs:86400000}")
     private int jwtRefreshExpirationMs;
 
     public Claims getAllClaimsFromToken(String token, String secret) {
