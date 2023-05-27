@@ -14,7 +14,6 @@ import com.urutare.stockm.exception.ForbiddenException;
 import com.urutare.stockm.models.ChangePasswordRequest;
 import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.dto.response.JwtResponse;
-import com.urutare.stockm.entity.BlockedToken;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.service.UserDetailsImpl;
 import com.urutare.stockm.service.UserService;
@@ -50,7 +49,7 @@ import javax.validation.Valid;
 @RequestMapping("/api")
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:nIrXqpiKwj}")
     private String jwtSecret;
 
     private final PasswordEncoder encoder;
@@ -157,45 +156,6 @@ public class AuthController {
 
         Map<String, String> data = jwtUtils.refreshUserTokens(user);
         return ResponseEntity.ok().body(data);
-    }
-
-    @PostMapping("/auth/logout")
-    @Operation(summary = "This is to  logout from the system", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "logout from the system", content = {
-                    @Content(mediaType = "application/json") }),
-            @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden, Authorization token must be provided", content = @Content) })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Object> logout(HttpServletRequest request)
-            throws jakarta.security.auth.message.AuthException {
-        String authorization = request.getHeader("Authorization");
-
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new jakarta.security.auth.message.AuthException("Invalid refresh token");
-        }
-
-        String token = authorization.substring(7);
-
-        if (!jwtUtils.validateToken(token, jwtSecret)) {
-            throw new jakarta.security.auth.message.AuthException("Invalid JWT token");
-        }
-
-        if (!jwtUtils.isJwtAccessToken(token)) {
-            throw new jakarta.security.auth.message.AuthException("Invalid JWT access token");
-        }
-
-        User user = userService.findUserByUsername(jwtUtils.getUserNameFromJwtToken(token));
-
-        BlockedToken blockedToken = new BlockedToken();
-        blockedToken.setToken(token);
-        blockedToken.setUser(user);
-
-        userService.blockUser(blockedToken);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Logged out successfully");
-        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/auth/activate-account")

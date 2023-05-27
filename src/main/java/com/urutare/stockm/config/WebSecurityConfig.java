@@ -9,19 +9,26 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.urutare.stockm.constants.WhiteList;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.AuthEntryPointJwt;
 import com.urutare.stockm.utils.AuthTokenFilter;
 import com.urutare.stockm.utils.JwtTokenUtil;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
+@Slf4j
 public class WebSecurityConfig {
 
     private final UserService userService;
@@ -30,12 +37,7 @@ public class WebSecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;
 
-    public WebSecurityConfig(UserService userService, AuthEntryPointJwt unauthorizedHandler,
-            JwtTokenUtil jwtUtils) {
-        this.userService = userService;
-        this.unauthorizedHandler = unauthorizedHandler;
-        this.jwtUtils = jwtUtils;
-    }
+    private final LogoutConfig logoutConfig;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -64,17 +66,27 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/swagger-ui/**",
-                                "/api/test/**",
-                                "/v3/api-docs/**")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and();
+        http.cors().and()
+                .csrf().disable()
+                .authorizeHttpRequests()
+                .requestMatchers(WhiteList.WHITELIST_URLS)
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(unauthorizedHandler)
+                .and()
+                .logout()
+                .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(logoutConfig)
+                .logoutSuccessHandler(((request, response, authentication) -> {
+                    SecurityContextHolder.clearContext();
+                    log.info("User has logged out from the system");
+                }))
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authenticationProvider(authenticationProvider());
 
