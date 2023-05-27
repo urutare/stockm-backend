@@ -11,8 +11,6 @@ import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findById(String userId);
-
     @Query("SELECT u FROM User u WHERE u.email=?1")
     User findByEmailAddress(String emailAddress);
 

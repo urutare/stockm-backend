@@ -52,7 +52,7 @@ public class TestController {
 
   @GetMapping("/admin")
   @Operation(summary = "ADMIN Board", description = "ONLY ADMIN CAN ACCESS THIS ENDPOINT")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public String adminAccess() {
     return "ADMIN Board.";
   }

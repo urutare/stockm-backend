@@ -1,7 +1,6 @@
 package com.urutare.stockm.service;
 
 import com.urutare.stockm.constants.Properties;
-import com.urutare.stockm.dto.UserDto;
 import com.urutare.stockm.entity.BlockedToken;
 import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.Role;
@@ -149,11 +148,10 @@ public class UserService implements UserDetailsService {
         return newUser;
     }
 
-    public UserDto findById(String userId) throws ResourceNotFoundException {
-        UserDto userDto = userRepository.findUserDtoById(userId);
-        if (userDto == null)
-            throw new ResourceNotFoundException("User not found");
-        return userDto;
+    public User findById(Long userId) throws ResourceNotFoundException {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException("User not found"));
+        return user;
     }
 
     public void forgotPassword(String email) throws AuthException, MessagingException {
@@ -204,13 +202,9 @@ public class UserService implements UserDetailsService {
         return userRepository.getIsActiveById(userId);
     }
 
-    public void updateEmailForUser(String userId, String newEmail) throws AuthException, MessagingException {
-        User user = userRepository.findById(userId);
-        if (user != null) {
-            updateEmail(user, newEmail);
-        } else {
-            throw new ResourceNotFoundException("User not found");
-        }
+    public void updateEmailForUser(Long userId, String newEmail) throws AuthException, MessagingException {
+        User user = this.findById(userId);
+        updateEmail(user, newEmail);
     }
 
     public void updateEmail(String oldEmail, String newEmail) throws AuthException, MessagingException {
@@ -247,8 +241,8 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public void changePassword(String userId, String oldPassword, String newPassword) throws MessagingException {
-        User user = userRepository.findById(userId);
+    public void changePassword(Long userId, String oldPassword, String newPassword) throws MessagingException {
+        User user = this.findById(userId);
         if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
             throw new IllegalArgumentException("The old password is incorrect");
         }

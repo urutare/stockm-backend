@@ -202,7 +202,7 @@ public class AuthController {
         String userId = request.getAttribute("userId").toString();
         String oldPassword = changePasswordRequest.getOldPassword();
         String newPassword = changePasswordRequest.getNewPassword();
-        userService.changePassword(userId, oldPassword, newPassword);
+        userService.changePassword(Long.parseLong(userId), oldPassword, newPassword);
         return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
 
     }

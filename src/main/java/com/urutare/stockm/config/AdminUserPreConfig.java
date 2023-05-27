@@ -53,6 +53,7 @@ public class AdminUserPreConfig implements CommandLineRunner {
             adminUser.setFullName("Admin");
             adminUser.setPassword(passwordEncoder.encode("Admin123"));
             adminUser.getRoles().add(adminRole);
+            adminUser.setVerified(true);
 
             // Save the admin user to the repository
             userRepository.save(adminUser);

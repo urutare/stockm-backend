@@ -22,6 +22,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtTokenUtil {
@@ -57,6 +58,10 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .claim("token_type", TokenType.ACCESS_TOKEN.name())
+                .claim("id", userPrincipal.getId())
+                .claim("roles", userPrincipal.getAuthorities()
+                        .stream()
+                        .map(role -> role.getAuthority()).toArray())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -77,7 +82,6 @@ public class JwtTokenUtil {
     }
 
     public Map<String, String> refreshUserTokens(User user) {
-        
 
         Map<String, String> data = new HashMap<>();
         UserDetailsImpl userPrincipal = UserDetailsImpl.build(user);
@@ -109,8 +113,26 @@ public class JwtTokenUtil {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
+    public Long getUserIdFromJwtToken(String token) {
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", Long.class);
+    }
+
     public String getTokenTypeFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("token_type", String.class);
+    }
+
+    public Long getUserIdFromHttpRequest(HttpServletRequest request) {
+        String token = parseJwt(request);
+        return getUserIdFromJwtToken(token);
+    }
+
+    public String parseJwt(HttpServletRequest request) {
+        String headerAuth = request.getHeader("Authorization");
+
+        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7);
+        }
+        return null;
     }
 
     public boolean isJwtAccessToken(String token) {
