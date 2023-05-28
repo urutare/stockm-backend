@@ -4,16 +4,14 @@ import com.urutare.stockm.entity.User;
 import com.urutare.stockm.models.UpdateEmailRequest;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JwtTokenUtil;
-
-import jakarta.mail.MessagingException;
-import jakarta.security.auth.message.AuthException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
+import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -85,5 +83,7 @@ public class UserController {
         return ResponseEntity.ok().body("{\"message\": \"Email updated successfully\"}");
 
     }
+
+
 
 }
