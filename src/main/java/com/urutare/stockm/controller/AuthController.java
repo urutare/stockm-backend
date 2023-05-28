@@ -90,6 +90,10 @@ public class AuthController {
         String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        if (!userDetails.isVerified()) {
+            throw new AuthException("Account is not verified");
+        }
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());

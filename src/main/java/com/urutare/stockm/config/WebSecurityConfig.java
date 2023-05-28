@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.urutare.stockm.constants.WhiteList;
 import com.urutare.stockm.service.UserService;
+import com.urutare.stockm.utils.AccessDenied;
 import com.urutare.stockm.utils.AuthEntryPointJwt;
 import com.urutare.stockm.utils.AuthTokenFilter;
 import com.urutare.stockm.utils.JwtTokenUtil;
@@ -38,6 +39,7 @@ public class WebSecurityConfig {
     private final AuthEntryPointJwt unauthorizedHandler;
 
     private final LogoutConfig logoutConfig;
+    private final AccessDenied accessDenied;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -76,6 +78,7 @@ public class WebSecurityConfig {
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(unauthorizedHandler)
+                .accessDeniedHandler(accessDenied)
                 .and()
                 .logout()
                 .logoutUrl("/api/auth/logout")
