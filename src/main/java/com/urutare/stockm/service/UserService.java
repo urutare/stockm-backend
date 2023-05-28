@@ -277,7 +277,7 @@ public class UserService implements UserDetailsService {
         blockedTokenRepository.save(blockedToken);
     }
 
-    public void CreateRole(AddRoleBody roleBody) throws ConflictException {
+    public void createRole(AddRoleBody roleBody) throws ConflictException {
 
         if (roleRepository.existsByName(roleBody.getName().name())) {
             throw new ConflictException("Error: Role is already registered!");

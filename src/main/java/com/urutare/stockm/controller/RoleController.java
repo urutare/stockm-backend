@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/roles")
 @Tag(name = "Roles")
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
@@ -26,14 +26,14 @@ public class RoleController {
 
     private final UserService userService;
 
-    @PostMapping("Role/add-role")
-    @Operation(summary = "Add role", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("add")
+    @Operation(summary = "Add role")
     public ResponseEntity<Object> addRole( @RequestBody @Validated AddRoleBody roleBody){
-        userService.CreateRole(roleBody);
+        userService.createRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
     }
-    @PostMapping("Role/assign-role")
-    @Operation(summary = "Assign role", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("assign")
+    @Operation(summary = "Assign role")
     public ResponseEntity<Object> assignRole(@RequestBody @Validated AssignRoleBody roleBody){
         userService.assignRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role assigned successfully\"}");
