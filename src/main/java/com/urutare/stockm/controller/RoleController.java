@@ -28,16 +28,14 @@ public class RoleController {
 
     @PostMapping("Role/add-role")
     @Operation(summary = "Add role", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Object> addRole(HttpServletRequest request, @RequestBody @Validated AddRoleBody roleBody){
-        String userId = request.getAttribute("userId").toString();
-        userService.CreateRole(Long.valueOf(userId),roleBody);
+    public ResponseEntity<Object> addRole( @RequestBody @Validated AddRoleBody roleBody){
+        userService.CreateRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
     }
     @PostMapping("Role/assign-role")
     @Operation(summary = "Assign role", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Object> assignRole(HttpServletRequest request, @RequestBody @Validated AssignRoleBody roleBody){
-        String userId = request.getAttribute("userId").toString();
-        userService.assignRole(Long.valueOf(userId),roleBody);
+    public ResponseEntity<Object> assignRole(@RequestBody @Validated AssignRoleBody roleBody){
+        userService.assignRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role assigned successfully\"}");
     }
 }
