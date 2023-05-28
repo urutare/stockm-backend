@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AssignRoleBody {
+public class AssignOrRemoveRoleBody {
     @Schema(description = "Role name", example = "ADMIN")
     private ERole name;
 

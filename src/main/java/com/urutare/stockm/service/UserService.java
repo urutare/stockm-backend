@@ -2,13 +2,12 @@ package com.urutare.stockm.service;
 
 import com.urutare.stockm.constants.Properties;
 import com.urutare.stockm.dto.request.AddRoleBody;
-import com.urutare.stockm.dto.request.AssignRoleBody;
+import com.urutare.stockm.dto.request.AssignOrRemoveRoleBody;
 import com.urutare.stockm.entity.BlockedToken;
 import com.urutare.stockm.entity.ResetPasswordToken;
 import com.urutare.stockm.entity.Role;
 import com.urutare.stockm.entity.User;
 import com.urutare.stockm.exception.ConflictException;
-import com.urutare.stockm.exception.ForbiddenException;
 import com.urutare.stockm.exception.ResourceNotFoundException;
 import com.urutare.stockm.models.ERole;
 import com.urutare.stockm.repository.BlockedTokenRepository;
@@ -17,6 +16,7 @@ import com.urutare.stockm.repository.RoleRepository;
 import com.urutare.stockm.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -287,26 +284,46 @@ public class UserService implements UserDetailsService {
         roleRepository.save(role);
     }
 
-    public void assignRole(AssignRoleBody roleBody)
+    public void assignRole(AssignOrRemoveRoleBody roleBody)
             throws ConflictException, ResourceNotFoundException {
+        Pair<Role, User> pair = validateRoleAndUser(roleBody);
+        Role role = pair.getLeft();
+        User user = pair.getRight();
+        Set<Role> userRoles = user.getRoles();
+        if (userRoles.contains(role)) {
+            throw new ConflictException("Error: Role is already assigned to the user!");
+        }
+        userRoles.add(role);
+        user.setRoles(userRoles);
+        userRepository.save(user);
+    }
 
+
+
+    private Pair<Role, User> validateRoleAndUser(AssignOrRemoveRoleBody roleBody) {
         Optional<Role> roleOptional = roleRepository.findByName(roleBody.getName());
-
         if (roleOptional.isEmpty()) {
             throw new ResourceNotFoundException("Error: Role is not registered!");
         }
 
         Optional<User> userOptional = userRepository.findById(roleBody.getUserId());
-
         if (userOptional.isEmpty()) {
-            throw new ResourceNotFoundException("Error: user with id" + roleBody.getUserId() + "   is not registered!");
+            throw new ResourceNotFoundException("Error: user with id " + roleBody.getUserId() + " is not registered!");
         }
-        User user = userOptional.get();
+
+        return Pair.of(roleOptional.get(), userOptional.get());
+    }
+
+
+    public void removeRole(AssignOrRemoveRoleBody roleBody) throws ResourceNotFoundException {
+        Pair<Role, User> pair = validateRoleAndUser(roleBody);
+        Role role = pair.getLeft();
+        User user = pair.getRight();
         Set<Role> userRoles = user.getRoles();
-        if (userRoles.contains(roleOptional.get())) {
-            throw new ConflictException("Error: Role is already assigned to the user!");
+        if (!userRoles.contains(role)) {
+            throw new ResourceNotFoundException("Error: Role is not assigned to the user!");
         }
-        userRoles.add(roleOptional.get());
+        userRoles.remove(role);
         user.setRoles(userRoles);
         userRepository.save(user);
     }

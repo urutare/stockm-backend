@@ -1,7 +1,7 @@
 package com.urutare.stockm.controller;
 
 import com.urutare.stockm.dto.request.AddRoleBody;
-import com.urutare.stockm.dto.request.AssignRoleBody;
+import com.urutare.stockm.dto.request.AssignOrRemoveRoleBody;
 import com.urutare.stockm.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,10 +31,17 @@ public class RoleController {
         userService.createRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
     }
-    @PostMapping("assign")
+    @PatchMapping("assign")
     @Operation(summary = "Assign role")
-    public ResponseEntity<Object> assignRole(@RequestBody @Validated AssignRoleBody roleBody){
+    public ResponseEntity<Object> assignRole(@RequestBody @Validated AssignOrRemoveRoleBody roleBody){
         userService.assignRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role assigned successfully\"}");
     }
+    @PatchMapping("remove")
+    @Operation(summary = "Remove role form a user")
+    public ResponseEntity<Object> removeRole(@RequestBody @Validated AssignOrRemoveRoleBody roleBody){
+        userService.removeRole(roleBody);
+        return ResponseEntity.ok().body("{\"message\": \"role revoked successfully\"}");
+    }
+
 }
