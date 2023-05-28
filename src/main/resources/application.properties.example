@@ -9,10 +9,16 @@ spring.datasource.username=myusername
 spring.datasource.password=mypassword
 spring.jpa.show-sql=true
 spring.jpa.hibernate.ddl-auto=update
-# email
+
+# EMAIL
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
 spring.mail.username=youremail@gmail.com
 spring.mail.password=yourpassword
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
+
+# JWT
+jwt.secret=
+jwt.access.token.expirationInMs=
+jwt.refresh.token.expirationInMs=

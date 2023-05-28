@@ -1,29 +1,53 @@
 package com.urutare.stockm.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.urutare.stockm.service.UserDetailsServiceImpl;
+import com.urutare.stockm.constants.WhiteList;
+import com.urutare.stockm.service.UserService;
+import com.urutare.stockm.utils.AccessDenied;
 import com.urutare.stockm.utils.AuthEntryPointJwt;
 import com.urutare.stockm.utils.AuthTokenFilter;
+import com.urutare.stockm.utils.JwtTokenUtil;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
+@Slf4j
 public class WebSecurityConfig {
+
 
     UserDetailsServiceImpl userDetailsService;
 
 
     private AuthEntryPointJwt unauthorizedHandler;
+
+
+    private final UserService userService;
+
+    private final JwtTokenUtil jwtUtils;
+
+    private final AuthEntryPointJwt unauthorizedHandler;
+
+    private final LogoutConfig logoutConfig;
+    private final AccessDenied accessDenied;
+
 
     public WebSecurityConfig( UserDetailsServiceImpl userDetailsService,AuthEntryPointJwt unauthorizedHandler){
         this.userDetailsService=userDetailsService;
@@ -31,14 +55,14 @@ public class WebSecurityConfig {
     }
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter();
+        return new AuthTokenFilter(jwtUtils, userService);
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
-        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder());
 
         return authProvider;
@@ -56,16 +80,28 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(
-                            "/api/auth/**",
-                            "/swagger-ui/**",
-                            "/api/test/**",
-                            "/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated())
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and();
+        http.cors().and()
+                .csrf().disable()
+                .authorizeHttpRequests()
+                .requestMatchers(WhiteList.WHITELIST_URLS)
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(unauthorizedHandler)
+                .accessDeniedHandler(accessDenied)
+                .and()
+                .logout()
+                .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(logoutConfig)
+                .logoutSuccessHandler(((request, response, authentication) -> {
+                    SecurityContextHolder.clearContext();
+                    log.info("User has logged out from the system");
+                }))
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authenticationProvider(authenticationProvider());
 

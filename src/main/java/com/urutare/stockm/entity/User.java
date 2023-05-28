@@ -1,5 +1,6 @@
 package com.urutare.stockm.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.urutare.stockm.utils.MapUtils;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -36,6 +37,7 @@ public class User {
     @Column(nullable = false)
     @NotBlank
     @Size(max = 120)
+    @JsonIgnore
     private String password;
 
     @NotBlank
