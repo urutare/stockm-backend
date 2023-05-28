@@ -32,13 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebSecurityConfig {
 
-
-    UserDetailsServiceImpl userDetailsService;
-
-
-    private AuthEntryPointJwt unauthorizedHandler;
-
-
     private final UserService userService;
 
     private final JwtTokenUtil jwtUtils;
@@ -48,11 +41,6 @@ public class WebSecurityConfig {
     private final LogoutConfig logoutConfig;
     private final AccessDenied accessDenied;
 
-
-    public WebSecurityConfig( UserDetailsServiceImpl userDetailsService,AuthEntryPointJwt unauthorizedHandler){
-        this.userDetailsService=userDetailsService;
-        this.unauthorizedHandler=unauthorizedHandler;
-    }
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter(jwtUtils, userService);

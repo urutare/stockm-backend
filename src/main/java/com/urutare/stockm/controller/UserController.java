@@ -90,19 +90,6 @@ public class UserController {
 
     }
 
-    @PostMapping("users/add-role")
-    @Operation(summary = "Add role", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Object> addRole(HttpServletRequest request, @RequestBody @Validated AddRoleBody roleBody){
-        String userId = request.getAttribute("userId").toString();
-         userService.CreateRole(Long.valueOf(userId),roleBody);
-        return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
-    }
-    @PostMapping("users/assign-role")
-    @Operation(summary = "Assign role", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Object> assignRole(HttpServletRequest request, @RequestBody @Validated AssignRoleBody roleBody){
-        String userId = request.getAttribute("userId").toString();
-        userService.assignRole(Long.valueOf(userId),roleBody);
-        return ResponseEntity.ok().body("{\"message\": \"role assigned successfully\"}");
-    }
+
 
 }

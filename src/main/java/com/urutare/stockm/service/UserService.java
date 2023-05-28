@@ -15,7 +15,6 @@ import com.urutare.stockm.repository.BlockedTokenRepository;
 import com.urutare.stockm.repository.ResetRepository;
 import com.urutare.stockm.repository.RoleRepository;
 import com.urutare.stockm.repository.UserRepository;
-import com.urutare.stockm.service.UserService.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import org.mindrot.jbcrypt.BCrypt;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -37,13 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class UserService {
-
-
-    PasswordEncoder encoder;
-
 public class UserService implements UserDetailsService {
-
     private final EmailService emailService;
     private final OathService oathService;
     private final Properties properties;
@@ -52,30 +44,19 @@ public class UserService implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final BlockedTokenRepository blockedTokenRepository;
 
-
-    public UserService(UserRepository userRepository,
-           EmailService emailService,
-           OathService oathService,
-           Properties properties, ResetRepository resetRepository,
-            RoleRepository roleRepository, PasswordEncoder encoder) {
-
     public UserService(@Autowired UserRepository userRepository,
-            @Autowired EmailService emailService,
-            @Autowired OathService oathService,
-            @Autowired Properties properties,
-            @Autowired ResetRepository resetRepository,
-            RoleRepository roleRepository,
-            BlockedTokenRepository blockedTokenRepository) {
-
+                       @Autowired EmailService emailService,
+                       @Autowired OathService oathService,
+                       @Autowired Properties properties,
+                       @Autowired ResetRepository resetRepository,
+                       RoleRepository roleRepository,
+                       BlockedTokenRepository blockedTokenRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.oathService = oathService;
         this.properties = properties;
         this.resetRepository = resetRepository;
         this.roleRepository = roleRepository;
-
-        this.encoder=encoder;
-
         this.blockedTokenRepository = blockedTokenRepository;
     }
 
@@ -86,7 +67,6 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
         return UserDetailsImpl.build(user);
-
     }
 
     public User validateUser(String email, String password) throws AuthException {
@@ -279,10 +259,6 @@ public class UserService implements UserDetailsService {
 
     }
 
-
-    public void CreateRole(Long loggedInUserId, AddRoleBody roleBody) throws ConflictException {
-        roleAuthorize(loggedInUserId,"add role");
-
     public User findUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
@@ -302,7 +278,6 @@ public class UserService implements UserDetailsService {
     }
 
     public void CreateRole(Long loggedInUserId, AddRoleBody roleBody) throws ConflictException {
-        roleAuthorize(loggedInUserId, "add role");
 
         if (roleRepository.existsByName(roleBody.getName().name())) {
             throw new ConflictException("Error: Role is already registered!");
@@ -312,13 +287,8 @@ public class UserService implements UserDetailsService {
         roleRepository.save(role);
     }
 
-    public void assignRole(Long loggedInUserId,AssignRoleBody roleBody) throws ConflictException ,ResourceNotFoundException{
-        roleAuthorize(loggedInUserId,"assign user role");
-
-
     public void assignRole(Long loggedInUserId, AssignRoleBody roleBody)
             throws ConflictException, ResourceNotFoundException {
-        roleAuthorize(loggedInUserId, "assign user role");
 
         Optional<Role> roleOptional = roleRepository.findByName(roleBody.getName());
 
@@ -328,16 +298,6 @@ public class UserService implements UserDetailsService {
 
         Optional<User> userOptional = userRepository.findById(roleBody.getUserId());
 
-
-        if(userOptional.isEmpty()){
-            throw new ResourceNotFoundException("Error: user with id"+roleBody.getUserId()+"   is not registered!");
-        }
-        User user = userOptional.get();
-       Set<Role> userRoles =user.getRoles();
-       if(userRoles.contains(roleOptional.get())){
-           throw new ConflictException("Error: Role is already assigned to the user!");
-       }
-
         if (userOptional.isEmpty()) {
             throw new ResourceNotFoundException("Error: user with id" + roleBody.getUserId() + "   is not registered!");
         }
@@ -346,40 +306,10 @@ public class UserService implements UserDetailsService {
         if (userRoles.contains(roleOptional.get())) {
             throw new ConflictException("Error: Role is already assigned to the user!");
         }
-
         userRoles.add(roleOptional.get());
         user.setRoles(userRoles);
         userRepository.save(user);
     }
 
-    private void roleAuthorize(Long userId,String action) throws ConflictException,ResourceNotFoundException, ForbiddenException {
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Role> adminRoleOptional = roleRepository.findByName(ERole.ADMIN);
-        if(adminRoleOptional.isEmpty()){
-            throw new ResourceNotFoundException("Error: Admin role not yet found");
-        }
-        if(userOptional.isEmpty()){
-            throw new ResourceNotFoundException("Error: User not found");
-        }
-        Boolean userAllowed = userOptional.get().getRoles().contains(adminRoleOptional.get());
-        if(!userAllowed){
-            throw  new ForbiddenException("You are not allowed to "+action);
 
-
-    private void roleAuthorize(Long userId, String action)
-            throws ConflictException, ResourceNotFoundException, ForbiddenException {
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Role> adminRoleOptional = roleRepository.findByName(ERole.ADMIN);
-        if (adminRoleOptional.isEmpty()) {
-            throw new ResourceNotFoundException("Error: Admin role not yet found");
-        }
-        if (userOptional.isEmpty()) {
-            throw new ResourceNotFoundException("Error: User not found");
-        }
-        Boolean userAllowed = userOptional.get().getRoles().contains(adminRoleOptional.get());
-        if (!userAllowed) {
-            throw new ForbiddenException("You are not allowed to " + action);
-
-        }
-    }
 }
