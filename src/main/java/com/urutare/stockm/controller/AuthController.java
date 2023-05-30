@@ -1,25 +1,17 @@
 package com.urutare.stockm.controller;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.urutare.stockm.dto.request.ForgotPasswordRequestBody;
 import com.urutare.stockm.dto.request.LoginRequestBody;
 import com.urutare.stockm.dto.request.ResetPasswordRequestBody;
-import com.urutare.stockm.exception.AuthException;
-import com.urutare.stockm.exception.ForbiddenException;
-import com.urutare.stockm.models.ChangePasswordRequest;
 import com.urutare.stockm.dto.request.SignupRequestBody;
 import com.urutare.stockm.dto.response.JwtResponse;
 import com.urutare.stockm.entity.User;
+import com.urutare.stockm.exception.AuthException;
+import com.urutare.stockm.exception.ForbiddenException;
 import com.urutare.stockm.service.UserDetailsImpl;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JsonUtils;
 import com.urutare.stockm.utils.JwtTokenUtil;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,38 +25,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
+    private final PasswordEncoder encoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenUtil jwtUtils;
+    private final UserService userService;
+    Logger logger = LoggerFactory.getLogger(UserController.class);
     @Value("${jwt.secret:nIrXqpiKwj}")
     private String jwtSecret;
 
-    private final PasswordEncoder encoder;
-
-    private final AuthenticationManager authenticationManager;
-
-    private final JwtTokenUtil jwtUtils;
-
-    private final UserService userService;
-    Logger logger = LoggerFactory.getLogger(UserController.class);
-
     public AuthController(@Autowired UserService userService,
-            JwtTokenUtil jwtUtils,
-            AuthenticationManager authenticationManager,
-            PasswordEncoder encoder) {
+                          JwtTokenUtil jwtUtils,
+                          AuthenticationManager authenticationManager,
+                          PasswordEncoder encoder) {
         this.userService = userService;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
@@ -75,7 +67,7 @@ public class AuthController {
     @Operation(summary = "This is to  login to system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login to the system", content = {
-                    @Content(mediaType = "application/json") }),
+                    @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     public ResponseEntity<?> login(@RequestBody LoginRequestBody loginRequest)
@@ -95,7 +87,7 @@ public class AuthController {
             throw new AuthException("Account is not verified");
         }
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new JwtResponse(jwt,
@@ -111,7 +103,7 @@ public class AuthController {
     @Operation(summary = "This is to  register into the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "signup to the system", content = {
-                    @Content(mediaType = "application/json") }),
+                    @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestBody userData)
@@ -171,7 +163,7 @@ public class AuthController {
 
     @PostMapping("/auth/reset-password")
     public ResponseEntity<Object> resetPassword(@RequestParam("token") String token,
-            @RequestBody ResetPasswordRequestBody body) throws jakarta.security.auth.message.AuthException {
+                                                @RequestBody ResetPasswordRequestBody body) throws jakarta.security.auth.message.AuthException {
         String password = body.getPassword();
         userService.resetPassword(token, password);
         return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset successfully")));
@@ -196,18 +188,5 @@ public class AuthController {
         // TODO: Implement
 
         return ResponseEntity.ok().body("{\"message\": \"Phone verified\"}");
-    }
-
-    @PatchMapping("/auth/change-password")
-    public ResponseEntity<Object> changePassword(
-            @RequestBody @Validated ChangePasswordRequest changePasswordRequest,
-            HttpServletRequest request) throws MessagingException {
-
-        String userId = request.getAttribute("userId").toString();
-        String oldPassword = changePasswordRequest.getOldPassword();
-        String newPassword = changePasswordRequest.getNewPassword();
-        userService.changePassword(Long.parseLong(userId), oldPassword, newPassword);
-        return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
-
     }
 }

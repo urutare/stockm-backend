@@ -26,7 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -122,26 +125,8 @@ public class UserService implements UserDetailsService {
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
-            strRoles.forEach(role -> {
-                switch (ERole.valueOf(role)) {
-                    case ADMIN:
-                        Role adminRole = roleRepository.findByName(ERole.ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-
-                        break;
-                    case MANAGER:
-                        Role modRole = roleRepository.findByName(ERole.MANAGER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(modRole);
-
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                }
-            });
+            strRoles.forEach(role -> roles.add(roleRepository.findByName(ERole.valueOf(role))
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."))));
         }
 
         user.setRoles(roles);
@@ -151,9 +136,8 @@ public class UserService implements UserDetailsService {
     }
 
     public User findById(Long userId) throws ResourceNotFoundException {
-        User user = userRepository.findById(userId).orElseThrow(
+        return userRepository.findById(userId).orElseThrow(
                 () -> new ResourceNotFoundException("User not found"));
-        return user;
     }
 
     public void forgotPassword(String email) throws AuthException, MessagingException {
@@ -187,9 +171,6 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
 
         resetRepository.delete(resetPasswordToken);
-    }
-
-    public record PublicUser(Long id, String email, String fullName) {
     }
 
     public void logoutUser(String userId) {
@@ -298,8 +279,6 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-
-
     private Pair<Role, User> validateRoleAndUser(AssignOrRemoveRoleBody roleBody) {
         Optional<Role> roleOptional = roleRepository.findByName(roleBody.getName());
         if (roleOptional.isEmpty()) {
@@ -314,7 +293,6 @@ public class UserService implements UserDetailsService {
         return Pair.of(roleOptional.get(), userOptional.get());
     }
 
-
     public void removeRole(AssignOrRemoveRoleBody roleBody) throws ResourceNotFoundException {
         Pair<Role, User> pair = validateRoleAndUser(roleBody);
         Role role = pair.getLeft();
@@ -326,6 +304,9 @@ public class UserService implements UserDetailsService {
         userRoles.remove(role);
         user.setRoles(userRoles);
         userRepository.save(user);
+    }
+
+    public record PublicUser(Long id, String email, String fullName) {
     }
 
 

@@ -1,6 +1,7 @@
 package com.urutare.stockm.controller;
 
 import com.urutare.stockm.entity.User;
+import com.urutare.stockm.models.ChangePasswordRequest;
 import com.urutare.stockm.models.UpdateEmailRequest;
 import com.urutare.stockm.service.UserService;
 import com.urutare.stockm.utils.JwtTokenUtil;
@@ -84,6 +85,18 @@ public class UserController {
 
     }
 
+    @PatchMapping("users/auth/change-password")
+    public ResponseEntity<Object> changePassword(
+            @RequestBody @Validated ChangePasswordRequest changePasswordRequest,
+            HttpServletRequest request) throws MessagingException {
+
+        String userId = request.getAttribute("userId").toString();
+        String oldPassword = changePasswordRequest.getOldPassword();
+        String newPassword = changePasswordRequest.getNewPassword();
+        userService.changePassword(Long.parseLong(userId), oldPassword, newPassword);
+        return ResponseEntity.ok().body("{\"message\": \"Password updated successfully!\"}");
+
+    }
 
 
 }
