@@ -1,4 +1,4 @@
-name: StockM User Service CI/CD
+name: StockM Auth Service CI/CD
 on:
   push:
     branches: [develop]
@@ -57,7 +57,7 @@ jobs:
           distribution: "adopt"
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package --file auth-service/pom.xml
 
       - name: Test with Maven
-        run: mvn -B test --file pom.xml
+        run: mvn -B test --file auth-service/pom.xml
