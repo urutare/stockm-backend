@@ -1,6 +1,7 @@
-package com.urutare.stockm.controller;
+package com.urutare.stockmcategory.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,33 +12,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.urutare.stockm.entity.Category;
-import com.urutare.stockm.exception.NotFoundException;
-import com.urutare.stockm.models.CategoryRequestBody;
-import com.urutare.stockm.repository.CategoryRepository;
+import com.urutare.stockmcategory.entity.Category;
+import com.urutare.stockmcategory.exception.NotFoundException;
+import com.urutare.stockmcategory.models.CategoryRequestBody;
+import com.urutare.stockmcategory.repository.CategoryRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/categories")
+@RequiredArgsConstructor
 public class CategoryController {
     private final CategoryRepository categoryRepository;
-
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
 
     @GetMapping
     public List<Category> getCategories() {
         // if (categoryId != null) {
-        //     return categoryRepository.findByParentId(categoryId);
+        // return categoryRepository.findByParentId(categoryId);
         // }
         return categoryRepository.findByParentId(null);
     }
 
     @GetMapping("/{id}")
-    public Category getCategory(@PathVariable Long id) {
+    public Category getCategory(@PathVariable UUID id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
     }
@@ -45,7 +44,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<Category> createCategory(@RequestBody CategoryRequestBody categoryBody) {
         Category category = new Category();
-        Long parentId = categoryBody.getParentId();
+        UUID parentId = categoryBody.getParentId();
 
         if (parentId != null) {
             Category parent = categoryRepository.findById(parentId)
@@ -58,11 +57,11 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public Category updateCategory(@RequestBody CategoryRequestBody categoryBody, @PathVariable Long id) {
+    public Category updateCategory(@RequestBody CategoryRequestBody categoryBody, @PathVariable UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
 
-        Long parentId = categoryBody.getParentId();
+        UUID parentId = categoryBody.getParentId();
 
         if (parentId != null) {
             Category parent = categoryRepository.findById(parentId)
@@ -77,7 +76,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
         categoryRepository.delete(category);

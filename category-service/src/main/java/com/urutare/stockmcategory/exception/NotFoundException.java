@@ -1,4 +1,4 @@
-package com.urutare.stockm.exception;
+package com.urutare.stockmcategory.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
