@@ -1,4 +1,8 @@
-# Default
+# DEFAULT
+server.port=0
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+eureka.instance.prefer-ip-address=true
+spring.application.name=user-service
 stockm.API_SECRET_KEY=UrutareIncStockM
 stockm.TOKEN_VALIDITY=86400000
 stockm.BASE_URL=http://localhost:8080
