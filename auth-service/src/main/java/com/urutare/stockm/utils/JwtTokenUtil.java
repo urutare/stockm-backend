@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.urutare.stockm.entity.User;
+import com.urutare.stockm.models.ERole;
 import com.urutare.stockm.models.TokenType;
 import com.urutare.stockm.service.UserDetailsImpl;
 
@@ -42,7 +43,6 @@ public class JwtTokenUtil {
     public Claims getAllClaimsFromToken(String token, String secret) {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
-
 
     public boolean validateToken(String token, String secret) {
         try {
@@ -117,6 +117,10 @@ public class JwtTokenUtil {
 
     public UUID getUserIdFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", UUID.class);
+    }
+
+    public ERole[] getRolesFromJwtToken(String token) {
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("roles", ERole[].class);
     }
 
     public String getTokenTypeFromJwtToken(String token) {
