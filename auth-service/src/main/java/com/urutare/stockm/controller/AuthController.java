@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/user-service")
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
     private final PasswordEncoder encoder;

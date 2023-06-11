@@ -1,5 +1,5 @@
 # DEFAULT
-server.port=0
+server.port=8081
 eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
 eureka.instance.prefer-ip-address=true
 spring.application.name=user-service

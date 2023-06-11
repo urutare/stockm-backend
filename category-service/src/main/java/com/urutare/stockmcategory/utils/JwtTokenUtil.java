@@ -1,26 +1,24 @@
-package com.urutare.stockm.utils;
+package com.urutare.stockmcategory.utils;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import com.urutare.stockm.entity.User;
-import com.urutare.stockm.models.TokenType;
-import com.urutare.stockm.service.UserDetailsImpl;
+import com.urutare.stockmcategory.models.global.ERole;
+import com.urutare.stockmcategory.models.global.Role;
+import com.urutare.stockmcategory.models.global.TokenType;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,71 +50,28 @@ public class JwtTokenUtil {
         }
     }
 
-    public String generateJwtAccessToken(Authentication authentication) {
-
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
-        return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .claim("token_type", TokenType.ACCESS_TOKEN.name())
-                .claim("id", userPrincipal.getId())
-                .claim("roles", userPrincipal.getAuthorities()
-                        .stream()
-                        .map(role -> role.getAuthority()).toArray())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
-                .compact();
-    }
-
-    public String generateJwtRefreshToken(Authentication authentication) {
-
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
-        return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .claim("token_type", TokenType.REFRESH_TOKEN.name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
-                .compact();
-    }
-
-    public Map<String, String> refreshUserTokens(User user) {
-
-        Map<String, String> data = new HashMap<>();
-        UserDetailsImpl userPrincipal = UserDetailsImpl.build(user);
-
-        String refreshToken = Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .claim("token_type", TokenType.REFRESH_TOKEN.name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
-                .compact();
-
-        String accessToken = Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .claim("token_type", TokenType.ACCESS_TOKEN.name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
-                .compact();
-
-        data.put("accessToken", accessToken);
-        data.put("refreshToken", refreshToken);
-
-        return data;
-
-    }
-
-    public String getUserNameFromJwtToken(String token) {
+   public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
     public UUID getUserIdFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", UUID.class);
     }
+
+    public Set<Role> getRolesFromJwtAccessToken(String token) {
+        ArrayList<?> roleARoles = Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("roles", ArrayList.class);
+
+        Set<Role> roles = new HashSet<>();
+        for (Object role : roleARoles) {
+            roles.add(new Role(ERole.valueOf(role.toString())));
+        }
+        return roles;
+    }
+
 
     public String getTokenTypeFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("token_type", String.class);
@@ -162,4 +117,5 @@ public class JwtTokenUtil {
 
         return false;
     }
+    
 }

@@ -1,4 +1,4 @@
-package com.urutare.apigateway.models;
+package com.urutare.stockmcategory.models.global;
 
 public enum TokenType {
     ACCESS_TOKEN,

@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/user-service")
 @Tag(name = "Users")
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor

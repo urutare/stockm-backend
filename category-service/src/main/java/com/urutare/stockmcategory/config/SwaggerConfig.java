@@ -1,4 +1,4 @@
-package com.urutare.stockm.swagger;
+package com.urutare.stockmcategory.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -12,14 +12,14 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition
 @Configuration
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, bearerFormat = "JWT", scheme = "bearer")
-public class SpringdocConfig {
+public class SwaggerConfig {
     @Bean
     public OpenAPI baseOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("StockM User Service API")
+                        .title("StockM Category Service API")
                         .version("1.0.0")
-                        .description("StockM User Service API v1.0")
+                        .description("StockM Category Service API v1.0")
                         .termsOfService("https://swagger.io/terms/")
                         .license(new License()
                                 .name("Apache 2.0")

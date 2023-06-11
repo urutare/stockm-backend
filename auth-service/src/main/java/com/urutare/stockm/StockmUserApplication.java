@@ -14,9 +14,9 @@ import org.thymeleaf.templatemode.TemplateMode;
 @EnableJpaAuditing
 @ConfigurationPropertiesScan
 @EnableDiscoveryClient
-public class StockmApplication {
+public class StockmUserApplication {
     public static void main(String[] args) {
-        SpringApplication.run(StockmApplication.class, args);
+        SpringApplication.run(StockmUserApplication.class, args);
     }
 
     @Bean

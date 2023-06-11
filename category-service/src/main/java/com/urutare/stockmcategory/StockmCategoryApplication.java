@@ -6,10 +6,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class StockmApplication {
+public class StockmCategoryApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(StockmApplication.class, args);
+		SpringApplication.run(StockmCategoryApplication.class, args);
 	}
-
 }

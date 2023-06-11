@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api/v1/user-service/test")
 @Tag(name = "Test", description = "Test API")
 @SecurityRequirement(name = "bearerAuth")
 public class TestController {

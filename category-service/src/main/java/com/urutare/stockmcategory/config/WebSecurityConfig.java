@@ -1,4 +1,4 @@
-package com.urutare.stockm.config;
+package com.urutare.stockmcategory.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,44 +9,35 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.urutare.stockm.constants.WhiteList;
-import com.urutare.stockm.service.UserService;
-import com.urutare.stockm.utils.AccessDenied;
-import com.urutare.stockm.utils.AuthEntryPointJwt;
-import com.urutare.stockm.utils.AuthTokenFilter;
+import com.urutare.stockmcategory.constants.WhiteList;
+import com.urutare.stockmcategory.service.JwtUserDetailService;
+import com.urutare.stockmcategory.utils.AuthEntryPointJwt;
+import com.urutare.stockmcategory.utils.AuthTokenFilter;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 @RequiredArgsConstructor
-@Slf4j
 public class WebSecurityConfig {
-
-    private final UserService userService;
 
     private final AuthEntryPointJwt unauthorizedHandler;
 
-    private final LogoutConfig logoutConfig;
-    private final AccessDenied accessDenied;
+    private final JwtUserDetailService jwtUserDetailService;
 
     private final AuthTokenFilter authTokenFilter;
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-        authProvider.setUserDetailsService(userService);
+        authProvider.setUserDetailsService(jwtUserDetailService);
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
 
@@ -72,21 +63,11 @@ public class WebSecurityConfig {
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(unauthorizedHandler)
-                .accessDeniedHandler(accessDenied)
-                .and()
-                .logout()
-                .logoutUrl("/api/auth/logout")
-                .addLogoutHandler(logoutConfig)
-                .logoutSuccessHandler(((request, response, authentication) -> {
-                    SecurityContextHolder.clearContext();
-                    log.info("User has logged out from the system");
-                }))
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.authenticationProvider(authenticationProvider());
-
+        http.authenticationProvider(daoAuthenticationProvider());
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
