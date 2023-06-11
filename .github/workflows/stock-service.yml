@@ -1,4 +1,4 @@
-name: StockM Category Service CI/CD
+name: Stock Service CI/CD
 on:
   push:
     branches: [develop]
@@ -44,7 +44,7 @@ jobs:
           distribution: "adopt"
 
       - name: Build with Maven
-        run: mvn -B package --file category-service/pom.xml
+        run: mvn -B package --file stock-service/pom.xml
 
       - name: Test with Maven
-        run: mvn -B test --file category-service/pom.xml
+        run: mvn -B test --file stock-service/pom.xml
