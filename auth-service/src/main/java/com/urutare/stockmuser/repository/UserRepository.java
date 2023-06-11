@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.urutare.stockmuser.dto.UserDto;
 import com.urutare.stockmuser.entity.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
@@ -17,9 +16,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.email=?1")
     long getCountByEmail(String email);
-
-    @Query("SELECT new com.urutare.stockm.dto.UserDto(u) FROM User u WHERE u.id=?1")
-    UserDto findUserDtoById(UUID id);
 
     @Modifying
     @Query("UPDATE User u SET u.isActive = :isActive WHERE u.id = :userId")
