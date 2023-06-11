@@ -1,5 +1,5 @@
 # DEFAULT
-server.port=0
+server.port=8082
 eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
 eureka.instance.prefer-ip-address=true
 spring.application.name=category-service
@@ -11,3 +11,6 @@ spring.datasource.password=postgres
 spring.jpa.show-sql=true
 spring.jpa.hibernate.ddl-auto=update
 logging.level.org.hibernate.SQL=debug
+
+# JWT
+jwt.secret=UrutareIncStockM
