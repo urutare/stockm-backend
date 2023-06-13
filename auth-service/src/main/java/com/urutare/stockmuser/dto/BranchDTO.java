@@ -5,8 +5,10 @@ import java.util.UUID;
 import com.urutare.stockmuser.entity.Branch;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class BranchDTO {
     private UUID id;
     private String name;
