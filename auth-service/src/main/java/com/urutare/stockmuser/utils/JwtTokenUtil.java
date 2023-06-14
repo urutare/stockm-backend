@@ -1,8 +1,11 @@
 package com.urutare.stockmuser.utils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -11,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import com.urutare.stockmuser.entity.Role;
 import com.urutare.stockmuser.entity.User;
+import com.urutare.stockmuser.models.ERole;
 import com.urutare.stockmuser.models.TokenType;
 import com.urutare.stockmuser.service.UserDetailsImpl;
 
@@ -115,7 +120,8 @@ public class JwtTokenUtil {
     }
 
     public UUID getUserIdFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", UUID.class);
+        String userId = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", String.class);
+        return UUID.fromString(userId);
     }
 
     public String getTokenTypeFromJwtToken(String token) {
@@ -142,6 +148,20 @@ public class JwtTokenUtil {
 
     public boolean isJwtRefreshToken(String token) {
         return getTokenTypeFromJwtToken(token).equals(TokenType.REFRESH_TOKEN.name());
+    }
+
+    public Set<Role> getRolesFromJwtAccessToken(String token) {
+        ArrayList<?> roleARoles = Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("roles", ArrayList.class);
+
+        Set<Role> roles = new HashSet<>();
+        for (Object role : roleARoles) {
+            roles.add(new Role(ERole.valueOf(role.toString())));
+        }
+        return roles;
     }
 
     public boolean validateJwtToken(String authToken) {

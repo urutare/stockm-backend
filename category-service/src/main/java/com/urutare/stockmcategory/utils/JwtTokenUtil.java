@@ -55,7 +55,8 @@ public class JwtTokenUtil {
     }
 
     public UUID getUserIdFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", UUID.class);
+        String userId = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", String.class);
+        return UUID.fromString(userId);
     }
 
     public Set<Role> getRolesFromJwtAccessToken(String token) {

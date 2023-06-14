@@ -78,6 +78,9 @@ public class User {
     @Column
     private Date lastLogin;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Company> companies = new HashSet<>();
+
     public User() {
     }
 
