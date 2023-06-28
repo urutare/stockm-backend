@@ -18,7 +18,7 @@ public class CategoryDTO {
     private List<CategoryDTO> children = new ArrayList<>();
     private int countChildren;
 
-    public static List<CategoryDTO> mapCategoriesToDTOs(List<Category> categories) {
+    public static List<CategoryDTO> mapCategoriesToDTOs(List<Category> categories, int childrenLimit) {
         List<CategoryDTO> dtos = new ArrayList<>();
 
         for (Category category : categories) {
@@ -29,8 +29,8 @@ public class CategoryDTO {
             dto.setCountChildren(category.getChildren().size());
             dto.setImage(category.getImage());
 
-            // Limit children to one level
             List<CategoryDTO> childDTOs = category.getChildren().stream()
+                    .limit(childrenLimit)
                     .map(child -> {
                         CategoryDTO childDTO = new CategoryDTO();
                         childDTO.setId(child.getId());
@@ -49,6 +49,3 @@ public class CategoryDTO {
         return dtos;
     }
 }
-
-
-

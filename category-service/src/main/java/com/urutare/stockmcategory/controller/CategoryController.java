@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,22 +46,25 @@ public class CategoryController {
     private final CategoryRepository categoryRepository;
     private final CloudinaryUtil cloudinaryUtil;
 
-    @Value("${pagination.default.page:0}")
-    private int defaultPage;
-    @Value("${pagination.default.size:10}")
-    private int defaultSize;
-    private static final int MAX_PAGE_SIZE = 100;
-
     @GetMapping
     public PaginatedResponseDTO<CategoryDTO> getCategories(@RequestParam(required = false) UUID parentId,
-            @RequestParam(defaultValue = "${pagination.default.page}") int page,
-            @RequestParam(defaultValue = "${pagination.default.size}") @Max(MAX_PAGE_SIZE) int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") @Max(25) int childrenLimit,
+            @RequestParam(defaultValue = "10") @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<Category> categoryPage = categoryRepository.findByParentId(parentId, pageable);
-        List<CategoryDTO> categoryDTOs = CategoryDTO.mapCategoriesToDTOs(categoryPage.getContent());
+        Page<Category> categoryPage;
+
+        if (keyword != null) {
+            categoryPage = categoryRepository.searchByName(keyword, pageable);
+        } else {
+            categoryPage = categoryRepository.findByParentId(parentId, pageable);
+        }
+
+        List<CategoryDTO> categoryDTOs = CategoryDTO.mapCategoriesToDTOs(categoryPage.getContent(), childrenLimit);
 
         PaginatedResponseDTO<CategoryDTO> paginatedResponseDTO = new PaginatedResponseDTO<>();
         paginatedResponseDTO.setContent(categoryDTOs);
@@ -82,15 +84,7 @@ public class CategoryController {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
     }
-
-    @GetMapping("/{id}/children")
-    @Operation(summary = "Get category children")
-    public List<CategoryDTO> getCategoryChildren(@PathVariable UUID id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Category not found"));
-        return CategoryDTO.mapCategoriesToDTOs(category.getChildren());
-    }
-
+    
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create category")
