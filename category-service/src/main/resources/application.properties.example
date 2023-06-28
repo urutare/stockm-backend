@@ -26,3 +26,6 @@ spring.servlet.multipart.max-request-size=10MB
 # Set the maximum allowed file size
 spring.servlet.multipart.max-file-size=10MB
 
+# Pagination
+pagination.default.page=0
+pagination.default.size=10

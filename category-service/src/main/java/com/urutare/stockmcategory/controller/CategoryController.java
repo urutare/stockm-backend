@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.urutare.stockmcategory.common.StringUtil;
@@ -22,12 +27,14 @@ import com.urutare.stockmcategory.entity.Category;
 import com.urutare.stockmcategory.exception.NotFoundException;
 import com.urutare.stockmcategory.models.dto.CategoryDTO;
 import com.urutare.stockmcategory.models.request.CategoryRequestBody;
+import com.urutare.stockmcategory.models.response.PaginatedResponseDTO;
 import com.urutare.stockmcategory.repository.CategoryRepository;
 import com.urutare.stockmcategory.utils.CloudinaryUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -40,9 +47,35 @@ public class CategoryController {
     private final CloudinaryUtil cloudinaryUtil;
 
     @GetMapping
-    public List<CategoryDTO> getCategories() {
-        List<Category> categories = categoryRepository.findByParentId(null);
-        return CategoryDTO.mapCategoriesToDTOs(categories);
+    public PaginatedResponseDTO<CategoryDTO> getCategories(@RequestParam(required = false) UUID parentId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") @Max(25) int childrenLimit,
+            @RequestParam(defaultValue = "10") @Max(100) int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Category> categoryPage;
+
+        if (keyword != null) {
+            categoryPage = categoryRepository.searchByName(keyword, pageable);
+        } else {
+            categoryPage = categoryRepository.findByParentId(parentId, pageable);
+        }
+
+        List<CategoryDTO> categoryDTOs = CategoryDTO.mapCategoriesToDTOs(categoryPage.getContent(), childrenLimit);
+
+        PaginatedResponseDTO<CategoryDTO> paginatedResponseDTO = new PaginatedResponseDTO<>();
+        paginatedResponseDTO.setContent(categoryDTOs);
+        paginatedResponseDTO.setPageNumber(categoryPage.getNumber());
+        paginatedResponseDTO.setPageSize(categoryPage.getSize());
+        paginatedResponseDTO.setTotalPages(categoryPage.getTotalPages());
+        paginatedResponseDTO.setTotalElements(categoryPage.getTotalElements());
+        paginatedResponseDTO.setFirst(categoryPage.isFirst());
+        paginatedResponseDTO.setLast(categoryPage.isLast());
+
+        return paginatedResponseDTO;
     }
 
     @GetMapping("/{id}")
@@ -51,15 +84,7 @@ public class CategoryController {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
     }
-
-    @GetMapping("/{id}/children")
-    @Operation(summary = "Get category children")
-    public List<CategoryDTO> getCategoryChildren(@PathVariable UUID id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Category not found"));
-        return CategoryDTO.mapCategoriesToDTOs(category.getChildren());
-    }
-
+    
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create category")
