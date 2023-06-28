@@ -20,8 +20,8 @@ public class Piece {
     @JoinColumn(name = "parent_piece_id")
     private Piece parentPiece;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id")
     private Unit unit;
 
     @Column(nullable = false)
@@ -30,4 +30,3 @@ public class Piece {
     @OneToOne(mappedBy = "parentPiece", cascade = CascadeType.ALL)
     private Piece childPiece;
 }
-

@@ -34,6 +34,9 @@ public class Category {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "string")
+    private String image;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     @JsonBackReference

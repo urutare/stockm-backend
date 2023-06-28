@@ -1,24 +1,29 @@
 package com.urutare.stockmcategory.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.urutare.stockmcategory.common.StringUtil;
 import com.urutare.stockmcategory.entity.Category;
 import com.urutare.stockmcategory.exception.NotFoundException;
+import com.urutare.stockmcategory.models.dto.CategoryDTO;
 import com.urutare.stockmcategory.models.request.CategoryRequestBody;
 import com.urutare.stockmcategory.repository.CategoryRepository;
+import com.urutare.stockmcategory.utils.CloudinaryUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,13 +37,12 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Categories", description = "Categories API")
 public class CategoryController {
     private final CategoryRepository categoryRepository;
+    private final CloudinaryUtil cloudinaryUtil;
 
     @GetMapping
-    public List<Category> getCategories() {
-        // if (categoryId != null) {
-        // return categoryRepository.findByParentId(categoryId);
-        // }
-        return categoryRepository.findByParentId(null);
+    public List<CategoryDTO> getCategories() {
+        List<Category> categories = categoryRepository.findByParentId(null);
+        return CategoryDTO.mapCategoriesToDTOs(categories);
     }
 
     @GetMapping("/{id}")
@@ -48,10 +52,18 @@ public class CategoryController {
                 .orElseThrow(() -> new NotFoundException("Category not found"));
     }
 
-    @PostMapping
+    @GetMapping("/{id}/children")
+    @Operation(summary = "Get category children")
+    public List<CategoryDTO> getCategoryChildren(@PathVariable UUID id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+        return CategoryDTO.mapCategoriesToDTOs(category.getChildren());
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create category")
-    public ResponseEntity<Category> createCategory(@RequestBody CategoryRequestBody categoryBody) {
+    public ResponseEntity<Category> createCategory(@ModelAttribute CategoryRequestBody categoryBody) {
         Category category = new Category();
         UUID parentId = categoryBody.getParentId();
 
@@ -60,15 +72,25 @@ public class CategoryController {
                     .orElseThrow(() -> new NotFoundException("Parent Category not found"));
             category.setParent(parent);
         }
+
+        if (categoryBody.getImage() != null) {
+            try {
+                String imageUrl = cloudinaryUtil.uploadImage(categoryBody.getImage());
+                category.setImage(imageUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         category.setName(categoryBody.getName());
         Category newCategory = categoryRepository.save(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Update category")
-    public Category updateCategory(@RequestBody CategoryRequestBody categoryBody, @PathVariable UUID id) {
+    public Category updateCategory(@ModelAttribute CategoryRequestBody categoryBody, @PathVariable UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
 
@@ -82,7 +104,22 @@ public class CategoryController {
             category.setParent(null);
         }
 
-        category.setName(categoryBody.getName());
+        if (categoryBody.getImage() != null) {
+            try {
+                String imageUrl = cloudinaryUtil.uploadImage(categoryBody.getImage());
+                category.setImage(imageUrl);
+
+                if (StringUtil.isNotNullOrEmpty(category.getImage())) {
+                    cloudinaryUtil.deleteImage(category.getImage());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (StringUtil.isNotNullOrEmpty(categoryBody.getName())) {
+            category.setName(categoryBody.getName());
+        }
         return categoryRepository.save(category);
     }
 
@@ -93,6 +130,13 @@ public class CategoryController {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
         categoryRepository.delete(category);
+        if (category.getImage() != null) {
+            try {
+                cloudinaryUtil.deleteImage(category.getImage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         return ResponseEntity.noContent().build();
     }
 }
