@@ -15,6 +15,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -23,7 +24,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "tbl_categories")
+@Table(name = "tbl_categories", indexes = { @Index(name = "idx_name", columnList = "name") })
 public class Category {
 
     @Id
@@ -31,10 +32,10 @@ public class Category {
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
 
-    @Column(name = "string")
+    @Column(name = "image")
     private String image;
 
     @ManyToOne(fetch = FetchType.LAZY)
