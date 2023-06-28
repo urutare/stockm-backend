@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.urutare.stockmcategory.common.StringUtil;
@@ -22,12 +28,14 @@ import com.urutare.stockmcategory.entity.Category;
 import com.urutare.stockmcategory.exception.NotFoundException;
 import com.urutare.stockmcategory.models.dto.CategoryDTO;
 import com.urutare.stockmcategory.models.request.CategoryRequestBody;
+import com.urutare.stockmcategory.models.response.PaginatedResponseDTO;
 import com.urutare.stockmcategory.repository.CategoryRepository;
 import com.urutare.stockmcategory.utils.CloudinaryUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,10 +47,33 @@ public class CategoryController {
     private final CategoryRepository categoryRepository;
     private final CloudinaryUtil cloudinaryUtil;
 
+    @Value("${pagination.default.page:0}")
+    private int defaultPage;
+    @Value("${pagination.default.size:10}")
+    private int defaultSize;
+    private static final int MAX_PAGE_SIZE = 100;
+
     @GetMapping
-    public List<CategoryDTO> getCategories() {
-        List<Category> categories = categoryRepository.findByParentId(null);
-        return CategoryDTO.mapCategoriesToDTOs(categories);
+    public PaginatedResponseDTO<CategoryDTO> getCategories(@RequestParam(required = false) UUID parentId,
+            @RequestParam(defaultValue = "${pagination.default.page}") int page,
+            @RequestParam(defaultValue = "${pagination.default.size}") @Max(MAX_PAGE_SIZE) int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Category> categoryPage = categoryRepository.findByParentId(parentId, pageable);
+        List<CategoryDTO> categoryDTOs = CategoryDTO.mapCategoriesToDTOs(categoryPage.getContent());
+
+        PaginatedResponseDTO<CategoryDTO> paginatedResponseDTO = new PaginatedResponseDTO<>();
+        paginatedResponseDTO.setContent(categoryDTOs);
+        paginatedResponseDTO.setPageNumber(categoryPage.getNumber());
+        paginatedResponseDTO.setPageSize(categoryPage.getSize());
+        paginatedResponseDTO.setTotalPages(categoryPage.getTotalPages());
+        paginatedResponseDTO.setTotalElements(categoryPage.getTotalElements());
+        paginatedResponseDTO.setFirst(categoryPage.isFirst());
+        paginatedResponseDTO.setLast(categoryPage.isLast());
+
+        return paginatedResponseDTO;
     }
 
     @GetMapping("/{id}")
