@@ -14,3 +14,15 @@ logging.level.org.hibernate.SQL=debug
 
 # JWT
 jwt.secret=UrutareIncStockM
+
+# CLOUDINARY
+cloudinary.cloud_name=urutareinc
+cloudinary.api_key=************
+cloudinary.api_secret=************
+
+# Set the maximum allowed request size
+spring.servlet.multipart.max-request-size=10MB
+
+# Set the maximum allowed file size
+spring.servlet.multipart.max-file-size=10MB
+
