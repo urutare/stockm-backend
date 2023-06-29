@@ -17,6 +17,7 @@ public class CategoryDTO {
     private UUID parentId;
     private List<CategoryDTO> children = new ArrayList<>();
     private int countChildren;
+    private int countProducts;
 
     public static List<CategoryDTO> mapCategoriesToDTOs(List<Category> categories, int childrenLimit) {
         List<CategoryDTO> dtos = new ArrayList<>();
@@ -28,6 +29,7 @@ public class CategoryDTO {
             dto.setParentId(category.getParent() != null ? category.getParent().getId() : null);
             dto.setCountChildren(category.getChildren().size());
             dto.setImage(category.getImage());
+            dto.setCountProducts(category.getProducts().size());
 
             List<CategoryDTO> childDTOs = category.getChildren().stream()
                     .limit(childrenLimit)
@@ -38,6 +40,7 @@ public class CategoryDTO {
                         childDTO.setParentId(child.getParent().getId());
                         childDTO.setCountChildren(child.getChildren().size());
                         childDTO.setImage(child.getImage());
+                        childDTO.setCountProducts(child.getProducts().size());
                         return childDTO;
                     })
                     .collect(Collectors.toList());
