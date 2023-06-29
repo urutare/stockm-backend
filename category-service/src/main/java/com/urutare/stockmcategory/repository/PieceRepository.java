@@ -4,9 +4,10 @@ import com.urutare.stockmcategory.entity.Piece;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface PieceRepository extends JpaRepository<Piece, UUID> {
-    // You can define custom query methods or use the ones provided by JpaRepository
+    List<Piece> findByProductId(UUID productId);
 }

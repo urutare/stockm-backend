@@ -24,9 +24,10 @@ public class Piece {
     @JoinColumn(name = "unit_id")
     private Unit unit;
 
-    @Column(nullable = false)
-    private double sellingPrice;
-
     @OneToOne(mappedBy = "parentPiece", cascade = CascadeType.ALL)
     private Piece childPiece;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 }
