@@ -100,7 +100,6 @@ public class ProductController {
             product.setCategory(productService.getCategoryById(productBody.getCategoryId()));
             product.setMeasurementType(productBody.getMeasurementType());
             product.setTaxType(productBody.getTaxType());
-            product.setQuantityAlert(productBody.getQuantityAlert());
             product.setBarCode(productBody.getBarCode());
             product.setDescription(productBody.getDescription());
             product.setImage(imageUrl);
@@ -125,7 +124,6 @@ public class ProductController {
         product.setCategory(productService.getCategoryById(productBody.getCategoryId()));
         product.setMeasurementType(productBody.getMeasurementType());
         product.setTaxType(productBody.getTaxType());
-        product.setQuantityAlert(productBody.getQuantityAlert());
         product.setBarCode(productBody.getBarCode());
         product.setDescription(productBody.getDescription());
 

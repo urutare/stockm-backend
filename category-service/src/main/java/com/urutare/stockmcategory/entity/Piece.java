@@ -6,7 +6,9 @@ import lombok.Data;
 import java.util.UUID;
 
 @Entity
-@Table(name = "pieces")
+@Table(name = "pieces", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "parent_piece_id", "product_id" }, name = "unique_product_piece")
+})
 @Data
 public class Piece {
     @Id

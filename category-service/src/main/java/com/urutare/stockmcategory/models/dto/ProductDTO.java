@@ -1,5 +1,6 @@
 package com.urutare.stockmcategory.models.dto;
 
+import com.urutare.stockmcategory.entity.MeasurementType;
 import com.urutare.stockmcategory.entity.Product;
 import lombok.Data;
 
@@ -12,9 +13,8 @@ public class ProductDTO {
     private UUID id;
     private String name;
     private CategoryDTO category;
-    private String measurementType;
+    private MeasurementType measurementType;
     private String taxType;
-    private Double quantityAlert;
     private String barCode;
     private String description;
     private String imageUrl;
@@ -26,7 +26,6 @@ public class ProductDTO {
         productDTO.setCategory(CategoryDTO.fromCategory(product.getCategory()));
         productDTO.setMeasurementType(product.getMeasurementType());
         productDTO.setTaxType(product.getTaxType().toString());
-        productDTO.setQuantityAlert(product.getQuantityAlert());
         productDTO.setBarCode(product.getBarCode());
         productDTO.setDescription(product.getDescription());
         productDTO.setImageUrl(product.getImage());

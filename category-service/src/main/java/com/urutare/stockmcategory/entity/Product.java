@@ -22,14 +22,11 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(nullable = false, length = 50)
-    private String measurementType;
+    @Enumerated(EnumType.STRING)
+    private MeasurementType measurementType;
 
     @Enumerated(EnumType.STRING)
     private TaxType taxType;
-
-    @Column(nullable = false)
-    private Double quantityAlert;
 
     @Column(unique = true, length = 50)
     private String barCode;
