@@ -51,4 +51,19 @@ public class CategoryDTO {
 
         return dtos;
     }
+
+    public static CategoryDTO fromCategory(Category category) {
+        CategoryDTO categoryDTO = new CategoryDTO();
+        categoryDTO.setId(category.getId());
+        categoryDTO.setName(category.getName());
+        if (category.getParent() != null) {
+            categoryDTO.setParentId(category.getParent().getId());
+        }
+        categoryDTO.setChildren(new ArrayList<>());
+        categoryDTO.setImage(category.getImage());
+        categoryDTO.setCountChildren(category.getChildren().size());
+        categoryDTO.setCountProducts(category.getProducts().size());
+        categoryDTO.setParentId(category.getParent() != null ? category.getParent().getId() : null);
+        return categoryDTO;
+    }
 }

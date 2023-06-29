@@ -3,6 +3,7 @@ package com.urutare.stockmcategory.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,9 +37,8 @@ public class Product {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "pieces_id")
-    private Piece pieces;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<Piece> pieces = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))

@@ -38,7 +38,7 @@ import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api/v1/category-service/categories")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Categories", description = "Categories API")

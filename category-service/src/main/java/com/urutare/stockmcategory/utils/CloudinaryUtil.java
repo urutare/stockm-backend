@@ -9,11 +9,20 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Map;
 
+import java.util.regex.Pattern;
+
 @Component
 @RequiredArgsConstructor
 public class CloudinaryUtil {
 
     private final Cloudinary cloudinary;
+
+    private static final Pattern URL_PATTERN = Pattern.compile(
+            "^((http|https)://)?([\\w-]+\\.)+[\\w-]+(/[\\w-./?%&=]*)?$");
+
+    public boolean isValidUrl(String url) { 
+        return URL_PATTERN.matcher(url).matches();
+    }
 
     public String uploadImage(MultipartFile image) throws IOException {
         Map<?, ?> uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
@@ -21,6 +30,9 @@ public class CloudinaryUtil {
     }
 
     public String deleteImage(String imageUrl) throws IOException {
+        if (!isValidUrl(imageUrl)) {
+            return "Invalid image url";
+        }
         String publicId = extractPublicIdFromImageUrl(imageUrl);
         Map<?, ?> deleteResult = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
         return (String) deleteResult.get("result");
