@@ -14,6 +14,9 @@ public class Piece {
     private UUID id;
 
     @Column(nullable = false)
+    String name;
+
+    @Column(nullable = false)
     private int numberOfPieces;
 
     @ManyToOne(fetch = FetchType.LAZY)

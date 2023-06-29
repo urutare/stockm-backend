@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 @Data
 public class PieceDTO {
     private UUID id;
+    private String name;
     private int numberOfPieces;
     private PieceDTO parentPiece;
     private UUID unitId;
@@ -17,6 +18,7 @@ public class PieceDTO {
 
     public static PieceDTO fromPiece(Piece piece) {
         PieceDTO pieceDTO = new PieceDTO();
+        pieceDTO.setName(piece.getName());
         pieceDTO.setId(piece.getId());
         pieceDTO.setNumberOfPieces(piece.getNumberOfPieces());
         if (piece.getParentPiece() != null) {

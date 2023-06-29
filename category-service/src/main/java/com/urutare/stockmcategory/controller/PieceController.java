@@ -15,7 +15,6 @@ import com.urutare.stockmcategory.service.PieceService;
 import com.urutare.stockmcategory.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -45,6 +44,7 @@ public class PieceController {
     @Operation(summary = "Create piece")
     public ResponseEntity<PieceDTO> createPiece(@RequestBody @Valid PieceRequestBody pieceBody) {
         Piece piece = new Piece();
+        piece.setName(pieceBody.getName());
         piece.setNumberOfPieces(pieceBody.getNumberOfPieces());
         piece.setProduct(productService.getProductById(pieceBody.getProductId()).orElse(null));
         piece.setUnit(pieceService.getUnitById(pieceBody.getUnitId()).orElse(null));
@@ -60,6 +60,7 @@ public class PieceController {
         Piece piece = pieceService.getPieceById(id)
                 .orElseThrow(() -> new NotFoundException("Piece not found"));
 
+        piece.setName(pieceBody.getName());
         piece.setNumberOfPieces(pieceBody.getNumberOfPieces());
         piece.setProduct(productService.getProductById(pieceBody.getProductId()).orElse(null));
         piece.setUnit(pieceService.getUnitById(pieceBody.getUnitId()).orElse(null));
