@@ -42,7 +42,7 @@ public class Product {
 
     @ManyToMany
     @JoinTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private List<Tag> tags;
+    private List<ProductTag> tags;
 
     @Column(name = "image", length = 255)
     private String image;
