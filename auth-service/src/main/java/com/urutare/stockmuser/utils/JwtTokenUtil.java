@@ -11,7 +11,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.urutare.stockmuser.entity.Role;
@@ -44,6 +43,10 @@ public class JwtTokenUtil {
     @Value("${jwt.refresh.token.expirationInMs:86400000}")
     private int jwtRefreshExpirationMs;
 
+    public String getSecretKey() {
+        return jwtSecret;
+    }
+
     public Claims getAllClaimsFromToken(String token, String secret) {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
@@ -57,9 +60,7 @@ public class JwtTokenUtil {
         }
     }
 
-    public String generateJwtAccessToken(Authentication authentication) {
-
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+    public String generateJwtAccessToken(UserDetailsImpl userPrincipal) {
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
@@ -74,9 +75,7 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public String generateJwtRefreshToken(Authentication authentication) {
-
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+    public String generateJwtRefreshToken(UserDetailsImpl userPrincipal) {
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())

@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class JwtResponse {
   private UUID id;
-  private String username;
   private String email;
   private List<String> roles;
 
@@ -16,10 +15,9 @@ public class JwtResponse {
   private String accessToken;
   private String refreshToken;
 
-  public JwtResponse(String accessToken, String refreshToken, UUID id, String username, String email,
+  public JwtResponse(String accessToken, String refreshToken, UUID id, String email,
       List<String> roles) {
     this.id = id;
-    this.username = username;
     this.email = email;
     this.roles = roles;
     this.accessToken = accessToken;

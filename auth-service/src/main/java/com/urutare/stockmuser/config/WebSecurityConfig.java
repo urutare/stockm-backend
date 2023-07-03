@@ -39,6 +39,7 @@ public class WebSecurityConfig {
     private final AccessDenied accessDenied;
 
     private final AuthTokenFilter authTokenFilter;
+    
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -50,6 +51,7 @@ public class WebSecurityConfig {
         return authProvider;
     }
 
+    
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
@@ -75,7 +77,7 @@ public class WebSecurityConfig {
                 .accessDeniedHandler(accessDenied)
                 .and()
                 .logout()
-                .logoutUrl("/api/auth/logout")
+                .logoutUrl("/api/v1/user-service/auth/logout")
                 .addLogoutHandler(logoutConfig)
                 .logoutSuccessHandler(((request, response, authentication) -> {
                     SecurityContextHolder.clearContext();

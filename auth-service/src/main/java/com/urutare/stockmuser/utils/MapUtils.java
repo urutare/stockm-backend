@@ -21,12 +21,8 @@ public enum MapUtils {
         if (!simplified) {
             map.put("phoneNumber", user.getPhoneNumber());
             map.put("roles", user.getRoles().toString());
-            map.put("isActive", user.isActive());
             map.put("avatar", user.getAvatar());
             map.put("verified", user.isVerified());
-            map.put("lastTimePasswordUpdated", user.getLastTimePasswordUpdated());
-            map.put("birthdate", user.getBirthdate());
-            map.put("lastLogin", user.getLastLogin());
         }
         return map;
     }

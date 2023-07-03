@@ -47,12 +47,12 @@ public class UserService implements UserDetailsService {
     private final BlockedTokenRepository blockedTokenRepository;
 
     public UserService(@Autowired UserRepository userRepository,
-                       @Autowired EmailService emailService,
-                       @Autowired OathService oathService,
-                       @Autowired Properties properties,
-                       @Autowired ResetRepository resetRepository,
-                       RoleRepository roleRepository,
-                       BlockedTokenRepository blockedTokenRepository) {
+            @Autowired EmailService emailService,
+            @Autowired OathService oathService,
+            @Autowired Properties properties,
+            @Autowired ResetRepository resetRepository,
+            RoleRepository roleRepository,
+            BlockedTokenRepository blockedTokenRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.oathService = oathService;
@@ -65,7 +65,7 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailOrUsername(username, username)
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
         return UserDetailsImpl.build(user);
@@ -109,13 +109,6 @@ public class UserService implements UserDetailsService {
         if (user.getEmail() != null) {
             user.setEmail(user.getEmail().toLowerCase());
         }
-        if (user.getUsername() == null) {
-            user.setUsername(user.getEmail());
-        }
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw new AuthException("Error: Username is already taken!");
-        }
-
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new AuthException("Error: Email is already in use!");
         }
@@ -175,18 +168,6 @@ public class UserService implements UserDetailsService {
         resetRepository.delete(resetPasswordToken);
     }
 
-    public void logoutUser(UUID userId) {
-        userRepository.updateIsActive(userId, false);
-    }
-
-    public void activateUser(UUID userId) {
-        userRepository.updateIsActive(userId, true);
-    }
-
-    public Boolean isActive(UUID userId) {
-        return userRepository.getIsActiveById(userId);
-    }
-
     public void updateEmailForUser(UUID userId, String newEmail) throws AuthException, MessagingException {
         User user = this.findById(userId);
         updateEmail(user, newEmail);
@@ -237,11 +218,6 @@ public class UserService implements UserDetailsService {
         sendEmailWithContext(user, user.getEmail(), "Urutare Inc account password change!",
                 "change_password_email.html");
 
-    }
-
-    public User findUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
     }
 
     public User findUserByBlockedToken(String token) {
@@ -311,5 +287,24 @@ public class UserService implements UserDetailsService {
     public record PublicUser(UUID id, String email, String fullName) {
     }
 
+    public User findByEmail(String email) {
+        try {
+            return userRepository.findByEmail(email).orElseThrow(
+                    () -> new UsernameNotFoundException("User Not Found with email: " + email));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public void activateUser(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UsernameNotFoundException("User Not Found with id: " + userId));
+        user.setVerified(true);
+        userRepository.save(user);
+    }
 
 }

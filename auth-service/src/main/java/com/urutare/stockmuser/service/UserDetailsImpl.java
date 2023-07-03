@@ -29,10 +29,9 @@ public class UserDetailsImpl implements UserDetails {
 
   private Collection<? extends GrantedAuthority> authorities;
 
-  public UserDetailsImpl(UUID id, String username, String email, String password,
+  public UserDetailsImpl(UUID id, String email, String password,
       Collection<? extends GrantedAuthority> authorities, boolean isVerified) {
     this.id = id;
-    this.username = username;
     this.email = email;
     this.password = password;
     this.authorities = authorities;
@@ -46,7 +45,6 @@ public class UserDetailsImpl implements UserDetails {
 
     return new UserDetailsImpl(
         user.getId(),
-        user.getUsername(),
         user.getEmail(),
         user.getPassword(),
         authorities,

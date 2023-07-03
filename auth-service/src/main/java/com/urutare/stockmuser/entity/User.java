@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,13 +33,13 @@ public class User {
     @Email
     private String email;
 
-    @Column(nullable = false, unique = true)
-    @NotBlank
-    @Size(max = 20)
-    private String username;
+    @Column
+    private String oauthProvider;
+
+    @Column
+    private String oauthId;
 
     @Column(nullable = false)
-    @NotBlank
     @Size(max = 120)
     @JsonIgnore
     private String password;
@@ -52,31 +51,13 @@ public class User {
     @Size(max = 13)
     private String phoneNumber;
 
-    @Column
-    private String gender;
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
-
-    @Column
-    private boolean isEnabled;
-    /**
-     * for chat purpose
-     */
-    @Column
-    private boolean isActive;
     @Column
     private String avatar;
     @Column
     private boolean verified;
-    @Column
-    private Date lastTimePasswordUpdated;
-    @Column
-    private String birthdate;
-    // private List<String> Permissions;
-    @Column
-    private Date lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Company> companies = new HashSet<>();
@@ -98,7 +79,6 @@ public class User {
         this.password = password;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
-        this.username = username;
     }
 
     public User(String email, String password) {

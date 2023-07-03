@@ -13,7 +13,10 @@ import com.urutare.stockmuser.models.ERole;
 import com.urutare.stockmuser.repository.RoleRepository;
 import com.urutare.stockmuser.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class AdminUserPreConfig implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -40,17 +43,16 @@ public class AdminUserPreConfig implements CommandLineRunner {
 
             // Save roles to the repository
             roleRepository.saveAll(Arrays.asList(adminRole, sellerRole, buyerRole, managerRole, userRole));
-            System.out.println("Roles pre-configured.");
+            log.info("Roles pre-configured.");
         }
         // Check if admin user already exists
-        if (!userRepository.existsByUsername("admin")) {
+        if (!userRepository.existsByEmail("admin@urutare.com")) {
             // Retrieve the ADMIN role from the repository
             Role adminRole = roleRepository.findByName(ERole.ADMIN)
                     .orElseThrow(() -> new RuntimeException("Admin role not found."));
             // Create a new admin user
             User adminUser = new User();
             adminUser.setId(UUID.randomUUID());
-            adminUser.setUsername("admin");
             adminUser.setEmail("admin@urutare.com");
             adminUser.setFullName("Admin");
             adminUser.setPassword(passwordEncoder.encode("Admin123"));
@@ -59,7 +61,7 @@ public class AdminUserPreConfig implements CommandLineRunner {
 
             // Save the admin user to the repository
             userRepository.save(adminUser);
-            System.out.println("Admin user pre-configured.");
+            log.info("Admin user pre-configured.");
         }
     }
 }

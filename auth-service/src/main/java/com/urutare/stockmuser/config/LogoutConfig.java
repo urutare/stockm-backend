@@ -57,7 +57,7 @@ public class LogoutConfig implements LogoutHandler {
             throw new AuthException("Invalid JWT token");
         }
 
-        User user = userService.findUserByUsername(jwtUtils.getUserNameFromJwtToken(token));
+        User user = userService.findByEmail(jwtUtils.getUserNameFromJwtToken(token));
 
         BlockedToken blockedToken = new BlockedToken();
         blockedToken.setToken(token);

@@ -8,10 +8,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +33,7 @@ import com.urutare.stockmuser.utils.JsonUtils;
 import com.urutare.stockmuser.utils.JwtTokenUtil;
 
 import javax.validation.Valid;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,24 +45,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/user-service")
 @Tag(name = "Authentication", description = "Authentication API")
+@AllArgsConstructor
 public class AuthController {
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtUtils;
     private final UserService userService;
-    Logger logger = LoggerFactory.getLogger(UserController.class);
-    @Value("${jwt.secret:nIrXqpiKwj}")
-    private String jwtSecret;
-
-    public AuthController(@Autowired UserService userService,
-            JwtTokenUtil jwtUtils,
-            AuthenticationManager authenticationManager,
-            PasswordEncoder encoder) {
-        this.userService = userService;
-        this.jwtUtils = jwtUtils;
-        this.authenticationManager = authenticationManager;
-        this.encoder = encoder;
-    }
 
     @PostMapping("/auth/login")
     @Operation(summary = "This is to  login to system")
@@ -76,12 +63,14 @@ public class AuthController {
             throws AuthException, jakarta.security.auth.message.AuthException {
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
                         loginRequest.getPassword()));
 
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtAccessToken(authentication);
-        String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(authentication);
+        String jwt = jwtUtils.generateJwtAccessToken(userPrincipal);
+        String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userPrincipal);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
@@ -95,7 +84,6 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponse(jwt,
                 jwtRefreshToken,
                 userDetails.getId(),
-                userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles));
 
@@ -142,6 +130,8 @@ public class AuthController {
 
         String token = authorization.substring(7);
 
+        String jwtSecret = jwtUtils.getSecretKey();
+
         if (!jwtUtils.validateToken(token, jwtSecret)) {
             throw new jakarta.security.auth.message.AuthException("Invalid JWT token");
         }
@@ -150,7 +140,7 @@ public class AuthController {
             throw new jakarta.security.auth.message.AuthException("Invalid JWT refresh token");
         }
 
-        User user = userService.findUserByUsername(jwtUtils.getUserNameFromJwtToken(token));
+        User user = userService.findByEmail(jwtUtils.getUserNameFromJwtToken(token));
 
         Map<String, String> data = jwtUtils.refreshUserTokens(user);
         return ResponseEntity.ok().body(data);
@@ -191,4 +181,5 @@ public class AuthController {
 
         return ResponseEntity.ok().body("{\"message\": \"Phone verified\"}");
     }
+
 }
