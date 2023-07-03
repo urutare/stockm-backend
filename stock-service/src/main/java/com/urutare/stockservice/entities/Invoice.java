@@ -1,6 +1,7 @@
 package com.urutare.stockservice.entities;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
@@ -12,19 +13,16 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "invoices")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "invoice_type")
-public abstract class Invoice {
+public abstract class Invoice extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
-    private Date createdAt;
 
     @ManyToOne
     @JoinColumn(name = "destination_id")

@@ -2,6 +2,7 @@ package com.urutare.stockservice.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
@@ -15,9 +16,9 @@ import com.urutare.stockservice.models.enums.NotificationType;
 @Entity
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "stockm_notifications")
-public class Notification {
-
+public class Notification extends BaseEntity {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -46,5 +47,4 @@ public class Notification {
 
     @Column(name = "user_id")
     private UUID userId;
-
 }

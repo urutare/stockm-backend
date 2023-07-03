@@ -3,11 +3,17 @@ package com.urutare.stockservice.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "stockm_piece_quantity")
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class PieceQuantity extends Quantity {
 
     @Column(name = "purchasing_price")

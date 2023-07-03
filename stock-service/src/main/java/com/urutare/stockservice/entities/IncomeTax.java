@@ -6,13 +6,15 @@ import org.hibernate.annotations.GenericGenerator;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "stockm_income_tax")
-public class IncomeTax {
+public class IncomeTax extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "UUID")

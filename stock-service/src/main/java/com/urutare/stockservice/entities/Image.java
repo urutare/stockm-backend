@@ -1,6 +1,7 @@
 package com.urutare.stockservice.entities;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
@@ -23,8 +24,9 @@ import com.urutare.stockservice.models.converter.JsonNodeConverter;
 @Entity
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "stockm_image")
-public class Image {
+public class Image extends BaseEntity {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -61,9 +63,6 @@ public class Image {
 
     @Column(name = "updated_by")
     private String updatedBy;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "attributes", columnDefinition = "jsonb")
     @Convert(converter = JsonNodeConverter.class)

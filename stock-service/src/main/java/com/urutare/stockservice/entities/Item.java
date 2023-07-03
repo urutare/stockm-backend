@@ -1,23 +1,30 @@
 package com.urutare.stockservice.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import com.urutare.stockservice.models.enums.Unit;
 
 @Entity
-@Table(name = "items")
+@Table(name = "stockm_items")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "item_type")
-public class Item {
-
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class Item extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    private UUID id;
 
     protected String name;
 
@@ -37,10 +44,6 @@ public class Item {
     @CollectionTable(name = "item_tags", joinColumns = @JoinColumn(name = "item_id"))
     @Column(name = "tag_id")
     protected Set<UUID> tagIds = new HashSet<>();
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
-    protected Date createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "unit_class")
