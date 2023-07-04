@@ -1,4 +1,5 @@
 name: StockM Backend CI/CD
+
 on:
   push:
     branches: [develop]
@@ -8,24 +9,33 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Service containers to run with `container-job`
-    services:
-      # Label used to access the service container
-      postgres:
-        # Docker Hub image
-        image: postgres
-        # Provide the password for postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          # Maps TCP port 5432 on service container to the host
-          - 5432:5432
+
+    strategy:
+      matrix:
+        java-version: [17]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: "17"
+          distribution: "adopt"
+
+      - name: Build and Test Services
+        run: |
+          mvn -B package --file discovery-service/pom.xml
+          mvn -B test --file discovery-service/pom.xml
+          mvn -B package --file api-gateway/pom.xml
+          mvn -B test --file api-gateway/pom.xml
+          mvn -B package --file auth-service/pom.xml
+          mvn -B test --file auth-service/pom.xml
+          mvn -B package --file category-service/pom.xml
+          mvn -B test --file category-service/pom.xml
+          mvn -B package --file stock-service/pom.xml
+          mvn -B test --file stock-service/pom.xml
+
     env:
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
@@ -46,45 +56,3 @@ jobs:
       CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
       CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
       CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-    strategy:
-      matrix:
-        java-version: [17]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Java
-        uses: actions/setup-java@v2
-        with:
-          java-version: "17"
-          distribution: "adopt"
-
-      - name: Build Discovery Service
-        run: mvn -B package --file discovery-service/pom.xml
-
-      - name: Test Discovery Service
-        run: mvn -B test --file discovery-service/pom.xml
-
-      - name: Build API Gateway
-        run: mvn -B package --file api-gateway/pom.xml
-
-      - name: Test API Gateway
-        run: mvn -B test --file api-gateway/pom.xml
-
-      - name: Build User Service
-        run: mvn -B package --file auth-service/pom.xml
-
-      - name: Test User Service
-        run: mvn -B test --file auth-service/pom.xml
-
-      - name: Build Category Service
-        run: mvn -B package --file category-service/pom.xml
-
-      - name: Test Category Service
-        run: mvn -B test --file category-service/pom.xml
-
-      - name: Build Stock Service
-        run: mvn -B package --file stock-service/pom.xml
-
-      - name: Test Stock Service
-        run: mvn -B test --file stock-service/pom.xml
