@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Entity
-@Table(name = "employees")
+@Table(name = "authentico_employees")
 @Data
 public class Employee {
 

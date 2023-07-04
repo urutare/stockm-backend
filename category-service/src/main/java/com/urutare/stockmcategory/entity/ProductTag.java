@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tags")
+@Table(name = "kategora_tags")
 @Data
 public class ProductTag {
     @Id

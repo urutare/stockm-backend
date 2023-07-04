@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@Table(name = "products")
+@Table(name = "stockm_products")
 @PrimaryKeyJoinColumn(name = "id")
 public class Product extends Item {
     @Column(name = "barcode")

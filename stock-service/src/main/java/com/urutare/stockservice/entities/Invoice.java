@@ -14,7 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "invoices")
+@Table(name = "stockm_invoices")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "invoice_type")
 public abstract class Invoice extends BaseEntity {

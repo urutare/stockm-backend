@@ -16,7 +16,7 @@ import com.urutare.stockservice.models.enums.Unit;
 @Table(name = "stockm_product_sold")
 public class ProductSold extends ItemSold {
 
-    @OneToMany(mappedBy = "productSold", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuantityInStock> quantityAffected;
 
     @Column(name = "total_selling_price")

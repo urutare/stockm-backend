@@ -11,7 +11,7 @@ import java.util.Date;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "items_sold")
+@Table(name = "stockm_items_sold")
 @EqualsAndHashCode(callSuper = true)
 public abstract class ItemSold extends Item {
     @Column(name = "sold_at")
