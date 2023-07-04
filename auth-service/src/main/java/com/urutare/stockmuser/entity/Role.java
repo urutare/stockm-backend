@@ -5,7 +5,7 @@ import com.urutare.stockmuser.models.ERole;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "authentico_roles")
 public class Role {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

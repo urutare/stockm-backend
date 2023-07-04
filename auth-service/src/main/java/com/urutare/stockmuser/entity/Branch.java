@@ -7,7 +7,7 @@ import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Entity
-@Table(name = "branches")
+@Table(name = "authentico_branches")
 @Data
 public class Branch {
     @Id

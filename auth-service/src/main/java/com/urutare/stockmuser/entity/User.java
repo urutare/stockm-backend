@@ -18,7 +18,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "users")
+@Table(name = "authentico_users")
 @Data
 public class User {
 

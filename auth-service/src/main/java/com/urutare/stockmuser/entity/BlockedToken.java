@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "blocked_tokens")
+@Table(name = "authentico_blocked_tokens")
 @Data
 public class BlockedToken {
     @Id

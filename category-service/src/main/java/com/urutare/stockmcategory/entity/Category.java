@@ -25,7 +25,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "tbl_categories", indexes = { @Index(name = "idx_name", columnList = "name") })
+@Table(name = "kategora_categories", indexes = { @Index(name = "idx_name", columnList = "name") })
 public class Category {
 
     @Id

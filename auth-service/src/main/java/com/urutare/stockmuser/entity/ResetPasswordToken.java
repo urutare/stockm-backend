@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reset_password_tokens")
+@Table(name = "authentico_reset_password_tokens")
 @Data
 @NoArgsConstructor
 public class ResetPasswordToken {
