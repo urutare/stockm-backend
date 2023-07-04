@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.urutare.stockmcategory.models.enums.Unit;
+
 @Entity
 @Table(name = "kategora_products")
 @Data
@@ -23,13 +25,14 @@ public class Product {
     private Category category;
 
     @Enumerated(EnumType.STRING)
-    private MeasurementType measurementType;
-
-    @Enumerated(EnumType.STRING)
     private TaxType taxType;
 
     @Column(unique = true, length = 50)
     private String barCode;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "unit_class")
+    private Unit measurementType;
 
     @Column(nullable = false, length = 500)
     private String description;

@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.util.UUID;
 
+import com.urutare.stockmcategory.models.enums.Unit;
+
 @Entity
 @Table(name = "kategora_pieces", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "parent_piece_id", "product_id" }, name = "unique_product_piece")
@@ -19,14 +21,14 @@ public class Piece {
     String name;
 
     @Column(nullable = false)
-    private int numberOfPieces;
+    private Integer numberOfPieces;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_piece_id")
     private Piece parentPiece;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_id")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "unit")
     private Unit unit;
 
     @OneToOne(mappedBy = "parentPiece", cascade = CascadeType.ALL)

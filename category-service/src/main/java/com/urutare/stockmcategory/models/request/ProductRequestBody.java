@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.urutare.stockmcategory.entity.MeasurementType;
 import com.urutare.stockmcategory.entity.TaxType;
+import com.urutare.stockmcategory.models.enums.Unit;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -20,7 +20,7 @@ public class ProductRequestBody {
     private UUID categoryId;
 
     @NotBlank(message = "Measurement type is required")
-    private MeasurementType measurementType;
+    private Unit measurementType;
 
     @NotNull(message = "Tax type is required")
     private TaxType taxType;
