@@ -1,7 +1,8 @@
 package com.urutare.stockmcategory.models.dto;
 
-import com.urutare.stockmcategory.entity.MeasurementType;
 import com.urutare.stockmcategory.entity.Product;
+import com.urutare.stockmcategory.models.enums.Unit;
+
 import lombok.Data;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class ProductDTO {
     private UUID id;
     private String name;
     private CategoryDTO category;
-    private MeasurementType measurementType;
+    private Unit measurementType;
     private String taxType;
     private String barCode;
     private String description;

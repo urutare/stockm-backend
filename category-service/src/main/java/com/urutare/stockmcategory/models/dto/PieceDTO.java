@@ -1,6 +1,8 @@
 package com.urutare.stockmcategory.models.dto;
 
 import com.urutare.stockmcategory.entity.Piece;
+import com.urutare.stockmcategory.models.enums.Unit;
+
 import lombok.Data;
 
 import java.util.List;
@@ -13,7 +15,7 @@ public class PieceDTO {
     private String name;
     private int numberOfPieces;
     private PieceDTO parentPiece;
-    private UUID unitId;
+    private Unit unit;
     private PieceDTO childPiece;
 
     public static PieceDTO fromPiece(Piece piece) {
@@ -27,7 +29,7 @@ public class PieceDTO {
             pieceDTO.setParentPiece(parentPieceDTO);
         }
         if (piece.getUnit() != null) {
-            pieceDTO.setUnitId(piece.getUnit().getId());
+            pieceDTO.setUnit(piece.getUnit());
         }
         if (piece.getChildPiece() != null) {
             PieceDTO childPieceDTO = new PieceDTO();

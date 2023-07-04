@@ -47,7 +47,7 @@ public class PieceController {
         piece.setName(pieceBody.getName());
         piece.setNumberOfPieces(pieceBody.getNumberOfPieces());
         piece.setProduct(productService.getProductById(pieceBody.getProductId()).orElse(null));
-        piece.setUnit(pieceService.getUnitById(pieceBody.getUnitId()).orElse(null));
+        piece.setUnit(pieceBody.getUnit());
 
         Piece createdPiece = pieceService.createPiece(piece);
         return ResponseEntity.status(HttpStatus.CREATED).body(PieceDTO.fromPiece(createdPiece));
@@ -63,7 +63,7 @@ public class PieceController {
         piece.setName(pieceBody.getName());
         piece.setNumberOfPieces(pieceBody.getNumberOfPieces());
         piece.setProduct(productService.getProductById(pieceBody.getProductId()).orElse(null));
-        piece.setUnit(pieceService.getUnitById(pieceBody.getUnitId()).orElse(null));
+        piece.setUnit(pieceBody.getUnit());
 
         Piece updatedPiece = pieceService.updatePiece(piece);
         return PieceDTO.fromPiece(updatedPiece);

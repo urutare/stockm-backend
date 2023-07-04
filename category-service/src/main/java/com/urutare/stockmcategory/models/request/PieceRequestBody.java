@@ -2,6 +2,8 @@ package com.urutare.stockmcategory.models.request;
 
 import java.util.UUID;
 
+import com.urutare.stockmcategory.models.enums.Unit;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -18,7 +20,7 @@ public class PieceRequestBody {
     private UUID parentPieceId;
 
     @NotNull
-    private UUID unitId;
+    private Unit unit;
 
     @NotNull
     private UUID productId;
