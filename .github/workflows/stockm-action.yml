@@ -71,3 +71,5 @@ jobs:
           mvn -B test --file category-service/pom.xml
           mvn -B package --file stock-service/pom.xml
           mvn -B test --file stock-service/pom.xml
+          mvn -B package --file syncservice/pom.xml
+          mvn -B test --file syncservice/pom.xml
