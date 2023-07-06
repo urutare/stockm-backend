@@ -20,8 +20,6 @@ public class UserDetailsImpl implements UserDetails {
 
   private String username;
 
-  private String email;
-
   private boolean isVerified;
 
   @JsonIgnore
@@ -32,7 +30,7 @@ public class UserDetailsImpl implements UserDetails {
   public UserDetailsImpl(UUID id, String email, String password,
       Collection<? extends GrantedAuthority> authorities, boolean isVerified) {
     this.id = id;
-    this.email = email;
+    this.username = email;
     this.password = password;
     this.authorities = authorities;
     this.isVerified = isVerified;
@@ -62,10 +60,6 @@ public class UserDetailsImpl implements UserDetails {
 
   public boolean isVerified() {
     return isVerified;
-  }
-
-  public String getEmail() {
-    return email;
   }
 
   @Override
