@@ -23,6 +23,6 @@ spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 
 # JWT
-jwt.secret=
-jwt.access.token.expirationInMs=
-jwt.refresh.token.expirationInMs=
+jwt.secret=UrutareIncStockM
+jwt.access.token.expirationInMs=86400000
+jwt.refresh.token.expirationInMs=86400000

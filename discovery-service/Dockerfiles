@@ -1,0 +1,91 @@
+# # FROM maven:3.9.1-sapmachine-11 AS build
+# FROM maven:3.9.3-eclipse-temurin-11 As build
+
+# # Install OpenJDK 17
+# RUN apt update
+# RUN apt upgrade
+# RUN apt search openjdk
+# # RUN apt install maven
+# # RUN apt-get install openjdk-17-jdk
+
+# # Set the JAVA_HOME environment variable
+# ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
+
+# # Set the PATH environment variable
+# ENV PATH=$JAVA_HOME/bin:$PATH
+
+# WORKDIR /home/app
+# COPY pom.xml .
+# COPY pom.xml .
+# COPY mvnw .
+# COPY .mvn/ .mvn/
+
+# RUN chmod +x ./mvnw
+# RUN ./mvnw dependency:go-offline
+# # RUN mvn dependency:go-offline
+# COPY src/ ./src/
+# # RUN mvn clean package
+
+# # Build the application
+# RUN ./mvnw package -DskipTests
+
+# # Package stage
+# # FROM openjdk:21-slim-buster
+# FROM openjdk:17-slim-buster
+
+# COPY --from=build /home/app/target/*.jar app.jar
+# EXPOSE 8080
+# ENTRYPOINT ["java","-jar","app.jar"]
+
+
+# # # Stage 1: Build
+# # FROM maven:3.9.1-sapmachine-11 AS build
+
+# # WORKDIR /home/app
+# # COPY pom.xml .
+# # RUN mvn dependency:go-offline
+# # COPY src/ ./src/
+# # RUN mvn clean package
+
+# # # Stage 2: Package
+# # FROM openjdk:17-slim-buster
+
+# # COPY --from=build /home/app/target/*.jar app.jar
+# # EXPOSE 8080
+# # ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+FROM maven:3.9.3-eclipse-temurin-11 AS build
+
+# Install apt-utils
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+
+# Install OpenJDK 17
+RUN apt-get install -y --no-install-recommends openjdk-17-jdk
+
+# Set the JAVA_HOME environment variable
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+# Set the PATH environment variable
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+WORKDIR /home/app
+
+COPY pom.xml .
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn/ .mvn/
+
+RUN chmod +x ./mvnw
+RUN ./mvnw dependency:go-offline
+
+COPY src/ ./src/
+
+RUN ./mvnw package -DskipTests
+
+# Package stage
+FROM openjdk:17-slim-buster
+
+COPY --from=build /home/app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","app.jar"]
