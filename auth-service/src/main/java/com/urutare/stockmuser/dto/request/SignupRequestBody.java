@@ -16,9 +16,7 @@ public class SignupRequestBody {
     @Schema(description = "Phone number", example = "250788000000")
     String phoneNumber;
     @Schema(description = "Roles", example = "[\"USER\"]")
-    private Set<String> role;
-    @Schema(description = "Username", example = "kamana")
-    private String username;
+    private Set<String> role = Set.of("USER");
 
     public SignupRequestBody(String email, String password, String fullName) {
         this.email = email;
