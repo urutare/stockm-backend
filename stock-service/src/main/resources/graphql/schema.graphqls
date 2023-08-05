@@ -1,0 +1,14 @@
+type ProductSold {
+    id: ID
+    title: String
+    isbn: String
+    pageCount: Int
+}
+
+type Query {
+    productSoldById(id: ID): ProductSold
+}
+
+type Mutation {
+    newProductSold(title: String, isbn: String, pageCount: Int, authorId: ID): ProductSold
+}
