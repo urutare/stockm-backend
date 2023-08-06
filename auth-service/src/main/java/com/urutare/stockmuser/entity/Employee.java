@@ -3,15 +3,18 @@ package com.urutare.stockmuser.entity;
 import lombok.Data;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "authentico_employees")
 @Data
-public class Employee {
+public class Employee extends BaseEntity {
 
     @Id
     @GeneratedValue

@@ -7,11 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddRoleBody {
     @Schema(description = "Role name", example = "ADMIN")
     private ERole name;
+    private UUID createdBy;
+    private UUID updatedBy;
 
 }

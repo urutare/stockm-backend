@@ -61,9 +61,6 @@ public class Image extends BaseEntity {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
-    @Column(name = "updated_by")
-    private String updatedBy;
-
     @Column(name = "attributes", columnDefinition = "jsonb")
     @Convert(converter = JsonNodeConverter.class)
     private JsonNode attributes = new ObjectNode(new ObjectMapper().getNodeFactory());

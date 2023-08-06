@@ -27,7 +27,8 @@ public class EmployeeController {
 
     @PostMapping
     @Operation(summary = "Create a new employee", description = "Create a new employee", tags = { "Employee" })
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO employeeDTO, @RequestHeader("userId") UUID userId) {
+        employeeDTO.setCreatedBy(userId);
         Employee createdEmployee = employeeService.createEmployee(employeeDTO);
         EmployeeDTO responseDTO = new EmployeeDTO(createdEmployee);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
@@ -43,7 +44,8 @@ public class EmployeeController {
     @PutMapping("/{employeeId}")
     @Operation(summary = "Update an employee", description = "Update an employee", tags = { "Employee" })
     public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable UUID employeeId,
-            @RequestBody EmployeeDTO employeeDTO) {
+            @RequestBody EmployeeDTO employeeDTO, @RequestHeader("userId") UUID userId) {
+        employeeDTO.setUpdatedBy(userId);
         Employee employee = employeeService.updateEmployee(employeeId, employeeDTO);
         EmployeeDTO responseDTO = new EmployeeDTO(employee);
         return ResponseEntity.ok(responseDTO);

@@ -147,7 +147,7 @@ public class AuthController {
 
     @PostMapping("/auth/activate-account")
     public ResponseEntity<Object> activateAccount(HttpServletRequest request) {
-        UUID userId = (UUID) request.getAttribute("userId");
+        UUID userId = jwtUtils.getUserIdFromHttpRequest(request);
         userService.activateUser(userId);
         return ResponseEntity.ok().body("{\"message\": \"Account is activated\"}");
     }
