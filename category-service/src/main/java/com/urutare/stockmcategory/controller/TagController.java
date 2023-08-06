@@ -13,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,7 +38,6 @@ public class TagController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create tag")
     public ResponseEntity<TagDTO> createTag(@RequestBody @Valid TagRequestBody tagBody) {
         ProductTag tag = new ProductTag();
@@ -51,7 +49,6 @@ public class TagController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Update tag")
     public TagDTO updateTag(@PathVariable UUID id, @RequestBody @Valid TagRequestBody tagBody) {
         ProductTag tag = tagRepository.findById(id)
@@ -65,7 +62,6 @@ public class TagController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Delete tag")
     public ResponseEntity<Void> deleteTag(@PathVariable UUID id) {
         ProductTag tag = tagRepository.findById(id)

@@ -1,60 +1,83 @@
 package com.urutare.apigateway.filter;
 
 import com.urutare.apigateway.utils.JwtUtil;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
+@Order(-1) // Set appropriate order for the filter
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
     @Autowired
     private RouteValidator validator;
+
     @Autowired
     private JwtUtil jwtUtil;
-    AuthenticationFilter() {
+
+    public AuthenticationFilter() {
         super(Config.class);
     }
 
     @Override
     public GatewayFilter apply(Config config) {
-        return (((exchange, chain) -> {
-            ServerHttpRequest request = null;
-            // what endpoints to validate
-            if(validator.isSecured.test(exchange.getRequest())) {
-                // contain token in header
-                if(!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    throw new JwtException("Missing authorization header");
+        return (exchange, chain) -> {
+            ServerHttpRequest request = exchange.getRequest();
+
+            if (validator.isSecured.test(request)) {
+                String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    return onError(exchange, "JWT malformed");
                 }
-                String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
-                if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-                    throw  new JwtException("JWT malformed");
-                }
-                authHeader = authHeader.split(" ")[1];
+
+                String token = authHeader.substring(7);
 
                 try {
-                    // validate token
-                    jwtUtil.validateToken(authHeader);
+                    Claims claims = jwtUtil.validateToken(token);
 
-                    request = exchange
-                            .getRequest()
-                            .mutate()
-                            .header("userId", (String) jwtUtil.getAllClaimsFromToken(authHeader).get("userId"))
+                    List<String> roles = claims.get("roles", List.class);
+                    String rolesString = roles != null ? String.join(",", roles) : "";
+
+                    ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                            .header("userId", (String) claims.get("userId"))
+                            .header("roles", rolesString)
                             .build();
-                    System.out.println(exchange.getRequest());
+
+                    return chain.filter(exchange.mutate().request(modifiedRequest).build());
                 } catch (JwtException | IllegalArgumentException exception) {
-                    throw new JwtException(exception.getMessage());
+                    return onError(exchange, exception.getMessage());
                 }
             }
 
-            assert request != null;
-            return chain.filter(exchange.mutate().request(request).build());
-        }));
+            return chain.filter(exchange);
+        };
     }
 
-    public static class Config{}
+    private Mono<Void> onError(ServerWebExchange exchange, String errorMessage) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        String errorResponse = "{\"message\": \"" + errorMessage + "\"}";
+        byte[] bytes = errorResponse.getBytes(StandardCharsets.UTF_8);
+        DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
+
+        return exchange.getResponse().writeWith(Mono.just(buffer));
+    }
+
+    public static class Config { }
 }

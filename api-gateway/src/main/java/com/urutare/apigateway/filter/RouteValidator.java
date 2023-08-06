@@ -14,7 +14,7 @@ public class RouteValidator {
     );
 
     public static final List<String> adminEndpoints = List.of(
-            "/api/v1/category-service/**"
+            "/api/v1/admin-service/**"
     );
     public Predicate<ServerHttpRequest> isSecured =
             request -> openApiEndpoints

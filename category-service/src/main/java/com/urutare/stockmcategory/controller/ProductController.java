@@ -1,8 +1,10 @@
 package com.urutare.stockmcategory.controller;
 
+import com.urutare.stockmcategory.aspect.RequiresRole;
 import com.urutare.stockmcategory.entity.Product;
 import com.urutare.stockmcategory.exception.NotFoundException;
 import com.urutare.stockmcategory.models.dto.ProductDTO;
+import com.urutare.stockmcategory.models.enums.UserRole;
 import com.urutare.stockmcategory.models.request.ProductRequestBody;
 import com.urutare.stockmcategory.models.response.PaginatedResponseDTO;
 import com.urutare.stockmcategory.service.ProductService;
@@ -20,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +45,7 @@ public class ProductController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all products")
     public PaginatedResponseDTO<ProductDTO> getProducts(@RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
@@ -86,8 +88,8 @@ public class ProductController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create product")
+    @RequiresRole({UserRole.ADMIN, UserRole.SELLER})
     public ResponseEntity<ProductDTO> createProduct(@ModelAttribute ProductRequestBody productBody) {
         try {
             String imageUrl = null;
@@ -113,8 +115,8 @@ public class ProductController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Update product")
+    @RequiresRole({UserRole.ADMIN, UserRole.SELLER})
     public ProductDTO updateProduct(@ModelAttribute @Valid ProductRequestBody productBody,
             @PathVariable UUID id) {
         Product product = productService.getProductById(id)
@@ -148,8 +150,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Delete product")
+    @RequiresRole({UserRole.ADMIN})
     public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
         Product product = productService.getProductById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found"));

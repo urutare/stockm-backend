@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.urutare.stockmcategory.entity.Piece;
 import com.urutare.stockmcategory.exception.NotFoundException;
@@ -40,7 +39,6 @@ public class PieceController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create piece")
     public ResponseEntity<PieceDTO> createPiece(@RequestBody @Valid PieceRequestBody pieceBody) {
         Piece piece = new Piece();
@@ -54,7 +52,6 @@ public class PieceController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Update piece")
     public PieceDTO updatePiece(@PathVariable UUID id, @RequestBody @Valid PieceRequestBody pieceBody) {
         Piece piece = pieceService.getPieceById(id)
@@ -70,7 +67,6 @@ public class PieceController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Delete piece")
     public ResponseEntity<Void> deletePiece(@PathVariable UUID id) {
         Piece piece = pieceService.getPieceById(id)
