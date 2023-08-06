@@ -13,15 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.urutare.stockmcategory.common.StringUtil;
 import com.urutare.stockmcategory.entity.Category;
@@ -90,7 +82,7 @@ public class CategoryController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create category")
     @RequiresRole({UserRole.ADMIN, UserRole.SELLER})
-    public ResponseEntity<Category> createCategory(@ModelAttribute CategoryRequestBody categoryBody) {
+    public ResponseEntity<Category> createCategory(@ModelAttribute CategoryRequestBody categoryBody, @RequestHeader("userId") UUID userId) {
         Category category = new Category();
         UUID parentId = categoryBody.getParentId();
 
@@ -110,6 +102,7 @@ public class CategoryController {
         }
 
         category.setName(categoryBody.getName());
+        category.setCreatedBy(userId);
         Category newCategory = categoryRepository.save(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
@@ -117,7 +110,7 @@ public class CategoryController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update category")
     @RequiresRole({UserRole.ADMIN, UserRole.SELLER})
-    public Category updateCategory(@ModelAttribute CategoryRequestBody categoryBody, @PathVariable UUID id) {
+    public Category updateCategory(@ModelAttribute CategoryRequestBody categoryBody, @PathVariable UUID id, @RequestHeader("userId") UUID userId) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
 
@@ -147,6 +140,7 @@ public class CategoryController {
         if (StringUtil.isNotNullOrEmpty(categoryBody.getName())) {
             category.setName(categoryBody.getName());
         }
+        category.setUpdatedBy(userId);
         return categoryRepository.save(category);
     }
 
