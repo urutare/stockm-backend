@@ -13,6 +13,8 @@ import com.urutare.stockmuser.dto.request.AddRoleBody;
 import com.urutare.stockmuser.dto.request.AssignOrRemoveRoleBody;
 import com.urutare.stockmuser.service.UserService;
 
+import java.util.UUID;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/user-service/roles")
@@ -26,7 +28,8 @@ public class RoleController {
 
     @PostMapping("add")
     @Operation(summary = "Add role")
-    public ResponseEntity<Object> addRole( @RequestBody @Validated AddRoleBody roleBody){
+    public ResponseEntity<Object> addRole( @RequestBody @Validated AddRoleBody roleBody, @RequestHeader("userId") UUID userId){
+        roleBody.setCreatedBy(userId);
         userService.createRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
     }

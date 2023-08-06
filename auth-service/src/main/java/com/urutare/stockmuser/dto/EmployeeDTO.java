@@ -19,6 +19,8 @@ public class EmployeeDTO {
     private String position;
     private UUID userId;
     private UUID branchId;
+    private UUID createdBy;
+    private UUID updatedBy;
 
     public EmployeeDTO(Employee employee) {
         this.id = employee.getId();
@@ -28,6 +30,8 @@ public class EmployeeDTO {
         this.position = employee.getPosition();
         this.userId = employee.getUser().getId();
         this.branchId = employee.getBranch().getId();
+        this.createdBy = employee.getCreatedBy();
+        this.updatedBy = employee.getUpdatedBy();
     }
 
     public static Employee toEntity(EmployeeDTO employeeDTO, Branch branch, User user) {
@@ -36,6 +40,8 @@ public class EmployeeDTO {
         employee.setEmail(employeeDTO.getEmail());
         employee.setContactInformation(employeeDTO.getContactInformation());
         employee.setPosition(employeeDTO.getPosition());
+        employee.setCreatedBy(employeeDTO.getCreatedBy());
+        employee.setUpdatedBy(employeeDTO.getUpdatedBy());
         employee.setBranch(branch);
         employee.setUser(user);
         return employee;

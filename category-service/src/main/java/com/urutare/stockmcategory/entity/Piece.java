@@ -6,13 +6,15 @@ import lombok.Data;
 import java.util.UUID;
 
 import com.urutare.stockmcategory.models.enums.Unit;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "kategora_pieces", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "parent_piece_id", "product_id" }, name = "unique_product_piece")
 })
 @Data
-public class Piece {
+public class Piece extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -23,7 +25,7 @@ public class Piece {
     @Column(nullable = false)
     private Integer numberOfPieces;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_piece_id")
     private Piece parentPiece;
 

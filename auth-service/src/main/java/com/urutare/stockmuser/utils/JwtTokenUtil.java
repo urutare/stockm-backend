@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import com.urutare.stockmuser.entity.Role;
@@ -65,10 +66,10 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .claim("token_type", TokenType.ACCESS_TOKEN.name())
-                .claim("id", userPrincipal.getId())
+                .claim("userId", userPrincipal.getId())
                 .claim("roles", userPrincipal.getAuthorities()
                         .stream()
-                        .map(role -> role.getAuthority()).toArray())
+                        .map(GrantedAuthority::getAuthority).toArray())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -119,7 +120,7 @@ public class JwtTokenUtil {
     }
 
     public UUID getUserIdFromJwtToken(String token) {
-        String userId = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("id", String.class);
+        String userId = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("userId", String.class);
         return UUID.fromString(userId);
     }
 

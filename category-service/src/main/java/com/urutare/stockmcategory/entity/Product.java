@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 import com.urutare.stockmcategory.models.enums.Unit;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "kategora_products")
 @Data
-public class Product {
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import com.urutare.stockmcategory.aspect.RequiresRole;
+import com.urutare.stockmcategory.models.enums.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,16 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.urutare.stockmcategory.common.StringUtil;
 import com.urutare.stockmcategory.entity.Category;
@@ -47,6 +40,7 @@ public class CategoryController {
     private final CloudinaryUtil cloudinaryUtil;
 
     @GetMapping
+    @Operation(summary = "Get all categories", description = "Get all categories")
     public PaginatedResponseDTO<CategoryDTO> getCategories(@RequestParam(required = false) UUID parentId,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
@@ -86,9 +80,9 @@ public class CategoryController {
     }
     
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Create category")
-    public ResponseEntity<Category> createCategory(@ModelAttribute CategoryRequestBody categoryBody) {
+    @RequiresRole({UserRole.ADMIN, UserRole.SELLER})
+    public ResponseEntity<Category> createCategory(@ModelAttribute CategoryRequestBody categoryBody, @RequestHeader("userId") UUID userId) {
         Category category = new Category();
         UUID parentId = categoryBody.getParentId();
 
@@ -108,14 +102,15 @@ public class CategoryController {
         }
 
         category.setName(categoryBody.getName());
+        category.setCreatedBy(userId);
         Category newCategory = categoryRepository.save(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Update category")
-    public Category updateCategory(@ModelAttribute CategoryRequestBody categoryBody, @PathVariable UUID id) {
+    @RequiresRole({UserRole.ADMIN, UserRole.SELLER})
+    public Category updateCategory(@ModelAttribute CategoryRequestBody categoryBody, @PathVariable UUID id, @RequestHeader("userId") UUID userId) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
 
@@ -145,12 +140,13 @@ public class CategoryController {
         if (StringUtil.isNotNullOrEmpty(categoryBody.getName())) {
             category.setName(categoryBody.getName());
         }
+        category.setUpdatedBy(userId);
         return categoryRepository.save(category);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Delete category")
+    @RequiresRole({UserRole.ADMIN})
     public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));

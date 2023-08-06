@@ -28,11 +28,8 @@ public class CompanyController {
 
     @PostMapping
     @Operation(summary = "Create a new company", description = "Create a new company", tags = { "Company" })
-    public ResponseEntity<Company> createCompany(HttpServletRequest request, @RequestBody Company company) {
-        UUID userId = jwtUtils.getUserIdFromHttpRequest(request);
-
-        System.out.println("userId: " + userId);
-
+    public ResponseEntity<Company> createCompany(HttpServletRequest request, @RequestBody Company company, @RequestHeader("userId") UUID userId) {
+        company.setCreatedBy(userId);
         Company createdCompany = companyService.createCompany(userId, company);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCompany);
     }
@@ -57,10 +54,11 @@ public class CompanyController {
 
     @PutMapping("/{companyId}")
     @Operation(summary = "Update a company by ID", description = "Update a company by ID", tags = { "Company" })
-    public ResponseEntity<Company> updateCompany(@PathVariable UUID companyId, @RequestBody Company company) {
+    public ResponseEntity<Company> updateCompany(@PathVariable UUID companyId, @RequestBody Company company, @RequestHeader("userId") UUID userId) {
         Company existingCompany = companyService.getCompanyById(companyId);
         if (existingCompany != null && !existingCompany.isDeleted()) {
             company.setId(existingCompany.getId());
+            company.setUpdatedBy(userId);
             Company updatedCompany = companyService.saveCompany(company);
             return ResponseEntity.ok(updatedCompany);
         } else {

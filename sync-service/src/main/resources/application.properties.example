@@ -9,11 +9,8 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/sync_service_db
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.hibernate.ddl-auto=update
 logging.level.org.hibernate.SQL=debug
-
-# JWT
-jwt.secret=UrutareIncStockM
 
 # Kafka
 spring.kafka.bootstrap-servers=localhost:9092

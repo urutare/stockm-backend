@@ -40,7 +40,8 @@ public class BranchController {
     @PostMapping
     @Operation(summary = "Add a new branch to a company", description = "Add a new branch to a company", tags = {
             "Branch" })
-    public ResponseEntity<Branch> addBranch(@PathVariable UUID companyId, @RequestBody Branch branch) {
+    public ResponseEntity<Branch> addBranch(@PathVariable UUID companyId, @RequestBody Branch branch, @RequestHeader("userId") UUID userId) {
+        branch.setCreatedBy(userId);
         Branch addedBranch = branchService.addBranch(companyId, branch);
         return ResponseEntity.status(HttpStatus.CREATED).body(addedBranch);
     }
@@ -54,7 +55,8 @@ public class BranchController {
 
     @PutMapping("/{branchId}")
     @Operation(summary = "Update a branch", description = "Update a branch", tags = { "Branch" })
-    public ResponseEntity<Branch> updateBranch(@PathVariable UUID branchId, @RequestBody Branch updatedBranch) {
+    public ResponseEntity<Branch> updateBranch(@PathVariable UUID branchId, @RequestBody Branch updatedBranch, @RequestHeader("userId") UUID userId) {
+        updatedBranch.setUpdatedBy(userId);
         Branch branch = branchService.updateBranch(branchId, updatedBranch);
         return branch != null ? ResponseEntity.ok(branch) : ResponseEntity.notFound().build();
     }
