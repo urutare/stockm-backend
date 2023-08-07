@@ -68,4 +68,12 @@ public class DestinationController {
         return destinationRepository.save(destination);
     }
 
+    @MutationMapping
+//    @RequiresRole(UserRole.ADMIN)
+    public Destination deleteDestination(@Argument UUID id) {
+        Destination destination = destinationRepository.findById(id).orElseThrow(() -> new NotFoundException("Destination not found"));
+        destinationRepository.delete(destination);
+        return destination;
+    }
+
 }

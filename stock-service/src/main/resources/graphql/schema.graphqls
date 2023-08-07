@@ -13,6 +13,201 @@ type DestinationPage {
     last: Boolean
 }
 
+type Image {
+    id: ID!
+    url: String!
+    description: String
+    fileName: String
+    fileType: String
+    fileSize: Int
+    width: Int
+    height: Int
+    uploadedBy: String
+    uploadedAt: String
+}
+
+type Expense {
+    id: ID!
+    amount: Float
+    description: String
+    proofURL: Image
+    stuffId: ID
+    expenseType: String
+    fromInvoice: Boolean
+}
+
+type IncomeTax {
+    id: ID!
+    singleProduct: Float
+    numberOfProduct: Float
+}
+
+type Invoice {
+    id: ID!
+    destination: Destination
+    onCredit: Boolean
+    modeOfPayment: String
+    totalMoneyToPay: Float
+    paidDate: String
+    promisedDate: String
+}
+
+interface Item {
+    id: ID!
+    name: String!
+    categoryId: ID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [ID]
+    unitClass: String
+}
+
+type ItemSold implements  Item {
+    id: ID!
+    name: String!
+    categoryId: ID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [ID]
+    unitClass: String
+    soldAt: String
+    grossProfit: Float!
+    sellingInvoiceId: String
+    calculateTaxes: Boolean
+    type: String
+}
+
+type Notification {
+    id: ID!
+    arrivalTime: String
+    notificationType: NotificationType
+    read: Boolean
+    messageType: MessageType
+    message: String
+    messageData: String
+    userId: ID
+}
+
+enum NotificationType {
+    TYPE_A
+    TYPE_B
+    # Add other notification types here as needed
+}
+
+enum MessageType {
+    INFO
+    WARNING
+    ERROR
+    # Add other message types here as needed
+}
+
+type Piece {
+    id: ID!
+    numberOfPieces: Int
+    subPiece: Piece
+    parentPiece: Piece
+    unitClass: Unit
+    unit: Unit
+    sellingPrice: Float
+    product: Product
+}
+
+type Product implements Item {
+    id: ID!
+    name: String!
+    categoryId: ID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [ID]
+    unitClass: String
+    barcode: String
+    piece: Piece
+    lowQuantity: Float
+    lowStockAlert: Boolean
+}
+
+type Quantity {
+    id: ID!
+    value: Float
+    unit: Unit
+    createdAt: String
+}
+
+type PieceQuantity {
+    id: ID!
+    value: Float
+    unit: Unit
+    createdAt: String
+    purchasingPrice: Float
+    sellingPrice: Float
+    pieceId: ID
+    quantityInStockId: ID
+    purchasedAt: String
+}
+
+enum Unit {
+    PIECE
+    BOX
+    KILOGRAM
+    # Add other unit types here as needed
+}
+
+type ProductInStock {
+    id: ID!
+    unit: Unit
+    product: Product
+}
+
+type ProductPurchase {
+    id: ID!
+    quantityPurchase: Quantity
+    purchaseDate: String
+    purchasingUnitPrice: Float
+    purchaseTotalPrice: Float
+    expiredDate: String
+    purchaseProductId: String
+    quantityInStockRefId: String
+    purchaseInvoiceRefId: String
+    product: Product
+    purchaseByPiece: Boolean
+    pieceId: String
+    unitClass: Unit
+}
+
+type ProductSold {
+    id: ID!
+    name: String!
+    categoryId: ID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [ID]
+    soldAt: String
+    grossProfit: Float!
+    sellingInvoiceId: String
+    calculateTaxes: Boolean
+    type: String
+    quantityAffected: [QuantityInStock]
+    totalSellingPrice: Float
+    productInStock: ProductInStock
+    sellByPiece: Boolean
+    piece: Piece
+    unitClass: Unit
+}
+
+type QuantityInStock {
+    id: ID!
+    value: Float
+    unit: Unit
+    createdAt: String
+    purchasingPrice: Float
+    sellingPrice: Float
+    purchasedAt: String
+}
+
 type Query {
     getAllDestinations(
         pageNumber: Int = 0,
@@ -27,4 +222,5 @@ type Query {
 type Mutation {
     createDestination(name: String!): Destination
     updateDestination(id: ID!, name: String!): Destination
+    deleteDestination(id: ID!): Destination
 }
