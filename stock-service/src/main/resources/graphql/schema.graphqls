@@ -1,14 +1,30 @@
-type ProductSold {
-    id: ID
-    title: String
-    isbn: String
-    pageCount: Int
+type Destination {
+    id: ID!
+    name: String!
+}
+
+type DestinationPage {
+    content: [Destination]
+    pageNumber: Int
+    pageSize: Int
+    totalPages: Int
+    totalElements: Int
+    first: Boolean
+    last: Boolean
 }
 
 type Query {
-    productSoldById(id: ID): ProductSold
+    getAllDestinations(
+        pageNumber: Int = 0,
+        pageSize: Int = 10,
+        sortDirection: String = "asc",
+        sortBy: String = "name",
+        keyword: String
+    ): DestinationPage
+    getDestinationById(id: ID!): Destination
 }
 
 type Mutation {
-    newProductSold(title: String, isbn: String, pageCount: Int, authorId: ID): ProductSold
+    createDestination(name: String!): Destination
+    updateDestination(id: ID!, name: String!): Destination
 }
