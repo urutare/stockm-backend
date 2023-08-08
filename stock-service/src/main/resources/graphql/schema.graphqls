@@ -290,17 +290,17 @@ type Mutation {
 
     # Delete operations
 
-    deleteDestination(id: ID!): Boolean
-    deleteImage(id: ID!): Boolean
-    deleteExpense(id: ID!): Boolean
-    deleteIncomeTax(id: ID!): Boolean
-    deleteInvoice(id: ID!): Boolean
-    deleteNotification(id: ID!): Boolean
-    deletePiece(id: ID!): Boolean
-    deleteProduct(id: ID!): Boolean
-    deleteQuantity(id: ID!): Boolean
-    deletePieceQuantity(id: ID!): Boolean
-    deleteProductPurchase(id: ID!): Boolean
-    deleteSellingInvoice(id: ID!): Boolean
-    deletePurchaseInvoice(id: ID!): Boolean
+    deleteDestination(id: ID!): Destination
+    deleteImage(id: ID!): Image
+    deleteExpense(id: ID!): Expense
+    deleteIncomeTax(id: ID!): IncomeTax
+    deleteInvoice(id: ID!): Invoice
+    deleteNotification(id: ID!): Notification
+    deletePiece(id: ID!): Piece
+    deleteProduct(id: ID!): Product
+    deleteQuantity(id: ID!): Quantity
+    deletePieceQuantity(id: ID!): PieceQuantity
+    deleteProductPurchase(id: ID!): ProductPurchase
+    deleteSellingInvoice(id: ID!): SellingInvoice
+    deletePurchaseInvoice(id: ID!): PurchaseInvoice
 }
