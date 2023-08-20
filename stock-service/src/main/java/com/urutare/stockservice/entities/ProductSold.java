@@ -6,8 +6,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Set;
+import java.util.UUID;
 
 import com.urutare.stockservice.models.enums.Unit;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Data
@@ -15,6 +17,9 @@ import com.urutare.stockservice.models.enums.Unit;
 @NoArgsConstructor
 @Table(name = "stockm_product_sold")
 public class ProductSold extends ItemSold {
+    @Id
+    @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
+    private UUID id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuantityInStock> quantityAffected;

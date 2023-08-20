@@ -20,8 +20,7 @@ import com.urutare.stockservice.models.enums.NotificationType;
 @Table(name = "stockm_notifications")
 public class Notification extends BaseEntity {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(name = "arrival_time")

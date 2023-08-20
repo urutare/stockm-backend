@@ -1,0 +1,345 @@
+directive @secured(requires : String!) on FIELD_DEFINITION | OBJECT
+
+type Destination {
+    id: UUID!
+    name: String!
+    createdAt: String
+    createdBy: UUID
+    updatedAt: String
+    updatedBy: UUID
+}
+
+type DestinationPage {
+    content: [Destination]
+    pageNumber: Int
+    pageSize: Int
+    totalPages: Int
+    totalElements: Int
+    first: Boolean
+    last: Boolean
+}
+
+type Image {
+    id: UUID!
+    url: String!
+    description: String
+    fileName: String
+    fileType: String
+    fileSize: Int
+    width: Int
+    height: Int
+    uploadedBy: String
+    uploadedAt: String
+}
+
+type Expense {
+    id: UUID!
+    amount: Float
+    description: String
+    proofURL: Image
+    stuffId: UUID
+    expenseType: String
+    fromInvoice: Boolean
+}
+
+type IncomeTax {
+    id: UUID!
+    singleProduct: Float
+    numberOfProduct: Float
+}
+
+type Invoice {
+    id: UUID!
+    destination: Destination
+    onCredit: Boolean
+    modeOfPayment: String
+    totalMoneyToPay: Float
+    paidDate: String
+    promisedDate: String
+}
+
+interface Item {
+    id: UUID!
+    name: String!
+    categoryId: UUID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [UUID]
+    unitClass: String
+}
+
+type ItemSold implements  Item {
+    id: UUID!
+    name: String!
+    categoryId: UUID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [UUID]
+    unitClass: String
+    soldAt: String
+    grossProfit: Float!
+    sellingInvoiceId: String
+    calculateTaxes: Boolean
+    type: String
+}
+
+type Notification {
+    id: UUID!
+    arrivalTime: String
+    notificationType: NotificationType
+    read: Boolean
+    messageType: MessageType
+    message: String
+    messageData: String
+    userId: UUID
+}
+
+enum NotificationType {
+    TYPE_A
+    TYPE_B
+    # Add other notification types here as needed
+}
+
+enum MessageType {
+    INFO
+    WARNING
+    ERROR
+    # Add other message types here as needed
+}
+
+type Piece {
+    id: UUID!
+    numberOfPieces: Int
+    subPiece: Piece
+    parentPiece: Piece
+    unitClass: Unit
+    unit: Unit
+    sellingPrice: Float
+    product: Product
+}
+
+type Product implements Item {
+    id: UUID!
+    name: String!
+    categoryId: UUID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [UUID]
+    unitClass: String
+    barcode: String
+    piece: Piece
+    lowQuantity: Float
+    lowStockAlert: Boolean
+}
+
+input ProductInput {
+    name: String!
+    categoryId: UUID!
+    description: String
+    images: [UUID]
+    taxRate: Float
+    tagIds: [UUID]
+    unitClass: String
+    barcode: String
+    pieceId: UUID
+    lowQuantity: Float
+    lowStockAlert: Boolean
+}
+
+type Quantity {
+    id: UUID!
+    value: Float
+    unit: Unit
+    createdAt: String
+}
+
+type PieceQuantity {
+    id: UUID!
+    value: Float
+    unit: Unit
+    createdAt: String
+    purchasingPrice: Float
+    sellingPrice: Float
+    pieceId: UUID
+    quantityInStockId: UUID
+    purchasedAt: String
+}
+
+enum Unit {
+    PIECE
+    BOX
+    KILOGRAM
+    # Add other unit types here as needed
+}
+
+type ProductInStock {
+    id: UUID!
+    unit: Unit
+    product: Product
+}
+
+type ProductPurchase {
+    id: UUID!
+    quantityPurchase: Quantity
+    purchaseDate: String
+    purchasingUnitPrice: Float
+    purchaseTotalPrice: Float
+    expiredDate: String
+    purchaseProductId: String
+    quantityInStockRefId: String
+    purchaseInvoiceRefId: String
+    product: Product
+    purchaseByPiece: Boolean
+    pieceId: String
+    unitClass: Unit
+}
+
+type ProductSold {
+    id: UUID!
+    name: String!
+    categoryId: UUID!
+    description: String
+    images: [Image]
+    taxRate: Float
+    tagIds: [UUID]
+    soldAt: String
+    grossProfit: Float!
+    sellingInvoiceId: String
+    calculateTaxes: Boolean
+    type: String
+    quantityAffected: [QuantityInStock]
+    totalSellingPrice: Float
+    productInStock: ProductInStock
+    sellByPiece: Boolean
+    piece: Piece
+    unitClass: Unit
+}
+
+type QuantityInStock {
+    id: UUID!
+    value: Float
+    unit: Unit
+    createdAt: String
+    purchasingPrice: Float
+    sellingPrice: Float
+    purchasedAt: String
+}
+
+type SellingInvoice {
+    id: UUID!
+    destination: Destination
+    onCredit: Boolean
+    modeOfPayment: String
+    totalMoneyToPay: Float
+    paidDate: String
+    promisedDate: String
+    customerName: String!
+}
+
+type PurchaseInvoice {
+    id: UUID!
+    destination: Destination
+    onCredit: Boolean
+    modeOfPayment: String
+    totalMoneyToPay: Float
+    paidDate: String
+    promisedDate: String
+    supplierName: String!
+}
+
+type ProductPage {
+    content: [Product]
+    pageNumber: Int
+    pageSize: Int
+    totalPages: Int
+    totalElements: Int
+    first: Boolean
+    last: Boolean
+}
+# @secured(requires : "@authFunction.hasOffer(#userUuid,'VIDEO','play')")
+type Query {
+    getAllDestinations(
+        pageNumber: Int = 0,
+        pageSize: Int = 10,
+        sortDirection: String = "asc",
+        sortBy: String = "name",
+        keyword: String
+    ): DestinationPage
+    getDestinationById(id: UUID!): Destination
+    getImage(id: UUID!): Image
+    getExpense(id: UUID!): Expense
+    getIncomeTax(id: UUID!): IncomeTax
+    getInvoice(id: UUID!): Invoice
+    getNotifications(pageNumber: Int, pageSize: Int): [Notification]
+    getProduct(id: UUID!): Product
+    getProducts(
+        pageNumber: Int = 0,
+        pageSize: Int = 10,
+        sortDirection: String = "asc",
+        sortBy: String = "name",
+        keyword: String
+    ): ProductPage
+    getQuantity(id: UUID!): Quantity
+    getPieceQuantity(id: UUID!): PieceQuantity
+    getProductInStock(id: UUID!): ProductInStock
+    getProductPurchase(id: UUID!): ProductPurchase
+    getProductSold(id: UUID!): ProductSold
+    getQuantityInStock(id: UUID!): QuantityInStock
+    getSellingInvoice(id: UUID!): SellingInvoice
+    getPurchaseInvoice(id: UUID!): PurchaseInvoice
+}
+
+scalar UUID
+
+type Mutation {
+    # Create operations
+
+    createDestination(name: String!): Destination!
+    createImage(url: String!, description: String, fileName: String, fileType: String, fileSize: Int, width: Int, height: Int, uploadedBy: String, uploadedAt: String): Image!
+    createExpense(amount: Float, description: String, proofURL: ID, stuffId: UUID, expenseType: String, fromInvoice: Boolean): Expense!
+    createIncomeTax(singleProduct: Float, numberOfProduct: Float): IncomeTax!
+    createInvoice(destinationId: UUID!, onCredit: Boolean, modeOfPayment: String, totalMoneyToPay: Float, paidDate: String, promisedDate: String): Invoice!
+    createNotification(arrivalTime: String, notificationType: NotificationType, read: Boolean, messageType: MessageType, message: String, messageData: String, userId: UUID): Notification!
+    createPiece(numberOfPieces: Int, subPieceId: UUID, parentPieceId: UUID, unitClass: Unit, unit: Unit, sellingPrice: Float, productId: UUID): Piece!
+    createProduct(input: ProductInput): Product!
+    createQuantity(value: Float, unit: Unit, createdAt: String): Quantity!
+    createPieceQuantity(value: Float, unit: Unit, createdAt: String, purchasingPrice: Float, sellingPrice: Float, pieceId: UUID, quantityInStockId: UUID, purchasedAt: String): PieceQuantity!
+    createProductPurchase(quantityPurchaseId: UUID!, purchaseDate: String, purchasingUnitPrice: Float, purchaseTotalPrice: Float, expiredDate: String, purchaseProductId: UUID, quantityInStockRefId: UUID, purchaseInvoiceRefId: UUID, purchaseByPiece: Boolean, pieceId: UUID, unitClass: Unit): ProductPurchase!
+    createSellingInvoice(destinationId: UUID!, onCredit: Boolean, modeOfPayment: String, totalMoneyToPay: Float, paidDate: String, promisedDate: String, customerName: String!): SellingInvoice!
+    createPurchaseInvoice(destinationId: UUID!, onCredit: Boolean, modeOfPayment: String, totalMoneyToPay: Float, paidDate: String, promisedDate: String, supplierName: String!): PurchaseInvoice!
+
+    # Update operations
+
+    updateDestination(id: UUID!, name: String!): Destination!
+    updateImage(id: UUID!, url: String, description: String, fileName: String, fileType: String, fileSize: Int, width: Int, height: Int, uploadedBy: String, uploadedAt: String): Image!
+    updateExpense(id: UUID!, amount: Float, description: String, proofURL: ID, stuffId: UUID, expenseType: String, fromInvoice: Boolean): Expense!
+    updateIncomeTax(id: UUID!, singleProduct: Float, numberOfProduct: Float): IncomeTax!
+    updateInvoice(id: UUID!, destinationId: UUID, onCredit: Boolean, modeOfPayment: String, totalMoneyToPay: Float, paidDate: String, promisedDate: String): Invoice!
+    updateNotification(id: UUID!, arrivalTime: String, notificationType: NotificationType, read: Boolean, messageType: MessageType, message: String, messageData: String, userId: UUID): Notification!
+    updatePiece(id: UUID!, numberOfPieces: Int, subPieceId: UUID, parentPieceId: UUID, unitClass: Unit, unit: Unit, sellingPrice: Float, productId: UUID): Piece!
+    updateProduct(id: UUID!, name: String, categoryId: UUID, description: String, images: [UUID], taxRate: Float, tagIds: [UUID], unitClass: String, barcode: String, pieceId: UUID, lowQuantity: Float, lowStockAlert: Boolean): Product!
+    updateQuantity(id: UUID!, value: Float, unit: Unit, createdAt: String): Quantity!
+    updatePieceQuantity(id: UUID!, value: Float, unit: Unit, createdAt: String, purchasingPrice: Float, sellingPrice: Float, pieceId: UUID, quantityInStockId: UUID, purchasedAt: String): PieceQuantity!
+    updateProductPurchase(id: UUID!, quantityPurchaseId: UUID, purchaseDate: String, purchasingUnitPrice: Float, purchaseTotalPrice: Float, expiredDate: String, purchaseProductId: UUID, quantityInStockRefId: UUID, purchaseInvoiceRefId: UUID, purchaseByPiece: Boolean, pieceId: UUID, unitClass: Unit): ProductPurchase!
+    updateSellingInvoice(id: UUID!, destinationId: UUID, onCredit: Boolean, modeOfPayment: String, totalMoneyToPay: Float, paidDate: String, promisedDate: String, customerName: String): SellingInvoice!
+    updatePurchaseInvoice(id: UUID!, destinationId: UUID, onCredit: Boolean, modeOfPayment: String, totalMoneyToPay: Float, paidDate: String, promisedDate: String, supplierName: String): PurchaseInvoice!
+
+    # Delete operations
+
+    deleteDestination(id: UUID!): Destination
+    deleteImage(id: UUID!): Image
+    deleteExpense(id: UUID!): Expense
+    deleteIncomeTax(id: UUID!): IncomeTax
+    deleteInvoice(id: UUID!): Invoice
+    deleteNotification(id: UUID!): Notification
+    deletePiece(id: UUID!): Piece
+    deleteProduct(id: UUID!): Product
+    deleteQuantity(id: UUID!): Quantity
+    deletePieceQuantity(id: UUID!): PieceQuantity
+    deleteProductPurchase(id: UUID!): ProductPurchase
+    deleteSellingInvoice(id: UUID!): SellingInvoice
+    deletePurchaseInvoice(id: UUID!): PurchaseInvoice
+}
