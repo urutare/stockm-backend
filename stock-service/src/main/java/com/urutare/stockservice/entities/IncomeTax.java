@@ -17,8 +17,7 @@ import lombok.NoArgsConstructor;
 public class IncomeTax extends BaseEntity {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(name = "single_product")

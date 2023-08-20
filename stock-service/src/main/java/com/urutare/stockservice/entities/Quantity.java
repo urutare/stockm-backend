@@ -19,8 +19,7 @@ import com.urutare.stockservice.models.enums.Unit;
 @DiscriminatorColumn(name = "quantity_type")
 public abstract class Quantity {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(name = "value")

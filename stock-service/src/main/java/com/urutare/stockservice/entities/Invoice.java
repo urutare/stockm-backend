@@ -20,8 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 public abstract class Invoice extends BaseEntity {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
     private UUID id;
 
     @ManyToOne

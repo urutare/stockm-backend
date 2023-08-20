@@ -18,8 +18,7 @@ import com.urutare.stockservice.models.enums.Unit;
 public class ProductPurchase {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
     private UUID id;
 
     @OneToOne

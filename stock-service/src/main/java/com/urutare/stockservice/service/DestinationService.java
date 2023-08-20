@@ -1,41 +1,34 @@
-package com.urutare.stockservice.controller;
+package com.urutare.stockservice.service;
 
-import com.urutare.stockservice.aspect.RequiresRole;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsMutation;
+import com.netflix.graphql.dgs.DgsQuery;
+import com.netflix.graphql.dgs.InputArgument;
 import com.urutare.stockservice.entities.Destination;
 import com.urutare.stockservice.exception.NotFoundException;
-import com.urutare.stockservice.models.enums.UserRole;
 import com.urutare.stockservice.models.response.PaginatedResponseDTO;
 import com.urutare.stockservice.repository.DestinationRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.UUID;
 
-@Controller
+@DgsComponent
 @RequiredArgsConstructor
-public class DestinationController {
+public class DestinationService {
     private final DestinationRepository destinationRepository;
-    private final HttpServletRequest request;
 
-    @QueryMapping
-    public Destination getDestinationById(@Argument UUID id) {
+    @DgsQuery
+    public Destination getDestinationById(@InputArgument UUID id) {
         return destinationRepository.findById(id).orElseThrow(() -> new NotFoundException("Destination not found"));
     }
 
-    @QueryMapping
-    public PaginatedResponseDTO<Destination> getAllDestinations(@Argument String keyword,
-                                                                @Argument Integer pageNumber,
-                                                                @Argument Integer pageSize,
-                                                                @Argument String sortBy,
-                                                                @Argument String sortDirection) {
+    @DgsQuery
+    public PaginatedResponseDTO<Destination> getAllDestinations(@InputArgument String keyword, @InputArgument Integer pageNumber, @InputArgument Integer pageSize, @InputArgument String sortBy, @InputArgument String sortDirection) {
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(direction, sortBy));
         Page<Destination> destinationPage;
@@ -48,29 +41,27 @@ public class DestinationController {
         return new PaginatedResponseDTO<>(destinationPage);
     }
 
-    @MutationMapping
+    @DgsMutation
 //    @RequiresRole(UserRole.ADMIN)
-    public Destination createDestination(@Argument String name) {
-//        UUID userId = UUID.fromString(request.getHeader("userId"));
+    public Destination createDestination(@InputArgument String name, @RequestHeader UUID userId) {
         Destination destination = new Destination();
         destination.setName(name);
-//        destination.setCreatedBy(userId);
+        destination.setCreatedBy(userId);
         return destinationRepository.save(destination);
     }
 
-    @MutationMapping
+    @DgsMutation
 //    @RequiresRole(UserRole.ADMIN)
-    public Destination updateDestination(@Argument UUID id, @Argument String name) {
-//        UUID userId = UUID.fromString(request.getHeader("userId"));
+    public Destination updateDestination(@InputArgument UUID id, @InputArgument String name, @RequestHeader UUID userId) {
         Destination destination = destinationRepository.findById(id).orElseThrow(() -> new NotFoundException("Destination not found"));
         destination.setName(name);
-//        destination.setUpdatedBy(userId);
+        destination.setUpdatedBy(userId);
         return destinationRepository.save(destination);
     }
 
-    @MutationMapping
+    @DgsMutation
 //    @RequiresRole(UserRole.ADMIN)
-    public Destination deleteDestination(@Argument UUID id) {
+    public Destination deleteDestination(@InputArgument UUID id) {
         Destination destination = destinationRepository.findById(id).orElseThrow(() -> new NotFoundException("Destination not found"));
         destinationRepository.delete(destination);
         return destination;
