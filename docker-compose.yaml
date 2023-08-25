@@ -1,0 +1,226 @@
+version: '3'
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    environment:
+      - SERVER_PORT=8080
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=api-gateway
+      - LOGGING_LEVEL_ROOT=INFO
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY_ROUTE_ROUTEDEFINITIONROUTELOCATOR=INFO
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY=TRACE
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_ID=user-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=lb://user-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0=Path=/api/v1/user-service/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_ID=category-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_URI=lb://category-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0=Path=/api/v1/category-service/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_ID=discovery-server
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_URI=http://discovery-server:8761
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0=Path=/eureka/web
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_0=SetPath=/
+      - SPRING_CLOUD_GATEWAY_ROUTES_3_ID=discovery-server-static
+      - SPRING_CLOUD_GATEWAY_ROUTES_3_URI=http://discovery-server:8761
+      - SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0=Path=/eureka/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_4_ID=stock-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_4_URI=lb://stock-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0=Path=/api/v1/stock-service/**,/graphql
+      - SPRING_CLOUD_GATEWAY_ROUTES_4_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_5_ID=sync-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_5_URI=lb://sync-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0=Path=/api/v1/sync-service/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_5_FILTERS_0=AuthenticationFilter
+      - JWT_SECRET=UrutareIncStockM
+    depends_on:
+      - discovery-server
+      - stock-service
+      - user-service
+      - category-service
+      - sync-service
+    networks:
+      - urutare-inc-network
+  
+  discovery-server:
+    build: ./discovery-service
+    restart: always
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_SERVER_LEASE_RENEWAL_INTERVAL_IN_SECONDS=15
+      - EUREKA_SERVER_LEASE_EXPIRATION_DURATION_IN_SECONDS=60
+      - SERVER_PORT=8761
+      - SPRING_APPLICATION_NAME=discovery-server
+    networks:
+      - urutare-inc-network
+
+  stock-service:
+    build: ./stock-service
+    restart: on-failure
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=stock-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stock-service-db:5432/stock_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
+      - SPRING_GRAPHQL_GRAPHIQL_ENABLED=true
+      - SPRING_GRAPHQL_GRAPHIQL_PATH=/graphiql
+    depends_on:
+      - discovery-server
+      - stock-service-db
+    networks:
+      - urutare-inc-network
+
+  stock-service-db:
+    image: postgres
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=stock_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
+
+  user-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_APPLICATION_NAME=user-service
+      - STOCKM_API_SECRET_KEY=UrutareIncStockM
+      - STOCKM_TOKEN_VALIDITY=86400000
+      - STOCKM_BASE_URL=http://api-gateway:8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-service-db:5432/stockm_users_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_USERNAME=andelacohot25@gmail.com
+      - SPRING_MAIL_PASSWORD=mdibmzpbragmgufd
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      - JWT_SECRET=UrutareIncStockM
+      - JWT_ACCESS_TOKEN_EXPIRATIONINMS=86400000
+      - JWT_REFRESH_TOKEN_EXPIRATIONINMS=86400000
+    depends_on:
+      - discovery-server
+      - user-service-db
+    networks:
+      - urutare-inc-network
+
+  user-service-db:
+    image: postgres
+    restart: on-failure
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=stockm_users_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
+
+  category-service:
+    build: ./category-service # Replace with the actual image and tag
+    ports:
+      - "8082:8082"
+    restart: on-failure
+    environment:
+      - SERVER_PORT=8082
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_APPLICATION_NAME=category-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://category-service-db:5432/stockm_category_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
+      - CLOUDINARY_CLOUD_NAME=http-voicetoworld-netlify-app
+      - CLOUDINARY_API_KEY=958152517412848
+      - CLOUDINARY_API_SECRET=h2eAzwp1zYxSKXe6lqHka-kopSQ
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=10MB
+    depends_on:
+      - discovery-server
+      - category-service-db
+    networks:
+      - urutare-inc-network
+
+  category-service-db:
+    image: postgres
+    restart: on-failure
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=stockm_category_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
+
+  sync-service:
+    build:
+      context: ./sync-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    restart: on-failure
+    environment:
+      - SERVER_PORT=8083
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_APPLICATION_NAME=sync-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://sync-service-db:5432/sync_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+    depends_on:
+      - discovery-server
+      - sync-service-db
+    networks:
+      - urutare-inc-network
+
+  sync-service-db:
+    image: postgres
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_DB=sync_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
+
+networks:
+  urutare-inc-network:
+    driver: bridge

@@ -1,0 +1,36 @@
+# Exclude common build tools and files
+target/
+gradle/
+gradlew
+gradlew.bat
+build/
+*.log
+*.lock
+
+# Exclude IDE-specific files
+.idea/
+.vscode/
+*.iml
+
+# Exclude temporary and cache files
+*.tmp
+*.swp
+*.bak
+*.DS_Store
+
+# Exclude version control files
+.git/
+.gitignore
+.gitattributes
+
+# Exclude Docker related files (optional, depends on your setup)
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+
+# Exclude documentation and test files (optional, adjust as needed)
+*.md
+*.html
+*.pdf
+test/
+tests/
