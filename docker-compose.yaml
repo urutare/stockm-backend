@@ -44,6 +44,8 @@ services:
       - user-service
       - category-service
       - sync-service
+    networks:
+      - urutare-inc-network
   
   discovery-server:
     build: ./discovery-service
@@ -59,6 +61,8 @@ services:
       - EUREKA_SERVER_LEASE_EXPIRATION_DURATION_IN_SECONDS=60
       - SERVER_PORT=8761
       - SPRING_APPLICATION_NAME=discovery-server
+    networks:
+      - urutare-inc-network
 
   stock-service:
     build: ./stock-service
@@ -80,6 +84,8 @@ services:
     depends_on:
       - discovery-server
       - stock-service-db
+    networks:
+      - urutare-inc-network
 
   stock-service-db:
     image: postgres
@@ -90,6 +96,8 @@ services:
       - POSTGRES_DB=stock_service_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
 
   user-service:
     build:
@@ -123,16 +131,20 @@ services:
     depends_on:
       - discovery-server
       - user-service-db
+    networks:
+      - urutare-inc-network
 
   user-service-db:
     image: postgres
     restart: on-failure
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       - POSTGRES_DB=stockm_users_service_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
 
   category-service:
     build: ./category-service # Replace with the actual image and tag
@@ -155,16 +167,23 @@ services:
       - CLOUDINARY_API_SECRET=h2eAzwp1zYxSKXe6lqHka-kopSQ
       - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
       - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=10MB
+    depends_on:
+      - discovery-server
+      - category-service-db
+    networks:
+      - urutare-inc-network
 
   category-service-db:
     image: postgres
     restart: on-failure
     ports:
-      - "5432:5432"
+      - "5435:5432"
     environment:
       - POSTGRES_DB=stockm_category_service_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin123!
+    networks:
+      - urutare-inc-network
 
   sync-service:
     build:
@@ -188,13 +207,20 @@ services:
     depends_on:
       - discovery-server
       - sync-service-db
+    networks:
+      - urutare-inc-network
 
   sync-service-db:
     image: postgres
     ports:
-      - "5432:5432"
+      - "5436:5432"
     environment:
       - POSTGRES_DB=sync_service_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin123!
-      
+    networks:
+      - urutare-inc-network
+
+networks:
+  urutare-inc-network:
+    driver: bridge
