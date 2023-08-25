@@ -34,3 +34,7 @@ docker-compose.yaml
 *.pdf
 test/
 tests/
+
+# Exclude Spring Boot properties files (if they are in the root directory)
+application.properties
+application.yml

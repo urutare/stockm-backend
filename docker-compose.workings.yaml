@@ -2,7 +2,7 @@ version: '3'
 services:
   discovery-server:
     build: ./discovery-service
-    restart: on-failure
+    restart: always
     ports:
       - "8761:8761"
     environment:
@@ -14,6 +14,38 @@ services:
       - EUREKA_SERVER_LEASE_EXPIRATION_DURATION_IN_SECONDS=60
       - SERVER_PORT=8761
       - SPRING_APPLICATION_NAME=discovery-server
+
+  stock-service:
+    build: ./stock-service
+    restart: on-failure
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=stock-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stock-service-db:5432/stock_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
+      - SPRING_GRAPHQL_GRAPHIQL_ENABLED=true
+      - SPRING_GRAPHQL_GRAPHIQL_PATH=/graphiql
+    depends_on:
+      - discovery-server
+      - stock-service-db
+
+  stock-service-db:
+    image: postgres
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=stock_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+
   user-service:
     build:
       context: ./auth-service
@@ -29,7 +61,7 @@ services:
       - STOCKM_API_SECRET_KEY=UrutareIncStockM
       - STOCKM_TOKEN_VALIDITY=86400000
       - STOCKM_BASE_URL=http://api-gateway:8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/stockm_users_service_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-service-db:5432/stockm_users_service_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin123!
       - SPRING_JPA_SHOW_SQL=true
@@ -45,9 +77,9 @@ services:
       - JWT_REFRESH_TOKEN_EXPIRATIONINMS=86400000
     depends_on:
       - discovery-server
-      - postgres
+      - user-service-db
 
-  postgres:
+  user-service-db:
     image: postgres
     restart: on-failure
     ports:
