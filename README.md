@@ -2,9 +2,9 @@
 
 StockM User Service is a Spring Boot application designed to manage user accounts and authentication for the Stock Management project. This service provides RESTful APIs to create, update, and retrieve user information, as well as handle authentication and authorization.
 ## Architecture
-![Alt text](chrome-capture-2023-7-25-1.gif)
+![Alt text](<chrome-capture-2023-7-25 (3).gif>)
+
 ## Features
-![Alt text](image.png)
 - User registration
 - User authentication (login/logout)
 - User profile management (update personal information, change password)
