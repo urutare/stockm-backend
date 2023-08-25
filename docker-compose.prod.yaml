@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  discover-server:
+    build: ./discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=discover-server
+      - EUREKA_CLIENT_REGISTER-WITH-EUREKA=false
+      - EUREKA_CLIENT_FETCH-REGISTRY=false
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discover-server:8761/eureka
+      - SPRING_APPLICATION_NAME=discovery-server
+      # Add other environment variables
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=api-gateway
+      # Add other environment variables
+    depends_on:
+      - discover-server
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=user-service
+      - STOCKM_API_SECRET_KEY=UrutareIncStockM
+      # Add other environment variables
+    depends_on:
+      - discover-server
+      - auth-service-db
+
+  category-service:
+    build: ./category-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVER_PORT=8082
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=category-service
+      # Add other environment variables
+    depends_on:
+      - discover-server
+      - category-service-db
+
+  stock-service:
+    build: ./stock-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=stock-service
+      # Add other environment variables
+    depends_on:
+      - discover-server
+      - stock-service-db
+
+  sync-service:
+    build: ./sync-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVER_PORT=8083
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=sync-service
+      # Add other environment variables
+    depends_on:
+      - discover-server
+      - sync-service-db
+
+  auth-service-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: stockm_users_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123!
+
+  category-service-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: stockm_category_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123!
+
+  stock-service-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: stock_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123!
+
+  sync-service-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: sync_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123!
+
