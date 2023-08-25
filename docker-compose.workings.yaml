@@ -88,3 +88,68 @@ services:
       - POSTGRES_DB=stockm_users_service_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin123!
+
+  category-service:
+    build: ./category-service # Replace with the actual image and tag
+    ports:
+      - "8082:8082"
+    restart: on-failure
+    environment:
+      - SERVER_PORT=8082
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_APPLICATION_NAME=category-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://category-service-db:5432/stockm_category_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
+      - CLOUDINARY_CLOUD_NAME=http-voicetoworld-netlify-app
+      - CLOUDINARY_API_KEY=958152517412848
+      - CLOUDINARY_API_SECRET=h2eAzwp1zYxSKXe6lqHka-kopSQ
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=10MB
+
+  category-service-db:
+    image: postgres
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=stockm_category_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+
+  sync-service:
+    build:
+      context: ./sync-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    restart: on-failure
+    environment:
+      - SERVER_PORT=8083
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_APPLICATION_NAME=sync-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://sync-service-db:5432/sync_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123!
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+    depends_on:
+      - discovery-server
+      - sync-service-db
+
+  sync-service-db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=sync_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+      
