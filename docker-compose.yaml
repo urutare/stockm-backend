@@ -220,6 +220,32 @@ services:
       - POSTGRES_PASSWORD=admin123!
     networks:
       - urutare-inc-network
+  
+  kong:
+    image: kong:latest
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    depends_on:
+      - api-gateway
+    environment:
+      KONG_DATABASE: "postgres"
+      KONG_PG_HOST: "kong-database"
+      KONG_PG_USER: "kong"
+      KONG_PG_PASSWORD: "kong"
+      KONG_PG_DATABASE: "kong"
+    networks:
+      - urutare-inc-network
+
+  kong-database:
+    image: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+    networks:
+      - urutare-inc-network
 
 networks:
   urutare-inc-network:
