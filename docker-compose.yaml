@@ -220,6 +220,17 @@ services:
       - POSTGRES_PASSWORD=admin123!
     networks:
       - urutare-inc-network
+      
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api-gateway
+    networks:
+      - urutare-inc-network
 
 networks:
   urutare-inc-network:
