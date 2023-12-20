@@ -5,12 +5,20 @@ eureka.instance.prefer-ip-address=true
 spring.application.name=category-service
 
 # POSTGRESQL
-spring.datasource.url=jdbc:postgresql://localhost:5432/stockm_category_service_db
+spring.datasource.url=jdbc:postgresql://localhost:5432/category_db
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.jpa.show-sql=true
 spring.jpa.hibernate.ddl-auto=update
 logging.level.org.hibernate.SQL=debug
+spring.datasource.hikari.minimum-idle= 3
+spring.datasource.hikari.maximum-pool-size=10
+idle-timeout: 180000
+spring.datasource.hikari.pool-name: MPoolService
+spring.datasource.hikari.max-lifetime: 720000
+spring.datasource.hikari.connection-timeout: 30000
+spring.datasource.hikari.connection-test-query: SELECT 1
+spring.datasource.hikari.validation-timeout: 5000
 
 # CLOUDINARY
 cloudinary.cloud_name=urutareinc
