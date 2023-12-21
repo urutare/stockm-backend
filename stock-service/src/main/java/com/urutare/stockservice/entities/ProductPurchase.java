@@ -53,7 +53,7 @@ public class ProductPurchase {
     private Product product;
 
     @Column(name = "product_id", insertable = false, updatable = false)
-    private String productId;
+    private UUID productId;
 
     @Column(name = "purchase_by_piece")
     private boolean purchaseByPiece;
