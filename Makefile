@@ -33,6 +33,8 @@ rebuild: down build
 
 restart: down start
 
+reup: down up
+
 default: up
 
 restart:

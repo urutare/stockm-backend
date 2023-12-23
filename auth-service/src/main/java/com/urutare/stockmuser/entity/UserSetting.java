@@ -23,7 +23,7 @@ public class UserSetting {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", columnDefinition = "uuid-char")
+    @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
