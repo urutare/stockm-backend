@@ -6,18 +6,18 @@ services:
     ports:
       - "8761:8761"
     container_name: discovery-server
-#    deploy:
-#       resources:
-#         limits:
-#           cpus: '0.5'
-#           memory: 512M
-#         reservations:
-#           memory: 150M
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+         reservations:
+           memory: 150M
     environment:
-      - EUREKA_INSTANCE_HOSTNAME=0.0.0.0
+      - EUREKA_INSTANCE_HOSTNAME=discovery-server
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
       - EUREKA_CLIENT_FETCH_REGISTRY=false
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://0.0.0.0:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_SERVER_LEASE_RENEWAL_INTERVAL_IN_SECONDS=15
       - EUREKA_SERVER_LEASE_EXPIRATION_DURATION_IN_SECONDS=60
       - SERVER_PORT=8761
@@ -33,16 +33,16 @@ services:
       - "7080:8080"
     restart: on-failure
     container_name: api-gateway
-#    deploy:
-#       resources:
-#         limits:
-#           cpus: '0.5'
-#           memory: 512M
-#         reservations:
-#           memory: 150M
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+         reservations:
+           memory: 150M
     environment:
       - SERVER_PORT=8080
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://0.0.0.0:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - SPRING_APPLICATION_NAME=api-gateway
       - LOGGING_LEVEL_ROOT=INFO
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY_ROUTE_ROUTEDEFINITIONROUTELOCATOR=INFO
@@ -56,11 +56,11 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0=Path=/api/v1/category-service/**
       - SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_0=AuthenticationFilter
       - SPRING_CLOUD_GATEWAY_ROUTES_2_ID=discovery-server
-      - SPRING_CLOUD_GATEWAY_ROUTES_2_URI=http://0.0.0.0:8761
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_URI=http://discovery-server:8761
       - SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0=Path=/eureka/web
       - SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_0=SetPath=/
       - SPRING_CLOUD_GATEWAY_ROUTES_3_ID=discovery-server-static
-      - SPRING_CLOUD_GATEWAY_ROUTES_3_URI=http://0.0.0.0:8761
+      - SPRING_CLOUD_GATEWAY_ROUTES_3_URI=http://discovery-server:8761
       - SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0=Path=/eureka/**
       - SPRING_CLOUD_GATEWAY_ROUTES_4_ID=stock-service
       - SPRING_CLOUD_GATEWAY_ROUTES_4_URI=lb://stock-service
@@ -150,7 +150,7 @@ services:
            memory: 150M
     environment:
       - SERVER_PORT=8084
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://0.0.0.0:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - SPRING_APPLICATION_NAME=stock-service
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/stock_db
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -184,7 +184,7 @@ services:
            memory: 150M
     environment:
       - SERVER_PORT=8081
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://0.0.0.0:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_APPLICATION_NAME=user-service
       - STOCKM_API_SECRET_KEY=UrutareIncStockM
@@ -227,7 +227,7 @@ services:
            memory: 150M
     environment:
       - SERVER_PORT=8082
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://0.0.0.0:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_APPLICATION_NAME=category-service
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/category_db
@@ -264,7 +264,7 @@ services:
            memory: 150M
     environment:
       - SERVER_PORT=8083
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://0.0.0.0:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_APPLICATION_NAME=sync-service
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/sync_db
