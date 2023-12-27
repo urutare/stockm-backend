@@ -1,4 +1,4 @@
-package com.urutare.stockmuser.swagger;
+package com.urutare.stockmuser.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition
 @Configuration
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, bearerFormat = "JWT", scheme = "bearer")
-public class SpringdocConfig {
+public class SwaggerConfig {
     @Bean
     public OpenAPI baseOpenAPI() {
         return new OpenAPI()
