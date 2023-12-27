@@ -42,6 +42,7 @@ services:
            memory: 150M
     environment:
       - SERVER_PORT=8080
+      - JWT_SECRET=UrutareIncStockM
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - SPRING_APPLICATION_NAME=api-gateway
       - LOGGING_LEVEL_ROOT=INFO
@@ -70,13 +71,19 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_5_URI=lb://sync-service
       - SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0=Path=/api/v1/sync-service/**
       - SPRING_CLOUD_GATEWAY_ROUTES_5_FILTERS_0=AuthenticationFilter
-      - JWT_SECRET=UrutareIncStockM
+
+      - SPRING_CLOUD_GATEWAY_ROUTES_6_ID=payment-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_6_URI=lb://payment-service
+      - SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0=Path=/api/v1/payment-service/**
+#      - SPRING_CLOUD_GATEWAY_ROUTES_6_FILTERS_0=AuthenticationFilter
+
     depends_on:
       - discovery-server
-      - stock-service
-      - user-service
-      - category-service
-      - sync-service
+#      - stock-service
+#      - user-service
+#      - category-service
+#      - sync-service
+      - payment-service
     networks:
       - urutare-inc-network
 
@@ -128,7 +135,7 @@ services:
     ports:
       - '9092:9092'
     volumes:
-      - './kafka-data:/bitnami/kafka/data'
+      - 'kafka-data:/bitnami/kafka/data'
     depends_on:
       - zookeeper
     networks:
@@ -165,7 +172,6 @@ services:
       - postgres-db
     networks:
       - urutare-inc-network
-
 
   user-service:
     build:
@@ -281,8 +287,49 @@ services:
     networks:
       - urutare-inc-network
 
+  payment-service:
+    image: 'thunderzeye/payment-service:latest'
+    container_name: "payment-service"
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 150M
+    ports:
+      - "9090:8089"
+    env_file: .env
+    environment:
+      - SERVER_PORT=8089
+      - COMPONENT_ID=4
+      - SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES=true
+      - HIBERNATE_ENABLE_LAZY_LOAD_NO_TRANS=true
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL}
+      - KAFKA_GROUP_ID_PARKING_MANAGER=${KAFKA_GROUP_ID_PARKING_MANAGER}
+      - KAFKA_TOPIC_PARTITION=${KAFKA_TOPIC_PARTITION}
+      - KAFKA_TOPIC_REPLICATION_FACTOR=${KAFKA_TOPIC_REPLICATION_FACTOR}
+      - DB_HOSTNAME=${DB_HOSTNAME}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=payment_db
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_APPLICATION_NAME=payment-service
+    depends_on:
+      - postgres-db
+      - redis_cache
+      - kafka
+    networks:
+      - urutare-inc-network
+
   nginx:
     image: nginx:latest
+    container_name: "nginx"
     ports:
       - "81:80"
     volumes:
@@ -300,4 +347,5 @@ networks:
 
 volumes:
   postgres-data:
+  kafka-data:
 #  kong-data:
