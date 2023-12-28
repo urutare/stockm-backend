@@ -79,10 +79,10 @@ services:
 
     depends_on:
       - discovery-server
-#      - stock-service
-#      - user-service
-#      - category-service
-#      - sync-service
+      - stock-service
+      - user-service
+      - category-service
+      - sync-service
       - payment-service
     networks:
       - urutare-inc-network
@@ -100,7 +100,7 @@ services:
     command: ["postgres", "-c", "max_connections=200", "-c", "timezone=Etc/UTC", "-c", "default_text_search_config=pg_catalog.english"]
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./db-init:/docker-entrypoint-initdb.d
     networks:
       - urutare-inc-network
 
@@ -299,7 +299,7 @@ services:
         reservations:
           memory: 150M
     ports:
-      - "9090:8089"
+      - "8089:8089"
     env_file: .env
     environment:
       - SERVER_PORT=8089
@@ -348,4 +348,3 @@ networks:
 volumes:
   postgres-data:
   kafka-data:
-#  kong-data:

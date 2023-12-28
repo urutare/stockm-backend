@@ -1,0 +1,5 @@
+CREATE DATABASE user_db;
+CREATE DATABASE category_db;
+CREATE DATABASE sync_db;
+CREATE DATABASE stock_db;
+CREATE DATABASE payment_db;
