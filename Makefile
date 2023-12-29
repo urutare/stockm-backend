@@ -29,6 +29,15 @@ ps:
 clean:
 	docker system prune --volumes --force
 
+kubernet:
+	kompose convert --file  $(COMPOSE_FILE) --out ./k8s
+
+deploy:
+	kubectl apply -f k8s
+
+getdeployment:
+	kubectl get deployments
+
 rebuild: down build
 
 restart: down start
