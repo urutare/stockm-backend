@@ -6,7 +6,9 @@ public class WhiteList {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-ui.html",
-            "/api/v1/stock-service/graphiql"
+            "/api/v1/stock-service/graphiql",
+            "/api/v1/stock-service/swagger-ui/**",
+            "/api/v1/stock-service/**",
     };
 
 }
