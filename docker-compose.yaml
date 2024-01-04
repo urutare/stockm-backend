@@ -71,7 +71,6 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_5_URI=lb://sync-service
       - SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0=Path=/api/v1/sync-service/**
 #      - SPRING_CLOUD_GATEWAY_ROUTES_5_FILTERS_0=AuthenticationFilter
-
       - SPRING_CLOUD_GATEWAY_ROUTES_6_ID=payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_URI=lb://payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0=Path=/api/v1/payment-service/**
