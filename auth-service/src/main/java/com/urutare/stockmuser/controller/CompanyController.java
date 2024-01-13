@@ -7,7 +7,6 @@ import com.urutare.stockmuser.entity.User;
 import com.urutare.stockmuser.service.CompanyService;
 import com.urutare.stockmuser.service.UserService;
 import com.urutare.stockmuser.utils.CloudinaryUtil;
-import com.urutare.stockmuser.utils.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,6 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class CompanyController {
     private final CompanyService companyService;
-    private final JwtTokenUtil jwtUtils;
     private final CloudinaryUtil cloudinaryUtil;
     private final UserService userService;
 
