@@ -1,12 +1,11 @@
 package com.urutare.stockmuser.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import com.urutare.stockmuser.entity.Company;
 import com.urutare.stockmuser.entity.User;
 import com.urutare.stockmuser.repository.CompanyRepository;
 import com.urutare.stockmuser.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +44,11 @@ public class CompanyService {
         if (existingCompany != null) {
             existingCompany.setName(updatedCompany.getName());
             existingCompany.setAddress(updatedCompany.getAddress());
-            existingCompany.setContactInformation(updatedCompany.getContactInformation());
+            existingCompany.setUpdatedBy(updatedCompany.getUpdatedBy());
+            existingCompany.setLogo(updatedCompany.getLogo());
+            existingCompany.setEmail(updatedCompany.getEmail());
+            existingCompany.setPhone(updatedCompany.getPhone());
+            existingCompany.setWebsite(updatedCompany.getWebsite());
 
             return companyRepository.save(existingCompany);
         }
