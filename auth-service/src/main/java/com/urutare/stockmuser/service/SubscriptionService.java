@@ -2,9 +2,11 @@ package com.urutare.stockmuser.service;
 
 import com.urutare.stockmuser.dto.subscription.SubscriptionDTO;
 import com.urutare.stockmuser.dto.subscription.SubscriptionFeatureDTO;
+import com.urutare.stockmuser.entity.Permission;
 import com.urutare.stockmuser.entity.Subscription;
 import com.urutare.stockmuser.entity.SubscriptionFeature;
 import com.urutare.stockmuser.exception.ResourceNotFoundException;
+import com.urutare.stockmuser.repository.PermissionRepository;
 import com.urutare.stockmuser.repository.SubscriptionFeatureRepository;
 import com.urutare.stockmuser.repository.SubscriptionRepository;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionFeatureRepository subscriptionFeatureRepository;
+    private final PermissionRepository permissionRepository;
 
     public Subscription createSubscription(SubscriptionDTO subscriptionDTO) {
         Subscription subscription = SubscriptionDTO.toEntity(subscriptionDTO);
@@ -89,6 +92,14 @@ public class SubscriptionService {
         List<SubscriptionFeature> subscriptionFeatures = subscriptionFeatureRepository.findAllById(featureIds);
         Set<SubscriptionFeature> featureSet = new HashSet<>(subscriptionFeatures);
         subscription.setFeatures(featureSet);
+        return subscriptionRepository.save(subscription);
+    }
+
+    public Subscription assignPermissionsToSubscription(UUID subscriptionId, List<UUID> permissionIds) {
+        Subscription subscription = getSubscriptionById(subscriptionId);
+        List<Permission> permissions = permissionRepository.findAllById(permissionIds);
+        Set<Permission> permissionSet = new HashSet<>(permissions);
+        subscription.setPermissions(permissionSet);
         return subscriptionRepository.save(subscription);
     }
 

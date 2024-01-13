@@ -127,5 +127,14 @@ public class SubscriptionController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PutMapping("/{subscriptionId}/permissions")
+    @Operation(summary = "Assign permissions to subscription", description = "Assign permissions to subscription", tags = {"Subscription"})
+    public ResponseEntity<SubscriptionDTO> assignPermissionsToSubscription(@PathVariable UUID subscriptionId,
+                                                                           @RequestBody List<UUID> permissionIds) {
+        Subscription subscription = subscriptionService.assignPermissionsToSubscription(subscriptionId, permissionIds);
+        SubscriptionDTO responseDTO = new SubscriptionDTO(subscription);
+        return ResponseEntity.ok(responseDTO);
+    }
+
 
 }

@@ -3,7 +3,9 @@ package com.urutare.stockmuser.controller;
 import com.urutare.stockmuser.dto.company.CompanyDTO;
 import com.urutare.stockmuser.dto.company.CreateCompanyBody;
 import com.urutare.stockmuser.entity.Company;
+import com.urutare.stockmuser.entity.User;
 import com.urutare.stockmuser.service.CompanyService;
+import com.urutare.stockmuser.service.UserService;
 import com.urutare.stockmuser.utils.CloudinaryUtil;
 import com.urutare.stockmuser.utils.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,13 +30,16 @@ public class CompanyController {
     private final CompanyService companyService;
     private final JwtTokenUtil jwtUtils;
     private final CloudinaryUtil cloudinaryUtil;
+    private final UserService userService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create a new company", description = "Create a new company", tags = {"Company"})
     public ResponseEntity<CompanyDTO> createCompany(HttpServletRequest request, @ModelAttribute CreateCompanyBody createCompanyBody, @RequestHeader("userId") UUID userId) {
+        User user = userService.findByID(userId);
         CompanyDTO companyDTO = createCompanyBody.toCompanyDTO();
         Company company = companyDTO.toEntity();
         company.setCreatedBy(userId);
+        company.setUser(user);
         if (createCompanyBody.getLogo() != null) {
             try {
                 String imageUrl = cloudinaryUtil.uploadImage(createCompanyBody.getLogo());

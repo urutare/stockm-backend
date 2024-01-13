@@ -1,17 +1,5 @@
 package com.urutare.stockmuser.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.security.auth.message.AuthException;
-import org.apache.commons.lang3.tuple.Pair;
-import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.context.Context;
-
 import com.urutare.stockmuser.constants.Properties;
 import com.urutare.stockmuser.dto.request.AddRoleBody;
 import com.urutare.stockmuser.dto.request.AssignOrRemoveRoleBody;
@@ -26,12 +14,19 @@ import com.urutare.stockmuser.repository.BlockedTokenRepository;
 import com.urutare.stockmuser.repository.ResetRepository;
 import com.urutare.stockmuser.repository.RoleRepository;
 import com.urutare.stockmuser.repository.UserRepository;
+import jakarta.mail.MessagingException;
+import jakarta.security.auth.message.AuthException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -47,12 +42,12 @@ public class UserService implements UserDetailsService {
     private final BlockedTokenRepository blockedTokenRepository;
 
     public UserService(@Autowired UserRepository userRepository,
-            @Autowired EmailService emailService,
-            @Autowired OathService oathService,
-            @Autowired Properties properties,
-            @Autowired ResetRepository resetRepository,
-            RoleRepository roleRepository,
-            BlockedTokenRepository blockedTokenRepository) {
+                       @Autowired EmailService emailService,
+                       @Autowired OathService oathService,
+                       @Autowired Properties properties,
+                       @Autowired ResetRepository resetRepository,
+                       RoleRepository roleRepository,
+                       BlockedTokenRepository blockedTokenRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.oathService = oathService;
@@ -284,9 +279,6 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public record PublicUser(UUID id, String email, String fullName) {
-    }
-
     public User findByEmail(String email) {
         try {
             return userRepository.findByEmail(email).orElseThrow(
@@ -305,6 +297,14 @@ public class UserService implements UserDetailsService {
                 () -> new UsernameNotFoundException("User Not Found with id: " + userId));
         user.setVerified(true);
         userRepository.save(user);
+    }
+
+    public User findByID(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new UsernameNotFoundException("User Not Found with id: " + userId));
+    }
+
+    public record PublicUser(UUID id, String email, String fullName) {
     }
 
 }

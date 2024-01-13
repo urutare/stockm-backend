@@ -47,4 +47,10 @@ public class Subscription extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "subscription_feature_id"))
     private Set<SubscriptionFeature> features = new HashSet<>();
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "subscription_permission",
+            joinColumns = @JoinColumn(name = "subscription_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private Set<Permission> permissions = new HashSet<>();
+
 }
