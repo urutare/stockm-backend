@@ -114,32 +114,47 @@ services:
     ports:
       - "6379:6379"
 
-  zookeeper:
+  zookeeper-server:
     image: 'bitnami/zookeeper:latest'
-    container_name: zookeeper
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+    container_name: "zookeeper-server"
+    networks:
+      - kafka-network
     ports:
       - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka-broker:
+    image: 'bitnami/kafka:latest'
+    container_name: "kafka-broker"
     networks:
       - kafka-network
-      - urutare-inc-network
-  kafka:
-    image: 'bitnami/kafka:latest'
-    container_name: kafka
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - ALLOW_PLAINTEXT_LISTENER=yes
     ports:
       - '9092:9092'
-    volumes:
-      - 'kafka-data:/bitnami/kafka/data'
+      - '29092:29092'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
+      - KAFKA_CFG_BROKER_ID=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
-      - zookeeper
+      - zookeeper-server
+
+  kafdrop-web:
+    image: obsidiandynamics/kafdrop
+    container_name: "kafdrop-web"
     networks:
       - kafka-network
-      - urutare-inc-network
+    ports:
+      - '9000:9000'
+    environment:
+      - KAFKA_BROKERCONNECT=kafka-broker:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka
+    depends_on:
+      - kafka-broker
 
   stock-service:
     build: ./stock-service
@@ -282,9 +297,10 @@ services:
     depends_on:
       - discovery-server
       - postgres-db
-      - kafka
+      - kafka-broker
     networks:
       - urutare-inc-network
+      - kafka-network
 
   payment-service:
     image: 'thunderzeye/payment-service:latest'
@@ -321,14 +337,15 @@ services:
       - SPRING_APPLICATION_NAME=payment-service
       - MTN_API_USER=some_username
       - MTN_API_KEY=some_secure_key
-      - MTN_TARGET_ENV=datassz
+      - MTN_TARGET_ENV=mtnrwanda
       - MTN_API_URL=https://api.mtn.com/collection/token
     depends_on:
       - postgres-db
       - redis_cache
-      - kafka
+      - kafka-broker
     networks:
       - urutare-inc-network
+      - kafka-network
 
   nginx:
     image: nginx:latest
