@@ -1,5 +1,8 @@
 package com.urutare.stockmuser.controller;
 
+import com.urutare.stockmuser.dto.request.AddRoleBody;
+import com.urutare.stockmuser.dto.request.AssignOrRemoveRoleBody;
+import com.urutare.stockmuser.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,10 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import com.urutare.stockmuser.dto.request.AddRoleBody;
-import com.urutare.stockmuser.dto.request.AssignOrRemoveRoleBody;
-import com.urutare.stockmuser.service.UserService;
 
 import java.util.UUID;
 
@@ -26,22 +25,24 @@ public class RoleController {
 
     private final UserService userService;
 
-    @PostMapping("add")
+    @PostMapping
     @Operation(summary = "Add role")
-    public ResponseEntity<Object> addRole( @RequestBody @Validated AddRoleBody roleBody, @RequestHeader("userId") UUID userId){
+    public ResponseEntity<Object> addRole(@RequestBody @Validated AddRoleBody roleBody, @RequestHeader("userId") UUID userId) {
         roleBody.setCreatedBy(userId);
         userService.createRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role created successfully\"}");
     }
-    @PatchMapping("assign")
+
+    @PatchMapping
     @Operation(summary = "Assign role")
-    public ResponseEntity<Object> assignRole(@RequestBody @Validated AssignOrRemoveRoleBody roleBody){
+    public ResponseEntity<Object> assignRole(@RequestBody @Validated AssignOrRemoveRoleBody roleBody) {
         userService.assignRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role assigned successfully\"}");
     }
-    @PatchMapping("remove")
+
+    @DeleteMapping
     @Operation(summary = "Remove role form a user")
-    public ResponseEntity<Object> removeRole(@RequestBody @Validated AssignOrRemoveRoleBody roleBody){
+    public ResponseEntity<Object> removeRole(@RequestBody @Validated AssignOrRemoveRoleBody roleBody) {
         userService.removeRole(roleBody);
         return ResponseEntity.ok().body("{\"message\": \"role revoked successfully\"}");
     }
