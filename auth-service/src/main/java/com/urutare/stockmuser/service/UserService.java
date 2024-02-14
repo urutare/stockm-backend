@@ -163,11 +163,6 @@ public class UserService implements UserDetailsService {
         resetRepository.delete(resetPasswordToken);
     }
 
-    public void updateEmailForUser(UUID userId, String newEmail) throws AuthException, MessagingException {
-        User user = this.findById(userId);
-        updateEmail(user, newEmail);
-    }
-
     public void updateEmail(String oldEmail, String newEmail) throws AuthException, MessagingException {
         User user = userRepository.findByEmailAddress(oldEmail);
         if (user == null) {
