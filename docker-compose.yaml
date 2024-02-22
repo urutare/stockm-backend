@@ -51,11 +51,11 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_0_ID=user-service
       - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=lb://user-service
       - SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0=Path=/api/v1/user-service/**
-#      - SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_0=AuthenticationFilter
       - SPRING_CLOUD_GATEWAY_ROUTES_1_ID=category-service
       - SPRING_CLOUD_GATEWAY_ROUTES_1_URI=lb://category-service
       - SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0=Path=/api/v1/category-service/**
-#      - SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_0=AuthenticationFilter
       - SPRING_CLOUD_GATEWAY_ROUTES_2_ID=discovery-server
       - SPRING_CLOUD_GATEWAY_ROUTES_2_URI=http://discovery-server:8761
       - SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0=Path=/eureka/web
@@ -66,15 +66,15 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_4_ID=stock-service
       - SPRING_CLOUD_GATEWAY_ROUTES_4_URI=lb://stock-service
       - SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0=Path=/api/v1/stock-service/**,/graphql
-#      - SPRING_CLOUD_GATEWAY_ROUTES_4_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_4_FILTERS_0=AuthenticationFilter
       - SPRING_CLOUD_GATEWAY_ROUTES_5_ID=sync-service
       - SPRING_CLOUD_GATEWAY_ROUTES_5_URI=lb://sync-service
       - SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0=Path=/api/v1/sync-service/**
-#      - SPRING_CLOUD_GATEWAY_ROUTES_5_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_5_FILTERS_0=AuthenticationFilter
       - SPRING_CLOUD_GATEWAY_ROUTES_6_ID=payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_URI=lb://payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0=Path=/api/v1/payment-service/**
-#      - SPRING_CLOUD_GATEWAY_ROUTES_6_FILTERS_0=AuthenticationFilter
+      - SPRING_CLOUD_GATEWAY_ROUTES_6_FILTERS_0=AuthenticationFilter
 
     depends_on:
       - discovery-server
