@@ -40,6 +40,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             if (validator.isSecured.test(request)) {
                 String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                
+                if (request.getURI().getPath().contains("swagger") || (request.getURI().getPath().split("/").length <= 4)) {
+                    return chain.filter(exchange);
+                }
 
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                     return onError(exchange, "JWT malformed");
@@ -79,5 +83,6 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         return exchange.getResponse().writeWith(Mono.just(buffer));
     }
 
-    public static class Config { }
+    public static class Config {
+    }
 }
