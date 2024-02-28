@@ -40,8 +40,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             if (validator.isSecured.test(request)) {
                 String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-                
-                if (request.getURI().getPath().contains("swagger") || (request.getURI().getPath().split("/").length <= 4)) {
+
+                if (request.getURI().getPath().contains("/user-service/auth") || request.getURI().getPath().contains("swagger") || (request.getURI().getPath().split("/").length <= 4)) {
                     return chain.filter(exchange);
                 }
 
