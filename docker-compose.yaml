@@ -335,10 +335,13 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_APPLICATION_NAME=payment-service
-      - MTN_API_USER=some_username
-      - MTN_API_KEY=some_secure_key
-      - MTN_TARGET_ENV=mtnrwanda
-      - MTN_API_URL=https://api.mtn.com/collection/token
+      - MTN_API_URL=${MTN_MOMO_API}
+      - MTN_API_USER=${MTN_API_USER}
+      - MTN_API_KEY=${MTN_API_KEY}
+      - MTN_PRIMARY_KEY=${MTN_PRIMARY_KEY}
+      - MTN_TARGET_ENV=${MTN_TARGET_ENV}
+      - MTN_CALLBACK_URL=${MTN_CALLBACK_URL}
+
     depends_on:
       - postgres-db
       - redis_cache
