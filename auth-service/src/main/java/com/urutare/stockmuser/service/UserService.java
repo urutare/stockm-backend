@@ -19,6 +19,8 @@ import jakarta.security.auth.message.AuthException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -60,10 +62,23 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+        User user;
+        if (username.contains("@")) {
+            user = this.findByEmail(username);
+        } else {
+            user = this.findByPhoneNumber(username);
+        }
 
-        return UserDetailsImpl.build(user);
+
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
+
+        return new UserDetailsImpl(user.getId(),
+                username,
+                user.getPassword(),
+                authorities,
+                user.isEmailVerified(), user.isPhoneVerified());
     }
 
     public User validateUser(String email, String password) throws AuthException {
@@ -275,24 +290,15 @@ public class UserService implements UserDetailsService {
     }
 
     public User findByEmail(String email) {
-        try {
-            return userRepository.findByEmail(email).orElseThrow(
-                    () -> new UsernameNotFoundException("User Not Found with email: " + email));
-        } catch (Exception e) {
-            return null;
-        }
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException("User Not Found with email: " + email));
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public User findByPhoneNumber(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new UsernameNotFoundException("User Not Found with phone number: " + phoneNumber));
     }
 
-    public void activateUser(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new UsernameNotFoundException("User Not Found with id: " + userId));
-        user.setVerified(true);
-        userRepository.save(user);
-    }
 
     public User findByID(UUID userId) {
         return userRepository.findById(userId).orElseThrow(

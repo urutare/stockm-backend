@@ -1,34 +1,18 @@
 package com.urutare.stockmuser.utils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
+import com.urutare.stockmuser.entity.Role;
+import com.urutare.stockmuser.models.ERole;
+import com.urutare.stockmuser.models.TokenType;
+import com.urutare.stockmuser.service.UserDetailsImpl;
+import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import com.urutare.stockmuser.entity.Role;
-import com.urutare.stockmuser.entity.User;
-import com.urutare.stockmuser.models.ERole;
-import com.urutare.stockmuser.models.TokenType;
-import com.urutare.stockmuser.service.UserDetailsImpl;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.*;
 
 @Component
 public class JwtTokenUtil {
@@ -87,10 +71,9 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public Map<String, String> refreshUserTokens(User user) {
+    public Map<String, String> refreshUserTokens(UserDetailsImpl userPrincipal) {
 
         Map<String, String> data = new HashMap<>();
-        UserDetailsImpl userPrincipal = UserDetailsImpl.build(user);
 
         String refreshToken = Jwts.builder()
                 .setSubject(userPrincipal.getUsername())

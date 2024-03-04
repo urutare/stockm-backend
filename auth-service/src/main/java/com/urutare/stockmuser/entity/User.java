@@ -30,12 +30,6 @@ public class User {
     @Email
     private String email;
 
-    @Column
-    private String oauthProvider;
-
-    @Column
-    private String oauthId;
-
     @Column(nullable = false)
     @Size(max = 120)
     @JsonIgnore
@@ -45,6 +39,7 @@ public class User {
     @Size(max = 150)
     private String fullName;
 
+    @Column(nullable = false, unique = true)
     @Size(max = 13)
     private String phoneNumber;
 
@@ -53,8 +48,12 @@ public class User {
     private Set<Role> roles = new HashSet<>();
     @Column
     private String avatar;
-    @Column
-    private boolean verified;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isEmailVerified;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isPhoneVerified;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Company> companies = new HashSet<>();

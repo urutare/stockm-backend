@@ -6,7 +6,7 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @MappedSuperclass
@@ -14,17 +14,16 @@ import java.util.UUID;
 public abstract class BaseEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Timestamp updatedAt;
 
     @Column(name = "created_by")
     private UUID createdBy;
 
     @Column(name = "updated_by")
     private UUID updatedBy;
-
     
 }

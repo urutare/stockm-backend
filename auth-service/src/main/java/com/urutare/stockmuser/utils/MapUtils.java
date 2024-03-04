@@ -1,10 +1,10 @@
 package com.urutare.stockmuser.utils;
 
+import com.urutare.stockmuser.entity.User;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import com.urutare.stockmuser.entity.User;
 
 public enum MapUtils {
     instance;
@@ -22,7 +22,8 @@ public enum MapUtils {
             map.put("phoneNumber", user.getPhoneNumber());
             map.put("roles", user.getRoles().toString());
             map.put("avatar", user.getAvatar());
-            map.put("verified", user.isVerified());
+            map.put("isEmailVerified", user.isEmailVerified());
+            map.put("isPhoneVerified", user.isPhoneVerified());
         }
         return map;
     }
