@@ -17,7 +17,8 @@ public enum MapUtils {
         Map<String, Object> map = new HashMap<>();
         map.put("id", user.getId());
         map.put("email", user.getEmail());
-        map.put("fullName", user.getFullName());
+        map.put("firstName", user.getFirstName());
+        map.put("lastName", user.getLastName());
         if (!simplified) {
             map.put("phoneNumber", user.getPhoneNumber());
             map.put("roles", user.getRoles().toString());
@@ -32,7 +33,8 @@ public enum MapUtils {
         User user = new User();
         user.setId((UUID) map.get("id"));
         user.setEmail((String) map.get("email"));
-        user.setFullName((String) map.get("fullName"));
+        user.setFirstName((String) map.get("firstName"));
+        user.setLastName((String) map.get("lastName"));
         user.setPhoneNumber((String) map.get("phoneNumber"));
         return user;
     }
