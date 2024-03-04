@@ -162,13 +162,13 @@ services:
     ports:
       - "8084:8084"
     container_name: stock-service
-#    deploy:
-#       resources:
-#         limits:
-#           cpus: '0.5'
-#           memory: 512M
-#         reservations:
-#           memory: 150M
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+         reservations:
+           memory: 150M
     environment:
       - SERVER_PORT=8084
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
@@ -195,13 +195,13 @@ services:
     ports:
       - "8081:8081"
     container_name: user-service
-#    deploy:
-#       resources:
-#         limits:
-#           cpus: '0.5'
-#           memory: 512M
-#         reservations:
-#           memory: 150M
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+         reservations:
+           memory: 150M
     environment:
       - SERVER_PORT=8081
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
@@ -238,13 +238,13 @@ services:
       - "8082:8082"
     restart: on-failure
     container_name: category-service
-#    deploy:
-#       resources:
-#         limits:
-#           cpus: '0.5'
-#           memory: 512M
-#         reservations:
-#           memory: 150M
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+         reservations:
+           memory: 150M
     environment:
       - SERVER_PORT=8082
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
@@ -275,13 +275,13 @@ services:
       - "8083:8083"
     restart: on-failure
     container_name: sync-service
-#    deploy:
-#       resources:
-#         limits:
-#           cpus: '0.5'
-#           memory: 512M
-#         reservations:
-#           memory: 150M
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+         reservations:
+           memory: 150M
     environment:
       - SERVER_PORT=8083
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
@@ -306,13 +306,13 @@ services:
     image: 'thunderzeye/payment-service:latest'
     container_name: "payment-service"
     restart: on-failure
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.5'
-#          memory: 512M
-#        reservations:
-#          memory: 150M
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 150M
     ports:
       - "8089:8089"
     env_file: .env
@@ -335,10 +335,13 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_APPLICATION_NAME=payment-service
-      - MTN_API_USER=some_username
-      - MTN_API_KEY=some_secure_key
-      - MTN_TARGET_ENV=mtnrwanda
-      - MTN_API_URL=https://api.mtn.com/collection/token
+      - MTN_API_URL=${MTN_MOMO_API}
+      - MTN_API_USER=${MTN_API_USER}
+      - MTN_API_KEY=${MTN_API_KEY}
+      - MTN_PRIMARY_KEY=${MTN_PRIMARY_KEY}
+      - MTN_TARGET_ENV=${MTN_TARGET_ENV}
+      - MTN_CALLBACK_URL=${MTN_CALLBACK_URL}
+
     depends_on:
       - postgres-db
       - redis_cache
