@@ -52,7 +52,8 @@ public class AdminUserPreConfig implements CommandLineRunner {
             User adminUser = new User();
             adminUser.setId(UUID.randomUUID());
             adminUser.setEmail("admin@urutare.com");
-            adminUser.setFullName("Admin");
+            adminUser.setFirstName("Admin");
+            adminUser.setLastName("Admin");
             adminUser.setPassword(passwordEncoder.encode("Admin123"));
             adminUser.getRoles().add(adminRole);
             adminUser.setEmailVerified(true);

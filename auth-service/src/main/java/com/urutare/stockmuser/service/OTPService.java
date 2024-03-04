@@ -49,7 +49,7 @@ public class OTPService {
             user = userRepository.findByEmail(emailOrPhone).orElseThrow(
                     () -> new ResourceNotFoundException("User not found with email: " + emailOrPhone));
             Context context = new Context();
-            context.setVariable("fullName", user.getFullName());
+            context.setVariable("fullName", user.getFirstName() + " " + user.getLastName());
             context.setVariable("supportEmail", "info@urutare.com");
             context.setVariable("supportPhone", "+250 7888888");
             context.setVariable("otp", otp);

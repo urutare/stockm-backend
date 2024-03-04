@@ -37,7 +37,11 @@ public class User {
 
     @NotBlank
     @Size(max = 150)
-    private String fullName;
+    private String firstName;
+
+    @NotBlank
+    @Size(max = 150)
+    private String lastName;
 
     @Column(nullable = false, unique = true)
     @Size(max = 13)
@@ -67,11 +71,12 @@ public class User {
     public User() {
     }
 
-    public User(String email, String password, String fullName,
+    public User(String email, String password, String firstName, String lastName,
                 String phoneNumber) {
         this.email = email;
         this.password = password;
-        this.fullName = fullName;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.phoneNumber = phoneNumber;
     }
 
@@ -80,10 +85,11 @@ public class User {
         this.password = password;
     }
 
-    public User(String email, String password, String fullName, String phoneNumber, Role role) {
+    public User(String email, String password, String firstName, String lastName, String phoneNumber, Role role) {
         this.email = email;
         this.password = password;
-        this.fullName = fullName;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.roles.add(role);
     }

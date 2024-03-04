@@ -100,7 +100,7 @@ public class UserService implements UserDetailsService {
     public List<PublicUser> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(user -> new PublicUser(user.getId(), user.getEmail(), user.getFullName()))
+                .map(user -> new PublicUser(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName()))
                 .collect(Collectors.toList());
     }
 
@@ -202,7 +202,7 @@ public class UserService implements UserDetailsService {
     private void sendEmailWithContext(User user, String email, String subject, String templateFile)
             throws MessagingException {
         Context context = new Context();
-        context.setVariable("fullName", user.getFullName());
+        context.setVariable("fullName", user.getFirstName() + " " + user.getLastName());
         context.setVariable("login_link", properties.getBASE_URL() + "/api/auth/login");
         context.setVariable("supportEmail", "info@urutare.rw");
         context.setVariable("supportPhone", "+250 7888888");
@@ -305,7 +305,7 @@ public class UserService implements UserDetailsService {
                 () -> new UsernameNotFoundException("User Not Found with id: " + userId));
     }
 
-    public record PublicUser(UUID id, String email, String fullName) {
+    public record PublicUser(UUID id, String email, String firstName, String lastName) {
     }
 
 }
