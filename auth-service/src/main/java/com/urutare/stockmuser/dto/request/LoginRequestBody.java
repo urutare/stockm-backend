@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequestBody {
-    @Schema(description = "email", example = "admin@urutare.com")
-    private String email;
+    @Schema(description = "emailOrPhone", example = "admin@urutare.com")
+    private String emailOrPhone;
 
     @Schema(description = "Password", example = "Admin123")
     private String password;

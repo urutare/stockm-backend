@@ -27,6 +27,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -61,7 +62,7 @@ public class AuthController {
             throws AuthException, jakarta.security.auth.message.AuthException {
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmailOrPhone(),
                         loginRequest.getPassword()));
 
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
@@ -72,9 +73,12 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        if (!userDetails.isEmailVerified()) {
-            throw new AuthException("Account is not verified");
+        if (userDetails.getUsername().contains("@") && !userDetails.isEmailVerified()) {
+            throw new AuthException("Email is not verified");
+        } else if (userDetails.getUsername().matches("^[0-9]*$") && !userDetails.isPhoneVerified()) {
+            throw new AuthException("Phone number is not verified");
         }
+
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
@@ -137,9 +141,27 @@ public class AuthController {
             throw new jakarta.security.auth.message.AuthException("Invalid JWT refresh token");
         }
 
-        User user = userService.findByEmail(jwtUtils.getUserNameFromJwtToken(token));
+        String username = jwtUtils.getUserNameFromJwtToken(token);
 
-        Map<String, String> data = jwtUtils.refreshUserTokens(user);
+        User user;
+        if (username.contains("@")) {
+            user = userService.findByEmail(username);
+        } else {
+            user = userService.findByPhoneNumber(username);
+        }
+
+
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
+
+        UserDetailsImpl userDetails = new UserDetailsImpl(user.getId(),
+                username,
+                user.getPassword(),
+                authorities,
+                user.isEmailVerified(), user.isPhoneVerified());
+
+        Map<String, String> data = jwtUtils.refreshUserTokens(userDetails);
         return ResponseEntity.ok().body(data);
     }
 
