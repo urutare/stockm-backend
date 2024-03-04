@@ -24,15 +24,24 @@ public class OTPService {
     private EmailService emailService;
 
     public String generateOTP(String emailOrPhone) throws MessagingException {
+        OTP existingOTP = otpRepository.findByUsername(emailOrPhone);
+
         // Generate OTP
         String otp = generateRandomOTP();
 
-        // Store OTP with email/phone
-        OTP otpEntity = new OTP();
-        otpEntity.setUsername(emailOrPhone);
-        otpEntity.setOtpCode(otp);
-        otpEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-        otpRepository.save(otpEntity);
+        if (existingOTP != null) {
+            // Update existing OTP
+            existingOTP.setOtpCode(otp);
+            existingOTP.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            otpRepository.save(existingOTP);
+        } else {
+            // Generate new OTP
+            OTP newOTP = new OTP();
+            newOTP.setUsername(emailOrPhone);
+            newOTP.setOtpCode(otp);
+            newOTP.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            otpRepository.save(newOTP);
+        }
 
         User user = null;
 
