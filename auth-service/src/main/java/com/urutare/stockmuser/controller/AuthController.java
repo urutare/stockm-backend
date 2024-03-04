@@ -1,5 +1,18 @@
 package com.urutare.stockmuser.controller;
 
+import com.urutare.stockmuser.dto.request.ForgotPasswordRequestBody;
+import com.urutare.stockmuser.dto.request.LoginRequestBody;
+import com.urutare.stockmuser.dto.request.ResetPasswordRequestBody;
+import com.urutare.stockmuser.dto.request.SignupRequestBody;
+import com.urutare.stockmuser.dto.response.JwtResponse;
+import com.urutare.stockmuser.entity.User;
+import com.urutare.stockmuser.exception.AuthException;
+import com.urutare.stockmuser.exception.ForbiddenException;
+import com.urutare.stockmuser.service.OTPService;
+import com.urutare.stockmuser.service.UserDetailsImpl;
+import com.urutare.stockmuser.service.UserService;
+import com.urutare.stockmuser.utils.JsonUtils;
+import com.urutare.stockmuser.utils.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,7 +22,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,31 +31,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import com.urutare.stockmuser.dto.request.ForgotPasswordRequestBody;
-import com.urutare.stockmuser.dto.request.LoginRequestBody;
-import com.urutare.stockmuser.dto.request.ResetPasswordRequestBody;
-import com.urutare.stockmuser.dto.request.SignupRequestBody;
-import com.urutare.stockmuser.dto.response.JwtResponse;
-import com.urutare.stockmuser.entity.User;
-import com.urutare.stockmuser.exception.AuthException;
-import com.urutare.stockmuser.exception.ForbiddenException;
-import com.urutare.stockmuser.service.UserDetailsImpl;
-import com.urutare.stockmuser.service.UserService;
-import com.urutare.stockmuser.utils.JsonUtils;
-import com.urutare.stockmuser.utils.JwtTokenUtil;
-
 import javax.validation.Valid;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/v1/user-service")
+@RequestMapping("/api/v1/user-service/auth")
 @Tag(name = "Authentication", description = "Authentication API")
 @AllArgsConstructor
 public class AuthController {
@@ -51,12 +48,13 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtUtils;
     private final UserService userService;
+    private final OTPService otpService;
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     @Operation(summary = "This is to  login to system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login to the system", content = {
-                    @Content(mediaType = "application/json") }),
+                    @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     public ResponseEntity<?> login(@RequestBody LoginRequestBody loginRequest)
@@ -74,7 +72,7 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        if (!userDetails.isVerified()) {
+        if (!userDetails.isEmailVerified()) {
             throw new AuthException("Account is not verified");
         }
         List<String> roles = userDetails.getAuthorities().stream()
@@ -89,11 +87,11 @@ public class AuthController {
 
     }
 
-    @PostMapping("/auth/signup")
+    @PostMapping("/signup")
     @Operation(summary = "This is to  register into the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "signup to the system", content = {
-                    @Content(mediaType = "application/json") }),
+                    @Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "NOt Available", content = @Content),
     })
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestBody userData)
@@ -117,7 +115,7 @@ public class AuthController {
 
     }
 
-    @PostMapping("/auth/tokens/refresh")
+    @PostMapping("/tokens/refresh")
     @Operation(summary = "This is to refresh token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> refreshToken(HttpServletRequest request)
             throws jakarta.security.auth.message.AuthException {
@@ -145,40 +143,31 @@ public class AuthController {
         return ResponseEntity.ok().body(data);
     }
 
-    @PostMapping("/auth/activate-account")
-    public ResponseEntity<Object> activateAccount(HttpServletRequest request) {
-        UUID userId = jwtUtils.getUserIdFromHttpRequest(request);
-        userService.activateUser(userId);
-        return ResponseEntity.ok().body("{\"message\": \"Account is activated\"}");
-    }
-
-    @PostMapping("/auth/reset-password")
+    @PostMapping("/reset-password")
     public ResponseEntity<Object> resetPassword(@RequestParam("token") String token,
-            @RequestBody ResetPasswordRequestBody body) throws jakarta.security.auth.message.AuthException {
+                                                @RequestBody ResetPasswordRequestBody body) throws jakarta.security.auth.message.AuthException {
         String password = body.getPassword();
         userService.resetPassword(token, password);
         return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset successfully")));
     }
 
-    @PostMapping("/auth/forgot-password")
+    @PostMapping("/forgot-password")
     public ResponseEntity<Object> forgotPassword(@RequestBody ForgotPasswordRequestBody body)
             throws MessagingException, jakarta.security.auth.message.AuthException {
         userService.forgotPassword(body.getEmail());
         return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset link sent to email")));
     }
 
-    @PostMapping("/auth/two-factor")
-    public ResponseEntity<Object> twoFactor() {
-        // TODO: Implement
-
-        return ResponseEntity.ok().body("{\"message\": \"Two factor\"}");
+    @PostMapping("/generate-otp")
+    public ResponseEntity<Object> generateOTP(@RequestParam String emailOrPhone) throws MessagingException {
+        String message = otpService.generateOTP(emailOrPhone);
+        return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", message)));
     }
 
-    @PostMapping("/auth/verify-phone")
-    public ResponseEntity<Object> verifyToken() {
-        // TODO: Implement
-
-        return ResponseEntity.ok().body("{\"message\": \"Phone verified\"}");
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Object> verifyOTP(@RequestParam String emailOrPhone, @RequestParam String otp) {
+        String message = otpService.verifyOTP(emailOrPhone, otp);
+        return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", message)));
     }
 
 }

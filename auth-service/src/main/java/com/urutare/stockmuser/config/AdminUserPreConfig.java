@@ -1,19 +1,17 @@
 package com.urutare.stockmuser.config;
 
-import java.util.Arrays;
-import java.util.UUID;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-
 import com.urutare.stockmuser.entity.Role;
 import com.urutare.stockmuser.entity.User;
 import com.urutare.stockmuser.models.ERole;
 import com.urutare.stockmuser.repository.RoleRepository;
 import com.urutare.stockmuser.repository.UserRepository;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -24,7 +22,7 @@ public class AdminUserPreConfig implements CommandLineRunner {
     private final RoleRepository roleRepository;
 
     public AdminUserPreConfig(UserRepository userRepository, RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -57,7 +55,8 @@ public class AdminUserPreConfig implements CommandLineRunner {
             adminUser.setFullName("Admin");
             adminUser.setPassword(passwordEncoder.encode("Admin123"));
             adminUser.getRoles().add(adminRole);
-            adminUser.setVerified(true);
+            adminUser.setEmailVerified(true);
+            adminUser.setPhoneVerified(true);
 
             // Save the admin user to the repository
             userRepository.save(adminUser);

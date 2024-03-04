@@ -283,16 +283,6 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
-
-    public void activateUser(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new UsernameNotFoundException("User Not Found with id: " + userId));
-        user.setVerified(true);
-        userRepository.save(user);
-    }
 
     public User findByID(UUID userId) {
         return userRepository.findById(userId).orElseThrow(
