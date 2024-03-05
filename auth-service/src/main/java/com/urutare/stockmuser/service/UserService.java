@@ -123,6 +123,10 @@ public class UserService implements UserDetailsService {
             throw new AuthException("Error: Email is already in use!");
         }
 
+        if (userRepository.existsByPhoneNumber(user.getPhoneNumber())) {
+            throw new AuthException("Error: Phone number is already in use!");
+        }
+
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
