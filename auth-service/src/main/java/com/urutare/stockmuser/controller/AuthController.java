@@ -115,6 +115,7 @@ public class AuthController {
 
         userService.registerUser(user, userData.getRole());
         Map<String, Object> data = new HashMap<>();
+        data.put("userId", user.getId());
         data.put("message", "Account created");
         return ResponseEntity.ok().body(data);
 
