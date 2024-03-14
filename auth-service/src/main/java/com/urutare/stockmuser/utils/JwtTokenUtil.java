@@ -1,5 +1,6 @@
 package com.urutare.stockmuser.utils;
 
+import com.urutare.stockmuser.dto.response.RefreshJwtResponse;
 import com.urutare.stockmuser.entity.Role;
 import com.urutare.stockmuser.models.ERole;
 import com.urutare.stockmuser.models.TokenType;
@@ -72,9 +73,8 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public Map<String, String> refreshUserTokens(UserDetailsImpl userPrincipal) {
+    public RefreshJwtResponse refreshUserTokens(UserDetailsImpl userPrincipal) {
 
-        Map<String, String> data = new HashMap<>();
 
         String refreshToken = Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
@@ -94,10 +94,10 @@ public class JwtTokenUtil {
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
 
-        data.put("accessToken", accessToken);
-        data.put("refreshToken", refreshToken);
+        long accessTokenExpiresAt = getTokenBody(accessToken).getExpiration().getTime();
+        long refreshTokenExpiresAt = getTokenBody(refreshToken).getExpiration().getTime();
 
-        return data;
+        return new RefreshJwtResponse(accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt);
 
     }
 
