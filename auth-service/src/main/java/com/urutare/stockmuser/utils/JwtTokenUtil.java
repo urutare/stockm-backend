@@ -65,6 +65,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .claim("token_type", TokenType.REFRESH_TOKEN.name())
+                .claim("userId", userPrincipal.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -78,6 +79,7 @@ public class JwtTokenUtil {
         String refreshToken = Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .claim("token_type", TokenType.REFRESH_TOKEN.name())
+                .claim("userId", userPrincipal.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -86,6 +88,7 @@ public class JwtTokenUtil {
         String accessToken = Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .claim("token_type", TokenType.ACCESS_TOKEN.name())
+                .claim("userId", userPrincipal.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -99,16 +102,20 @@ public class JwtTokenUtil {
     }
 
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+        return getTokenBody(token).getSubject();
     }
 
     public UUID getUserIdFromJwtToken(String token) {
-        String userId = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("userId", String.class);
+        String userId = getTokenBody(token).get("userId", String.class);
         return UUID.fromString(userId);
     }
 
+    public Claims getTokenBody(String token) {
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+    }
+
     public String getTokenTypeFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("token_type", String.class);
+        return getTokenBody(token).get("token_type", String.class);
     }
 
     public UUID getUserIdFromHttpRequest(HttpServletRequest request) {
@@ -134,10 +141,7 @@ public class JwtTokenUtil {
     }
 
     public Set<Role> getRolesFromJwtAccessToken(String token) {
-        ArrayList<?> roleARoles = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody()
+        ArrayList<?> roleARoles = getTokenBody(token)
                 .get("roles", ArrayList.class);
 
         Set<Role> roles = new HashSet<>();
