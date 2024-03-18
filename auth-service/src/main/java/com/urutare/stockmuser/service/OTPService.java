@@ -22,6 +22,7 @@ public class OTPService {
     private OTPRepository otpRepository;
     private UserRepository userRepository;
     private EmailService emailService;
+    private SmsService smsService;
 
     public String generateOTP(String emailOrPhone) throws MessagingException {
         OTP existingOTP = otpRepository.findByUsername(emailOrPhone);
@@ -58,6 +59,8 @@ public class OTPService {
         } else {
             user = userRepository.findByPhoneNumber(emailOrPhone).orElseThrow(
                     () -> new ResourceNotFoundException("User not found with phone: " + emailOrPhone));
+            smsService.sendSms(user.getPhoneNumber(), "OTP is: " + otp);
+
         }
 
 
