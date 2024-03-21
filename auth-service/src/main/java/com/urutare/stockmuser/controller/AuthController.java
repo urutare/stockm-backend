@@ -71,7 +71,7 @@ public class AuthController {
 
         if (userDetails.getUsername().contains("@") && !userDetails.isEmailVerified()) {
             throw new AuthException("Email is not verified");
-        } else if (userDetails.getUsername().matches("^[0-9]*$") && !userDetails.isPhoneVerified()) {
+        } else if (!userDetails.isPhoneVerified()) {
             throw new AuthException("Phone number is not verified");
         }
 

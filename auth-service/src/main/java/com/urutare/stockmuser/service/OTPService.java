@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Random;
 
 @Service
@@ -30,17 +31,20 @@ public class OTPService {
         // Generate OTP
         String otp = generateRandomOTP();
 
+        Instant currentTime = Instant.now();
+        long currentMillis = currentTime.toEpochMilli();
+
         if (existingOTP != null) {
             // Update existing OTP
             existingOTP.setOtpCode(otp);
-            existingOTP.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            existingOTP.setCreatedAt(new Timestamp(currentMillis));
             otpRepository.save(existingOTP);
         } else {
             // Generate new OTP
             OTP newOTP = new OTP();
             newOTP.setUsername(emailOrPhone);
             newOTP.setOtpCode(otp);
-            newOTP.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            newOTP.setCreatedAt(new Timestamp(currentMillis));
             otpRepository.save(newOTP);
         }
 
@@ -52,7 +56,7 @@ public class OTPService {
             Context context = new Context();
             context.setVariable("fullName", user.getFirstName() + " " + user.getLastName());
             context.setVariable("supportEmail", "info@urutare.com");
-            context.setVariable("supportPhone", "+250 7888888");
+            context.setVariable("supportPhone", "250 7888888");
             context.setVariable("otp", otp);
             context.setVariable("welcome_image", "/images/celebrate.png");
             emailService.sendEmail(user.getEmail(), "User OTP", context, "otp_email.html");
@@ -73,17 +77,23 @@ public class OTPService {
             throw new ResourceNotFoundException("No OTP found for " + emailOrPhone);
         }
 
-        // Check if OTP has expired
-        // 5 minutes in milliseconds
-        int OTP_EXPIRY_TIME = 300000;
-        if (System.currentTimeMillis() - otpEntity.getCreatedAt().getTime() > OTP_EXPIRY_TIME) {
-            throw new ResourceNotFoundException("OTP has expired. Please request a new one.");
-        }
-
         // Validate OTP
         if (!otp.equals(otpEntity.getOtpCode())) {
             throw new ResourceNotFoundException("Incorrect OTP. Please try again.");
         }
+
+        // Check if OTP has expired
+        // 5 minutes in milliseconds
+        int OTP_EXPIRY_TIME = 300000;
+        Instant currentTime = Instant.now();
+        long currentMillis = currentTime.toEpochMilli();
+        long otpCreationTime = otpEntity.getCreatedAt().getTime();
+        long timeElapsed = currentMillis - otpCreationTime;
+
+        if (timeElapsed > OTP_EXPIRY_TIME) {
+            throw new ResourceNotFoundException("OTP has expired. Please request a new one.");
+        }
+
 
         User user;
         if (emailOrPhone.contains("@")) {

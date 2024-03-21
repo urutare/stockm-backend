@@ -26,7 +26,7 @@ public class CreateCompanyBody {
     @Schema(example = "www.urutare.com")
     private String website;
 
-    @Schema(example = "+250788000000")
+    @Schema(example = "250788000000")
     private String phone;
 
     public CompanyDTO toCompanyDTO() {

@@ -120,18 +120,18 @@ public class UserService implements UserDetailsService {
             user.setEmail(user.getEmail().toLowerCase());
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new AuthException("Error: Email is already in use!");
+            throw new AuthException("Email is already in use!");
         }
 
         if (userRepository.existsByPhoneNumber(user.getPhoneNumber())) {
-            throw new AuthException("Error: Phone number is already in use!");
+            throw new AuthException("Phone number is already in use!");
         }
 
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
             Role userRole = roleRepository.findByName(ERole.USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Role is not found."));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> roles.add(roleRepository.findByName(ERole.valueOf(role))
@@ -209,7 +209,7 @@ public class UserService implements UserDetailsService {
         context.setVariable("fullName", user.getFirstName() + " " + user.getLastName());
         context.setVariable("login_link", properties.getBASE_URL() + "/api/auth/login");
         context.setVariable("supportEmail", "info@urutare.rw");
-        context.setVariable("supportPhone", "+250 7888888");
+        context.setVariable("supportPhone", "250 7888888");
         context.setVariable("email", email);
         context.setVariable("welcome_image", "/images/celebrate.png");
         emailService.sendEmail(email, subject, context, templateFile);
