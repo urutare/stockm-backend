@@ -7,6 +7,7 @@ import com.urutare.stockmuser.dto.response.UserTokenResponse;
 import com.urutare.stockmuser.entity.User;
 import com.urutare.stockmuser.exception.AuthException;
 import com.urutare.stockmuser.exception.ForbiddenException;
+import com.urutare.stockmuser.models.Error;
 import com.urutare.stockmuser.service.OTPService;
 import com.urutare.stockmuser.service.UserDetailsImpl;
 import com.urutare.stockmuser.service.UserService;
@@ -70,9 +71,9 @@ public class AuthController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         if (userDetails.getUsername().contains("@") && !userDetails.isEmailVerified()) {
-            throw new AuthException("Email is not verified");
+            throw new AuthException("Email is not verified", Error.EMAIL_NOT_VERIFIED);
         } else if (!userDetails.isPhoneVerified()) {
-            throw new AuthException("Phone number is not verified");
+            throw new AuthException("Phone number is not verified", Error.PHONE_NOT_VERIFIED);
         }
 
         List<String> roles = userDetails.getAuthorities().stream()
