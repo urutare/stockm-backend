@@ -69,10 +69,10 @@ public class AuthController {
         String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userPrincipal);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
+        
         if (userDetails.getUsername().contains("@") && !userDetails.isEmailVerified()) {
             throw new AuthException("Email is not verified", Error.EMAIL_NOT_VERIFIED);
-        } else if (!userDetails.isPhoneVerified()) {
+        } else if (!userDetails.getUsername().contains("@") && !userDetails.isPhoneVerified()) {
             throw new AuthException("Phone number is not verified", Error.PHONE_NOT_VERIFIED);
         }
 
@@ -115,9 +115,9 @@ public class AuthController {
                 userData.getLastName(),
                 userData.getPhoneNumber());
 
-        userService.registerUser(user, userData.getRole());
+        User createdUser = userService.registerUser(user, userData.getRole());
         Map<String, Object> data = new HashMap<>();
-        data.put("userId", user.getId());
+        data.put("userId", createdUser.getId());
         data.put("message", "Account created");
         return ResponseEntity.ok().body(data);
 
