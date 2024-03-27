@@ -28,25 +28,22 @@ public class OTPService {
     public String generateOTP(String emailOrPhone) throws MessagingException {
         OTP existingOTP = otpRepository.findByUsername(emailOrPhone);
 
+        if (existingOTP != null) {
+            // Delete existing OTP
+            otpRepository.delete(existingOTP);
+        }
+
         // Generate OTP
         String otp = generateRandomOTP();
 
         Instant currentTime = Instant.now();
         long currentMillis = currentTime.toEpochMilli();
 
-        if (existingOTP != null) {
-            // Update existing OTP
-            existingOTP.setOtpCode(otp);
-            existingOTP.setCreatedAt(new Timestamp(currentMillis));
-            otpRepository.save(existingOTP);
-        } else {
-            // Generate new OTP
-            OTP newOTP = new OTP();
-            newOTP.setUsername(emailOrPhone);
-            newOTP.setOtpCode(otp);
-            newOTP.setCreatedAt(new Timestamp(currentMillis));
-            otpRepository.save(newOTP);
-        }
+        OTP newOTP = new OTP();
+        newOTP.setUsername(emailOrPhone);
+        newOTP.setOtpCode(otp);
+        newOTP.setCreatedAt(new Timestamp(currentMillis));
+        otpRepository.save(newOTP);
 
         User user = null;
 
