@@ -69,7 +69,7 @@ public class AuthController {
         String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userPrincipal);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        
+
         if (userDetails.getUsername().contains("@") && !userDetails.isEmailVerified()) {
             throw new AuthException("Email is not verified", Error.EMAIL_NOT_VERIFIED);
         } else if (!userDetails.getUsername().contains("@") && !userDetails.isPhoneVerified()) {
@@ -79,17 +79,7 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        long accessTokenExpiresAt = jwtUtils.getTokenBody(jwt).getExpiration().getTime();
-        long refreshTokenExpiresAt = jwtUtils.getTokenBody(jwtRefreshToken).getExpiration().getTime();
-
-        JwtResponse jwtResponse = new JwtResponse(jwt,
-                jwtRefreshToken,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                roles);
-        jwtResponse.setAccessTokenExpiresAt(accessTokenExpiresAt);
-        jwtResponse.setRefreshTokenExpiresAt(refreshTokenExpiresAt);
-        return ResponseEntity.ok(jwtResponse);
+        return getObjectJWtResponseEntity(userDetails, roles, jwt, jwtRefreshToken);
 
     }
 
@@ -159,11 +149,41 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Object> resetPassword(@RequestParam("token") String token,
-                                                @RequestBody ResetPasswordRequestBody body) throws jakarta.security.auth.message.AuthException {
-        String password = body.getPassword();
-        userService.resetPassword(token, password);
-        return ResponseEntity.ok().body(JsonUtils.of().toJson(Map.of("message", "Password reset successfully")));
+    public ResponseEntity<JwtResponse> resetPassword(
+            @RequestBody ResetPasswordRequestBody body) {
+        User user = userService.resetPassword(body);
+
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
+
+        UserDetailsImpl userDetails = new UserDetailsImpl(user.getId(),
+                body.getUsername(),
+                user.getPassword(),
+                authorities,
+                user.isEmailVerified(), user.isPhoneVerified());
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        String jwt = jwtUtils.generateJwtAccessToken(userDetails);
+        String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userDetails);
+        return getObjectJWtResponseEntity(userDetails, roles, jwt, jwtRefreshToken);
+    }
+
+
+    private ResponseEntity<JwtResponse> getObjectJWtResponseEntity(UserDetailsImpl userDetails, List<String> roles, String jwt, String jwtRefreshToken) {
+        long accessTokenExpiresAt = jwtUtils.getTokenBody(jwt).getExpiration().getTime();
+        long refreshTokenExpiresAt = jwtUtils.getTokenBody(jwtRefreshToken).getExpiration().getTime();
+
+        JwtResponse jwtResponse = new JwtResponse(jwt,
+                jwtRefreshToken,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                roles);
+        jwtResponse.setAccessTokenExpiresAt(accessTokenExpiresAt);
+        jwtResponse.setRefreshTokenExpiresAt(refreshTokenExpiresAt);
+        return ResponseEntity.ok(jwtResponse);
     }
 
     @PostMapping("/forgot-password")

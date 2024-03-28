@@ -68,10 +68,32 @@ public class OTPService {
         return "OTP generated successfully and sent to " + emailOrPhone;
     }
 
-    public String verifyOTP(String emailOrPhone, String otp) {
-        OTP otpEntity = otpRepository.findByUsername(emailOrPhone);
+    public boolean isOTPValid(String emailOrPhone, String otp) {
+        OTP otpEntity = otpRepository.findByUsernameAndOtpCode(emailOrPhone, otp);
         if (otpEntity == null) {
-            throw new ResourceNotFoundException("No OTP found for " + emailOrPhone);
+            return false;
+        }
+
+        // Validate OTP
+        if (!otp.equals(otpEntity.getOtpCode())) {
+            return false;
+        }
+
+        // Check if OTP has expired
+        // 1 minute in milliseconds
+        int OTP_EXPIRY_TIME = 60000;
+        Instant currentTime = Instant.now();
+        long currentMillis = currentTime.toEpochMilli();
+        long otpCreationTime = otpEntity.getCreatedAt().getTime();
+        long timeElapsed = currentMillis - otpCreationTime;
+
+        return timeElapsed <= OTP_EXPIRY_TIME;
+    }
+
+    public String verifyOTP(String emailOrPhone, String otp) {
+        OTP otpEntity = otpRepository.findByUsernameAndOtpCode(emailOrPhone, otp);
+        if (otpEntity == null) {
+            throw new ResourceNotFoundException("OTP not found. Please request a new one.");
         }
 
         // Validate OTP
@@ -115,5 +137,12 @@ public class OTPService {
         Random random = new Random();
         int otp = 100000 + random.nextInt(900000); // Generates a random 6-digit number
         return String.valueOf(otp);
+    }
+
+    public void deleteOTP(String username) {
+        OTP existingOTP = otpRepository.findByUsername(username);
+        if (existingOTP != null) {
+            otpRepository.delete(existingOTP);
+        }
     }
 }

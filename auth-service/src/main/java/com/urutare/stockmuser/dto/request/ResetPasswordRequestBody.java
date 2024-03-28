@@ -9,4 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ResetPasswordRequestBody {
     private String password;
+    private String username;
+    private String otp;
 }

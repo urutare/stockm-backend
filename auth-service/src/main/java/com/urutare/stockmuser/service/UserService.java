@@ -3,6 +3,7 @@ package com.urutare.stockmuser.service;
 import com.urutare.stockmuser.constants.Properties;
 import com.urutare.stockmuser.dto.request.AddRoleBody;
 import com.urutare.stockmuser.dto.request.AssignOrRemoveRoleBody;
+import com.urutare.stockmuser.dto.request.ResetPasswordRequestBody;
 import com.urutare.stockmuser.entity.BlockedToken;
 import com.urutare.stockmuser.entity.ResetPasswordToken;
 import com.urutare.stockmuser.entity.Role;
@@ -16,9 +17,9 @@ import com.urutare.stockmuser.repository.RoleRepository;
 import com.urutare.stockmuser.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class UserService implements UserDetailsService {
     private final EmailService emailService;
     private final OathService oathService;
@@ -42,22 +44,8 @@ public class UserService implements UserDetailsService {
     private final ResetRepository resetRepository;
     private final RoleRepository roleRepository;
     private final BlockedTokenRepository blockedTokenRepository;
+    private final OTPService otpService;
 
-    public UserService(@Autowired UserRepository userRepository,
-                       @Autowired EmailService emailService,
-                       @Autowired OathService oathService,
-                       @Autowired Properties properties,
-                       @Autowired ResetRepository resetRepository,
-                       RoleRepository roleRepository,
-                       BlockedTokenRepository blockedTokenRepository) {
-        this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.oathService = oathService;
-        this.properties = properties;
-        this.resetRepository = resetRepository;
-        this.roleRepository = roleRepository;
-        this.blockedTokenRepository = blockedTokenRepository;
-    }
 
     @Override
     @Transactional
@@ -168,18 +156,24 @@ public class UserService implements UserDetailsService {
         emailService.sendEmail(email, subject, context, "reset_password_email.html");
     }
 
-    public void resetPassword(String token, String password) throws AuthException {
-        ResetPasswordToken resetPasswordToken = resetRepository.findByToken(token);
-        if (resetPasswordToken == null) {
-            throw new AuthException("Invalid token");
+    public User resetPassword(ResetPasswordRequestBody body) {
+
+        if (!otpService.isOTPValid(body.getUsername(), body.getOtp())) {
+            throw new ResourceNotFoundException("Invalid or OTP");
         }
 
-        User user = oathService.getUserFromTokenWhenResetPassword(token);
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+        User user;
+        if (body.getUsername().contains("@")) {
+            user = this.findByEmail(body.getUsername().trim().toLowerCase());
+        } else {
+            user = this.findByPhoneNumber(body.getUsername().trim().toLowerCase());
+        }
+        String hashedPassword = BCrypt.hashpw(body.getPassword(), BCrypt.gensalt(10));
         user.setPassword(hashedPassword);
-        userRepository.save(user);
 
-        resetRepository.delete(resetPasswordToken);
+        otpService.deleteOTP(body.getUsername());
+
+        return userRepository.save(user);
     }
 
     public void updateEmail(String oldEmail, String newEmail) throws AuthException, MessagingException {
