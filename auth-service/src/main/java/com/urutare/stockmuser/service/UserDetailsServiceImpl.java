@@ -38,11 +38,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
 
-        return new UserDetailsImpl(user.getId(),
+        return new UserDetailsImpl(
                 username,
-                user.getPassword(),
-                authorities,
-                user.isEmailVerified(), user.isPhoneVerified());
+                user);
     }
 
 }

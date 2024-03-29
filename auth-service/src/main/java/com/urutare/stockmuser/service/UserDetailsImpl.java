@@ -1,19 +1,29 @@
 package com.urutare.stockmuser.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.urutare.stockmuser.entity.User;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Data
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private final UUID id;
 
     private final String username;
+
+    private final String firstName;
+    private final String lastName;
+    private final String avatar;
 
     private final boolean isEmailVerified;
     private final boolean isPhoneVerified;
@@ -23,14 +33,19 @@ public class UserDetailsImpl implements UserDetails {
 
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(UUID id, String username, String password,
-                           Collection<? extends GrantedAuthority> authorities, boolean isEmailVerified, boolean isPhoneVerified) {
-        this.id = id;
+    public UserDetailsImpl(String username, User user) {
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
+        this.id = user.getId();
         this.username = username;
-        this.password = password;
+        this.password = user.getPassword();
         this.authorities = authorities;
-        this.isEmailVerified = isEmailVerified;
-        this.isPhoneVerified = isPhoneVerified;
+        this.isEmailVerified = user.isEmailVerified();
+        this.isPhoneVerified = user.isPhoneVerified();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+        this.avatar = user.getAvatar();
     }
 
     @Override

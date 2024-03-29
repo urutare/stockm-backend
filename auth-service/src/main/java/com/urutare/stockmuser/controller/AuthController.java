@@ -76,10 +76,7 @@ public class AuthController {
             throw new AuthException("Phone number is not verified", Error.PHONE_NOT_VERIFIED);
         }
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-        return getObjectJWtResponseEntity(userDetails, roles, jwt, jwtRefreshToken);
+        return getObjectJWtResponseEntity(userDetails, jwt, jwtRefreshToken);
 
     }
 
@@ -139,11 +136,9 @@ public class AuthController {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(user.getId(),
+        UserDetailsImpl userDetails = new UserDetailsImpl(
                 username,
-                user.getPassword(),
-                authorities,
-                user.isEmailVerified(), user.isPhoneVerified());
+                user);
 
         return ResponseEntity.ok().body(jwtUtils.refreshUserTokens(userDetails));
     }
@@ -157,30 +152,22 @@ public class AuthController {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(user.getId(),
+        UserDetailsImpl userDetails = new UserDetailsImpl(
                 body.getUsername(),
-                user.getPassword(),
-                authorities,
-                user.isEmailVerified(), user.isPhoneVerified());
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                user);
 
         String jwt = jwtUtils.generateJwtAccessToken(userDetails);
         String jwtRefreshToken = jwtUtils.generateJwtRefreshToken(userDetails);
-        return getObjectJWtResponseEntity(userDetails, roles, jwt, jwtRefreshToken);
+        return getObjectJWtResponseEntity(userDetails, jwt, jwtRefreshToken);
     }
 
 
-    private ResponseEntity<JwtResponse> getObjectJWtResponseEntity(UserDetailsImpl userDetails, List<String> roles, String jwt, String jwtRefreshToken) {
+    private ResponseEntity<JwtResponse> getObjectJWtResponseEntity(UserDetailsImpl userDetails, String jwt, String jwtRefreshToken) {
         long accessTokenExpiresAt = jwtUtils.getTokenBody(jwt).getExpiration().getTime();
         long refreshTokenExpiresAt = jwtUtils.getTokenBody(jwtRefreshToken).getExpiration().getTime();
 
-        JwtResponse jwtResponse = new JwtResponse(jwt,
-                jwtRefreshToken,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                roles);
+        JwtResponse jwtResponse = new JwtResponse(userDetails, jwt,
+                jwtRefreshToken);
         jwtResponse.setAccessTokenExpiresAt(accessTokenExpiresAt);
         jwtResponse.setRefreshTokenExpiresAt(refreshTokenExpiresAt);
         return ResponseEntity.ok(jwtResponse);

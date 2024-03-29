@@ -20,8 +20,6 @@ import jakarta.security.auth.message.AuthException;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -57,16 +55,9 @@ public class UserService implements UserDetailsService {
             user = this.findByPhoneNumber(username);
         }
 
-
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toList());
-
-        return new UserDetailsImpl(user.getId(),
+        return new UserDetailsImpl(
                 username,
-                user.getPassword(),
-                authorities,
-                user.isEmailVerified(), user.isPhoneVerified());
+                user);
     }
 
     public User validateUser(String email, String password) throws AuthException {
