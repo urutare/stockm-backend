@@ -80,8 +80,8 @@ public class OTPService {
         }
 
         // Check if OTP has expired
-        // 1 minute in milliseconds
-        int OTP_EXPIRY_TIME = 60000;
+        // 3 minute in milliseconds
+        int OTP_EXPIRY_TIME = 180000;
         Instant currentTime = Instant.now();
         long currentMillis = currentTime.toEpochMilli();
         long otpCreationTime = otpEntity.getCreatedAt().getTime();

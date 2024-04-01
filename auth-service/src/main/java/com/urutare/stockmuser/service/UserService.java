@@ -150,7 +150,7 @@ public class UserService implements UserDetailsService {
     public User resetPassword(ResetPasswordRequestBody body) {
 
         if (!otpService.isOTPValid(body.getUsername(), body.getOtp())) {
-            throw new ResourceNotFoundException("Invalid or OTP");
+            throw new ResourceNotFoundException("Invalid or expired OTP");
         }
 
         User user;

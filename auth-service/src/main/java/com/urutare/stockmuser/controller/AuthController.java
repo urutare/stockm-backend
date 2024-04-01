@@ -148,10 +148,6 @@ public class AuthController {
             @RequestBody ResetPasswordRequestBody body) {
         User user = userService.resetPassword(body);
 
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toList());
-
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 body.getUsername(),
                 user);
