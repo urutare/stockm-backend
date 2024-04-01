@@ -2,7 +2,7 @@ COMPOSE_FILE = docker-compose.yaml
 APP = app
 DATABASE_NAME = postgres_db
 
-start:
+dev:
 	docker compose -f $(COMPOSE_FILE) up --build
 
 up:
@@ -14,6 +14,7 @@ down:
 build:
 	docker compose -f $(COMPOSE_FILE) build
 
+start: build up
 logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
 
