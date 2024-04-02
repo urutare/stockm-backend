@@ -14,7 +14,6 @@ down:
 build:
 	docker compose -f $(COMPOSE_FILE) build
 
-start: build up
 logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
 
@@ -41,6 +40,8 @@ getdeployment:
 
 rebuild: down build
 
+start: build up
+
 restart: down start
 
 reup: down up
@@ -49,4 +50,6 @@ default: up
 
 restart:
 	down start
+redev:
+	down dev
 # .PHONY: up down build logs exec ps clean reset:db default

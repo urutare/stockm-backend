@@ -353,7 +353,9 @@ services:
   nginx:
     image: nginx:latest
     container_name: "nginx"
+    restart: on-failure
     ports:
+      - "80:80"
       - "81:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
