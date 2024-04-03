@@ -1,1 +1,0 @@
-# stockm-category-service
