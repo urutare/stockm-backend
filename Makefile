@@ -42,7 +42,7 @@ rebuild: down build
 
 start: build up
 
-restart: down start
+restart: rebuild up
 
 reup: down up
 

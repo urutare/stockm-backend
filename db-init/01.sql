@@ -3,3 +3,4 @@ CREATE DATABASE category_db;
 CREATE DATABASE sync_db;
 CREATE DATABASE stock_db;
 CREATE DATABASE payment_db;
+CREATE DATABASE sms_db;

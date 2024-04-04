@@ -86,75 +86,31 @@ services:
     networks:
       - urutare-inc-network
 
-  postgres-db:
-    image: postgres
-    container_name: postgres-db
-    restart: always
+  sms-gateway:
+    build:
+      context: sms-gateway
+      dockerfile: docker/Dockerfile.dev
+    restart: on-failure
+    container_name: sms-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 150M
     ports:
-      - "5434:5432"
+      - "8085:8001"
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=kong
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=admin123!
-    command: [ "postgres", "-c", "max_connections=200", "-c", "timezone=Etc/UTC", "-c", "default_text_search_config=pg_catalog.english" ]
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASS}@${DB_HOSTNAME}:${DB_PORT}/sms_db
+      - EUREKA_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+    depends_on:
+      - postgres-db
+      - discovery-server
     networks:
       - urutare-inc-network
-
-  redis_cache:
-    container_name: redis
-    image: 'bitnami/redis:latest'
-    restart: always
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    networks:
-      - urutare-inc-network
-    ports:
-      - "6379:6379"
-
-  zookeeper-server:
-    image: 'bitnami/zookeeper:latest'
-    container_name: "zookeeper-server"
-    networks:
-      - kafka-network
-    ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-
-  kafka-broker:
-    image: 'bitnami/kafka:latest'
-    container_name: "kafka-broker"
-    networks:
-      - kafka-network
-    ports:
-      - '9092:9092'
-      - '29092:29092'
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://localhost:29092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
-      - KAFKA_CFG_BROKER_ID=1
-      - ALLOW_PLAINTEXT_LISTENER=yes
-    depends_on:
-      - zookeeper-server
-
-  kafdrop-web:
-    image: obsidiandynamics/kafdrop
-    container_name: "kafdrop-web"
-    networks:
-      - kafka-network
-    ports:
-      - '9000:9000'
-    environment:
-      - KAFKA_BROKERCONNECT=kafka-broker:9092
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka
-    depends_on:
-      - kafka-broker
 
   stock-service:
     build: ./stockm-stock-service
@@ -349,6 +305,76 @@ services:
     networks:
       - urutare-inc-network
       - kafka-network
+
+  postgres-db:
+    image: postgres
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=kong
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+    command: [ "postgres", "-c", "max_connections=200", "-c", "timezone=Etc/UTC", "-c", "default_text_search_config=pg_catalog.english" ]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - urutare-inc-network
+
+  redis_cache:
+    container_name: redis
+    image: 'bitnami/redis:latest'
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - urutare-inc-network
+    ports:
+      - "6379:6379"
+
+  zookeeper-server:
+    image: 'bitnami/zookeeper:latest'
+    container_name: "zookeeper-server"
+    networks:
+      - kafka-network
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka-broker:
+    image: 'bitnami/kafka:latest'
+    container_name: "kafka-broker"
+    networks:
+      - kafka-network
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
+      - KAFKA_CFG_BROKER_ID=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper-server
+
+  kafdrop-web:
+    image: obsidiandynamics/kafdrop
+    container_name: "kafdrop-web"
+    networks:
+      - kafka-network
+    ports:
+      - '9000:9000'
+    environment:
+      - KAFKA_BROKERCONNECT=kafka-broker:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka
+    depends_on:
+      - kafka-broker
 
   nginx:
     image: nginx:latest
