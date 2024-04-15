@@ -43,5 +43,5 @@ kafka-data
 
 ### Stock repos ###
 *stockm*
-sms-gateway
-src
+./sms-gateway
+./src
