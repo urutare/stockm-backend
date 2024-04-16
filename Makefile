@@ -5,6 +5,17 @@ DATABASE_NAME = postgres_db
 dev:
 	docker compose -f $(COMPOSE_FILE) up --build
 
+dev-build:
+	docker-compose -f $(COMPOSE_FILE) build
+
+dev-up:
+	docker-compose -f $(COMPOSE_FILE) up -d
+
+hard-down:
+	docker-compose -f $(COMPOSE_FILE) down --remove-orphans && docker volume prune -f
+
+re-dev: dev-build dev-up
+
 up:
 	docker compose -f $(COMPOSE_FILE) up -d
 
@@ -12,7 +23,7 @@ down:
 	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
 
 build:
-	docker compose -f $(COMPOSE_FILE) build
+	docker compose -f $(COMPOSE_FILE) build --no-cache
 
 logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
