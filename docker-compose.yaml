@@ -304,6 +304,9 @@ services:
 
   payment-service:
     image: 'thunderzeye/payment-service:latest'
+    build:
+      context: ./stockm-payment-service
+      dockerfile: Dockerfile
     container_name: "payment-service"
     restart: on-failure
     deploy:
@@ -353,11 +356,14 @@ services:
   stockm-sms-gateway:
     build:
       context: ./sms-gateway
-      dockerfile: docker/Dockerfile
+      dockerfile: ./docker/Dockerfile
     restart: on-failure
+    image: sms-service-prod
+    container_name: sms-gateway
+    env_file:
+      - .env
     ports:
       - "8085:8000"
-    container_name: stockm-sms-gateway
     deploy:
       resources:
         limits:
@@ -367,11 +373,17 @@ services:
           memory: 150M
     environment:
       - LOCAL_PORT=8000
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - APPLICATION_NAME=sms-service
       - GATEWAY_BASE_URL=http://api-gateway:8080
       - DATABASE_URL=postgresql+asyncpg://postgres:admin123!@postgres-db:5432/sms_db
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
+      - APP_NAME=sms-service
+      - INSTANCE_HOST=localhost
+#    command: >
+#      bash -c "
+#         gunicorn --worker-class uvicorn.workers.UvicornWorker main:app -w 2 -b 0.0.0.0:8000 --reload"
+#    volumes:
+#      - .:/usr/src/app
     depends_on:
       - discovery-server
       - postgres-db
