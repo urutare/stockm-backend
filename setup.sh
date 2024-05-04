@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Array of repository names
-repositories=("stockm-category-service", "stockm-sync-service", "stockm-stock-service", "stockm-discovery-service", "stockm-auth-service", "stockm-api-gateway", "stockm-payment-service")
+repositories=("stockm-category-service", "stockm-sync-service", "stockm-stock-service", "stockm-discovery-service", "stockm-auth-service", "stockm-api-gateway", "stockm-payment-service", "stockm-common-core", "sms-gateway")
 
 # Base URL for the GitHub organization
 base_url="https://github.com/urutare/"
