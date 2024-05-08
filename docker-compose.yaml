@@ -75,7 +75,8 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_6_URI=lb://payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0=Path=/api/v1/payment-service/**
     #      - SPRING_CLOUD_GATEWAY_ROUTES_6_FILTERS_0=AuthenticationFilter
-
+    volumes:
+      - ./kong.yml:/config/kong.yml
     depends_on:
       - discovery-server
       - stock-service
@@ -83,8 +84,19 @@ services:
       - category-service
       - sync-service
       - payment-service
+      - kong
+    command: >
+      sh -c "
+        echo 'Waiting for Kong to be ready...' &&
+        while ! curl -s http://kong:8001; do sleep 5; done &&
+        echo 'Kong is up, configuring...' &&
+        curl -X POST --url http://kong:8001/config --header 'Content-Type: application/yaml' --data-binary @/config/kong.yml
+      "
     networks:
       - urutare-inc-network
+      - kong-network
+
+
 
   postgres-db:
     image: postgres
@@ -404,10 +416,45 @@ services:
     networks:
       - urutare-inc-network
 
+  kong:
+    image: kong
+    container_name: kong
+    restart: on-failure
+    user: root
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: postgres-db
+      KONG_PG_DATABASE: kong
+      KONG_PG_USER: postgres
+      KONG_PG_PASSWORD: admin123!
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: '0.0.0.0:8001, 0.0.0.0:8444 ssl'
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+    networks:
+      - kong-network
+    volumes:
+      - ./kong.yml:/etc/kong/kong.yml
+      - ./kong-config.sh:/docker-entrypoint-initdb.d/kong-config.sh
+#    command: >
+#      bash -c "
+#        apt-get update &&
+#        apt install -y curl &&
+#        curl -X POST --url http://127.0.0.1:8001/config --header 'Content-Type: application/yaml' --data-binary @/etc/kong/kong.yml
+#      "
+
 networks:
   urutare-inc-network:
     driver: bridge
   kafka-network:
+    driver: bridge
+  kong-network:
     driver: bridge
 
 volumes:

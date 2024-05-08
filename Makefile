@@ -53,14 +53,15 @@ rebuild: down build
 
 start: build up
 
-restart: down start
+restart:
+	docker compose down
+	docker compose up --build -d
+	docker logs -f api-gateway
 
 reup: down up
 
 default: up
 
-restart:
-	down start
 redev:
 	down dev
 # .PHONY: up down build logs exec ps clean reset:db default
