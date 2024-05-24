@@ -1,4 +1,4 @@
-package com.urutare.stockm;
+package com.urutare.stockmcategory;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
