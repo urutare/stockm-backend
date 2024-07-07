@@ -107,18 +107,19 @@ services:
       - kafka-network
 
   kafka-broker:
-    image: 'bitnami/kafka:latest'
-    container_name: "kafka-broker"
+    image: 'bitnami/kafka:3.2.0'
+    container_name: kafka
+    restart: "always"
     ports:
-      - '19092:9092'
+      - '9092:9092'
+      - '9093:9093'
       - '29092:29092'
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://localhost:29092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
-      - KAFKA_CFG_BROKER_ID=1
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL_SAME:PLAINTEXT,EXTERNAL_DIFF:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:29092,EXTERNAL_SAME://:9092,EXTERNAL_DIFF://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://172.17.0.1:29092,EXTERNAL_SAME://172.17.0.1:9092,EXTERNAL_DIFF://172.17.0.1:9093
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
       - zookeeper-server
@@ -131,8 +132,10 @@ services:
     ports:
       - '9000:9000'
     environment:
-      - KAFKA_BROKERCONNECT=kafka-broker:9092
+      - KAFKA_BROKERCONNECT=kafka-broker:29092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka
+      - JVM_OPTS="-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+
     depends_on:
       - kafka-broker
     networks:
@@ -180,13 +183,13 @@ services:
     ports:
       - "8081:8081"
     container_name: user-service
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          memory: 150M
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 512M
+#        reservations:
+#          memory: 150M
     env_file:
       - .env
     environment:
@@ -211,7 +214,10 @@ services:
       - JWT_SECRET=UrutareIncStockM
       - JWT_ACCESS_TOKEN_EXPIRATIONINMS=86400000
       - JWT_REFRESH_TOKEN_EXPIRATIONINMS=86400000
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=http://kafka-broker:9092
+      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL}
+      - KAFKA_GROUP_ID_PARKING_MANAGER=${KAFKA_GROUP_ID_PARKING_MANAGER}
+      - KAFKA_TOPIC_PARTITION=${KAFKA_TOPIC_PARTITION}
+      - KAFKA_TOPIC_REPLICATION_FACTOR=${KAFKA_TOPIC_REPLICATION_FACTOR}
       - SMS_API_URL=sms-gateway:8085
       - SMS_USERNAME=asdasdas
       - SMS_SECRET=kdmpowlcos
@@ -346,7 +352,7 @@ services:
     depends_on:
       - discovery-server
       - postgres-db
-      - redis_cache
+      - user-service
       - kafka-broker
     networks:
       - urutare-inc-network
