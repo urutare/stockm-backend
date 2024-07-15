@@ -1,11 +1,8 @@
 #!/bin/bash
-
 # Array of repository names
-repositories=("stockm-category-service", "stockm-sync-service", "stockm-stock-service", "stockm-discovery-service", "stockm-auth-service", "stockm-api-gateway", "stockm-payment-service", "stockm-common-core", "sms-gateway")
-
+repositories=("stockm-category-service" "stockm-sync-service" "stockm-stock-service" "stockm-discovery-service" "stockm-auth-service" "stockm-api-gateway" "stockm-payment-service" "stockm-common-core" "sms-gateway")
 # Base URL for the GitHub organization
 base_url="https://github.com/urutare/"
-
 # Loop through the repositories array
 for r in "${repositories[@]}"; do
     # check if the repository exists then skip
@@ -15,6 +12,5 @@ for r in "${repositories[@]}"; do
         git clone "${base_url}${r}.git"
     fi
 done
-
 # Call run.sh
-#./run.sh
+# ./run.sh
