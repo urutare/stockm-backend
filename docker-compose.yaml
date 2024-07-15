@@ -108,6 +108,7 @@ services:
 
   kafka-broker:
     image: 'bitnami/kafka:latest'
+    container_name: "kafka-broker"
     ports:
       - '19092:9092'
       - '9093:9093'
