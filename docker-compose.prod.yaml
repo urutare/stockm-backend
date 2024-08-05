@@ -1,4 +1,4 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   discovery-server:
@@ -16,10 +16,6 @@ services:
       - EUREKA_SERVER_LEASE_EXPIRATION_DURATION_IN_SECONDS=60
       - SERVER_PORT=8761
       - SPRING_APPLICATION_NAME=discovery-server
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     networks:
       - urutare-inc-network
 
@@ -60,12 +56,13 @@ services:
       - SPRING_CLOUD_GATEWAY_ROUTES_6_ID=payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_URI=lb://payment-service
       - SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0=Path=/api/v1/payment-service/**
-    deploy:
-      resources:
-        limits:
-          memory: 512M
     depends_on:
       - discovery-server
+    #      - stock-service
+    #      - user-service
+    #      - category-service
+    #      - sync-service
+    #      - payment-service
     networks:
       - urutare-inc-network
 
@@ -79,11 +76,7 @@ services:
       - POSTGRES_DB=kong
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin123!
-    command: [ "postgres", "-c", "max_connections=100", "-c", "shared_buffers=128MB", "-c", "work_mem=4MB" ]
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+    command: [ "postgres", "-c", "max_connections=200", "-c", "timezone=Etc/UTC", "-c", "default_text_search_config=pg_catalog.english" ]
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d
@@ -98,10 +91,6 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "7379:6379"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     networks:
       - urutare-inc-network
 
@@ -112,10 +101,6 @@ services:
       - '2181:2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     networks:
       - kafka-network
 
@@ -134,18 +119,14 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
       - KAFKA_CFG_BROKER_ID=1
       - ALLOW_PLAINTEXT_LISTENER=yes
-    deploy:
-      resources:
-        limits:
-          memory: 512M
     depends_on:
       - zookeeper-server
     networks:
       - kafka-network
 
-  kafdrop:
+  kafdrop-web:
     image: obsidiandynamics/kafdrop
-    container_name: kafdrop
+    container_name: kafdrop-web
     ports:
       - '9000:9000'
     environment:
@@ -153,15 +134,10 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
-    deploy:
-      resources:
-        limits:
-          memory: 128M
     depends_on:
       - kafka-broker
     networks:
       - kafka-network
-      - urutare-inc-network
 
   user-service:
     image: urutare/user-service
@@ -174,10 +150,6 @@ services:
     environment:
       - SERVER_PORT=8081
       - DB_DATABASE=user_db
-    deploy:
-      resources:
-        limits:
-          memory: 512M
     depends_on:
       - discovery-server
       - postgres-db
@@ -197,6 +169,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+        reservations:
+          memory: 150M
     env_file:
       - .env
     environment:
@@ -233,6 +207,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+        reservations:
+          memory: 150M
     env_file:
       - .env
     environment:
@@ -265,6 +241,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+        reservations:
+          memory: 150M
     env_file:
       - .env
     environment:
@@ -291,6 +269,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+        reservations:
+          memory: 150M
     environment:
       - LOCAL_PORT=8000
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
@@ -315,6 +295,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+        reservations:
+          memory: 150M
     ports:
       - "8086:8086"
     env_file:
@@ -325,6 +307,7 @@ services:
       - COMPONENT_ID=4
       - SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES=true
       - HIBERNATE_ENABLE_LAZY_LOAD_NO_TRANS=true
+
     depends_on:
       - discovery-server
       - postgres-db
@@ -339,11 +322,7 @@ services:
     container_name: "nginx"
     restart: on-failure
     ports:
-      - "80:80"
-    deploy:
-      resources:
-        limits:
-          memory: 128M
+      - "80-89:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
@@ -360,10 +339,6 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
@@ -375,10 +350,6 @@ services:
     restart: always
     ports:
       - "9090:9090"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
