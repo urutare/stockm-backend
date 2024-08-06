@@ -9,7 +9,7 @@ dev-build:
 	docker-compose -f $(COMPOSE_FILE) build
 
 dev-up:
-	docker-compose -f $(COMPOSE_FILE) up -d
+	docker-compose -f $(COMPOSE_FILE) up
 
 hard-down:
 	docker-compose -f $(COMPOSE_FILE) down --remove-orphans && docker volume prune -f
