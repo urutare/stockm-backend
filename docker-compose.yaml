@@ -390,18 +390,15 @@ services:
       - kafka-network
 
 
-  nginx:
-    image: nginx:latest
-    container_name: "nginx"
-    restart: on-failure
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
     ports:
-      - "80:80"
-    deploy:
-      resources:
-        limits:
-          memory: 128M
+      - "9001:9000"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
     depends_on:
       - api-gateway
     networks:
@@ -416,3 +413,4 @@ networks:
 volumes:
   postgres-data:
   kafka-data:
+  portainer_data:
