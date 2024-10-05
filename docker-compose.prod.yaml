@@ -305,6 +305,20 @@ services:
       - urutare-inc-network
       - kafka-network
 
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9001:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
+    depends_on:
+      - api-gateway
+    networks:
+      - urutare-inc-network
+
 
 networks:
   urutare-inc-network:
@@ -315,4 +329,5 @@ networks:
 volumes:
   postgres-data:
   kafka-data:
+  portainer_data:
 
