@@ -5,6 +5,9 @@ DATABASE_NAME = postgres_db
 dev:
 	docker compose -f $(COMPOSE_FILE) up --build --remove-orphans
 
+start: 
+	docker compose -f $(COMPOSE_FILE) up -d --build --remove-orphans
+
 dev-build:
 	docker-compose -f $(COMPOSE_FILE) build
 
@@ -50,8 +53,6 @@ getdeployment:
 	kubectl get deployments
 
 rebuild: down build
-
-start: build up
 
 restart: down start
 
