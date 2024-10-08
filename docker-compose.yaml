@@ -38,7 +38,7 @@ services:
       SPRING_CLOUD_GATEWAY_ROUTES[4]_ID: sync-service
       SPRING_CLOUD_GATEWAY_ROUTES[4]_URI: http://sync-service:8083
       SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[0]: Path=/api/v1/sync-service/**
-      SPRING_CLOUD_GATEWAY_ROUTES[5]_ID: sms-service
+      # SPRING_CLOUD_GATEWAY_ROUTES[5]_ID: sms-service
       # SPRING_CLOUD_GATEWAY_ROUTES[5]_URI: http://sms-service:8000
       # SPRING_CLOUD_GATEWAY_ROUTES[5]_PREDICATES[0]: Path=/api/v1/sms-service/**
       # SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[0]: ""
