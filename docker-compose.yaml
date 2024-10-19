@@ -290,13 +290,15 @@ services:
   sync-service:
     image: 'urutare/sync-service:latest'
     ports:
-      - "8083:8083"
+      - "8083:8080"
+      - "5000:5000"
     restart: on-failure
     container_name: sync-service
     env_file:
       - ./secrets/.env
     environment:
-      - SERVER_PORT=8083
+      - SERVER_PORT=8080
+      - SOCKET_IO_PORT=5000
     depends_on:
       - discovery-server
       - api-gateway

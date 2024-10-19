@@ -1,0 +1,278 @@
+services:
+  discovery-server:
+    image: urutare/service-discovery
+    build:
+      context: ./stockm-discovery-service
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8761:8761"
+    container_name: discovery-server
+    networks:
+      - urutare-inc-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  config-server:
+    image: urutare/config-server
+    build:
+      context: ./stockm-config-server
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8888:8888"
+    container_name: config-server
+    env_file:
+      - ./secrets/.env
+    environment:
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka
+    depends_on:
+      - discovery-server
+    networks:
+      - urutare-inc-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  api-gateway:
+    image: urutare/api-gateway
+    build:
+      context: ./stockm-api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./secrets/.env
+    restart: on-failure
+    container_name: api-gateway
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
+    depends_on:
+      - discovery-server
+      - config-server
+    networks:
+      - urutare-inc-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres-db:
+    image: postgres
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=kong
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123!
+    command: [ "postgres", "-c", "max_connections=200", "-c", "timezone=Etc/UTC", "-c", "default_text_search_config=pg_catalog.english" ]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - urutare-inc-network
+
+  redis_cache:
+    container_name: redis
+    image: 'bitnami/redis:latest'
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "7379:6379"
+    networks:
+      - urutare-inc-network
+
+  zookeeper-server:
+    image: 'bitnami/zookeeper:latest'
+    container_name: "zookeeper-server"
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - urutare-inc-network
+
+  kafka-broker:
+    image: 'bitnami/kafka:latest'
+    container_name: "kafka-broker"
+    ports:
+      - '19092:9092'
+      - '9093:9093'
+      - '29092:29092'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
+      - KAFKA_CFG_BROKER_ID=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper-server
+    networks:
+      - urutare-inc-network
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop
+    ports:
+      - '9000:9000'
+    environment:
+      KAFKA_BROKERCONNECT: kafka-broker:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+    depends_on:
+      - kafka-broker
+    networks:
+      - urutare-inc-network
+
+  user-service:
+    image: urutare/user-service
+    build:
+      context: ./stockm-auth-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    container_name: user-service
+    env_file:
+      - ./secrets/.env
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka
+    depends_on:
+      - discovery-server
+      - config-server
+      - postgres-db
+      - kafka-broker
+    networks:
+      - urutare-inc-network
+
+#  category-service:
+#    image: urutare/category-service
+#    build:
+#      context: ./stockm-category-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8082:8082"
+#    restart: on-failure
+#    container_name: category-service
+#    environment:
+#      CONFIG_SERVER_URL: http://config-server:8888
+#    depends_on:
+#      - config-server
+#    networks:
+#      - urutare-inc-network
+
+#  stock-service:
+#    image: urutare/stock-service
+#    build:
+#      context: ./stockm-stock-service
+#      dockerfile: Dockerfile
+#    restart: on-failure
+#    ports:
+#      - "8084:8084"
+#    container_name: stock-service
+#    environment:
+#      CONFIG_SERVER_URL: http://config-server:8888
+#    depends_on:
+#      - config-server
+#    networks:
+#      - urutare-inc-network
+#
+#  sync-service:
+#    image: urutare/sync-service
+#    build:
+#      context: ./stockm-sync-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8083:8080"
+#      - "5000:5000"
+#    restart: on-failure
+#    container_name: sync-service
+#    environment:
+#      CONFIG_SERVER_URL: http://config-server:8888
+#    depends_on:
+#      - config-server
+#    networks:
+#      - urutare-inc-network
+#
+#  sms-gateway:
+#    restart: on-failure
+#    image: urutare/sms-service
+#    build:
+#      context: ./sms-gateway
+#      dockerfile: Dockerfile
+#    container_name: sms-gateway
+#    env_file:
+#      - ./secrets/.env
+#      - ./secrets/.env.sms
+#    ports:
+#      - "8085:8000"
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 512M
+#    environment:
+#      - LOCAL_PORT=8000
+#      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+#      - GATEWAY_BASE_URL=http://api-gateway:8080
+#      - DATABASE_URL=postgresql+asyncpg://postgres:admin123!@postgres-db:5432/sms_db
+#      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
+#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+#      - SPRING_APPLICATION_NAME=sms-service
+#      - APP_NAME=sms-service
+#      - INSTANCE_HOST=localhost
+#    depends_on:
+#      - config-server
+#    networks:
+#      - urutare-inc-network
+#
+#  payment-service:
+#    image: 'urutare/payment-service'
+#    build:
+#      context: ./stockm-payment-service
+#      dockerfile: Dockerfile
+#    container_name: "payment-service"
+#    restart: on-failure
+#    ports:
+#      - "8086:8086"
+#    environment:
+#      CONFIG_SERVER_URL: http://config-server:8888
+#    depends_on:
+#      - config-server
+#    networks:
+#      - urutare-inc-network
+#
+#  portainer:
+#    image: portainer/portainer-ce:latest
+#    container_name: portainers
+#    restart: always
+#    ports:
+#      - "9001:9000"
+#    volumes:
+#      - "/var/run/docker.sock:/var/run/docker.sock"
+#      - "portainer_data:/data"
+#    networks:
+#      - urutare-inc-network
+
+networks:
+  urutare-inc-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  kafka-data:
+  portainer_data:
