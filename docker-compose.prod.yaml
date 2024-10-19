@@ -17,10 +17,7 @@ services:
       retries: 3
 
   config-server:
-    image: urutare/config-server
-    build:
-      context: ./stockm-config-server
-      dockerfile: Dockerfile
+    image: urutare/stock-config-server
     restart: always
     ports:
       - "8888:8888"
@@ -29,6 +26,10 @@ services:
       - ./secrets/.env
     environment:
       EUREKA_SERVER_URL: http://discovery-server:8761/eureka
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/home/app/config
+    volumes:
+      - ./stockm-config-server/src/main/resources/config:/home/app/config
     depends_on:
       - discovery-server
     networks:

@@ -3,7 +3,7 @@
 
 
 REM Array of repository names
-set repositories=("stockm-category-service", "stockm-sync-service", "stockm-stock-service", "stockm-discovery-service", "stockm-auth-service", "stockm-api-gateway", "stockm-payment-service", "stockm-common-core", "sms-gateway")
+set repositories=("stockm-config-server","stockm-category-service", "stockm-sync-service", "stockm-stock-service", "stockm-discovery-service", "stockm-auth-service", "stockm-api-gateway", "stockm-payment-service", "stockm-common-core", "sms-gateway")
 
 REM Base URL for the GitHub organization
 set base_url=https://github.com/urutare/
