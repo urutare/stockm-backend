@@ -160,114 +160,122 @@ services:
     networks:
       - urutare-inc-network
 
-#  category-service:
-#    image: urutare/category-service
-#    build:
-#      context: ./stockm-category-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8082:8082"
-#    restart: on-failure
-#    container_name: category-service
-#    environment:
-#      CONFIG_SERVER_URL: http://config-server:8888
-#    depends_on:
-#      - config-server
-#    networks:
-#      - urutare-inc-network
+  category-service:
+    image: urutare/category-service
+    build:
+      context: ./stockm-category-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./secrets/.env
+    ports:
+      - "8082:8082"
+    restart: on-failure
+    container_name: category-service
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      - config-server
+    networks:
+      - urutare-inc-network
 
-#  stock-service:
-#    image: urutare/stock-service
-#    build:
-#      context: ./stockm-stock-service
-#      dockerfile: Dockerfile
-#    restart: on-failure
-#    ports:
-#      - "8084:8084"
-#    container_name: stock-service
-#    environment:
-#      CONFIG_SERVER_URL: http://config-server:8888
-#    depends_on:
-#      - config-server
-#    networks:
-#      - urutare-inc-network
-#
-#  sync-service:
-#    image: urutare/sync-service
-#    build:
-#      context: ./stockm-sync-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8083:8080"
-#      - "5000:5000"
-#    restart: on-failure
-#    container_name: sync-service
-#    environment:
-#      CONFIG_SERVER_URL: http://config-server:8888
-#    depends_on:
-#      - config-server
-#    networks:
-#      - urutare-inc-network
-#
-#  sms-gateway:
-#    restart: on-failure
-#    image: urutare/sms-service
-#    build:
-#      context: ./sms-gateway
-#      dockerfile: Dockerfile
-#    container_name: sms-gateway
-#    env_file:
-#      - ./secrets/.env
-#      - ./secrets/.env.sms
-#    ports:
-#      - "8085:8000"
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.5'
-#          memory: 512M
-#    environment:
-#      - LOCAL_PORT=8000
-#      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-#      - GATEWAY_BASE_URL=http://api-gateway:8080
-#      - DATABASE_URL=postgresql+asyncpg://postgres:admin123!@postgres-db:5432/sms_db
-#      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
-#      - SPRING_APPLICATION_NAME=sms-service
-#      - APP_NAME=sms-service
-#      - INSTANCE_HOST=localhost
-#    depends_on:
-#      - config-server
-#    networks:
-#      - urutare-inc-network
-#
-#  payment-service:
-#    image: 'urutare/payment-service'
-#    build:
-#      context: ./stockm-payment-service
-#      dockerfile: Dockerfile
-#    container_name: "payment-service"
-#    restart: on-failure
-#    ports:
-#      - "8086:8086"
-#    environment:
-#      CONFIG_SERVER_URL: http://config-server:8888
-#    depends_on:
-#      - config-server
-#    networks:
-#      - urutare-inc-network
-#
-#  portainer:
-#    image: portainer/portainer-ce:latest
-#    container_name: portainers
-#    restart: always
-#    ports:
-#      - "9001:9000"
-#    volumes:
-#      - "/var/run/docker.sock:/var/run/docker.sock"
-#      - "portainer_data:/data"
-#    networks:
-#      - urutare-inc-network
+  stock-service:
+    image: urutare/stock-service
+    build:
+      context: ./stockm-stock-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8084:8084"
+    container_name: stock-service
+    env_file:
+      - ./secrets/.env
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      - config-server
+    networks:
+      - urutare-inc-network
+
+  sync-service:
+    image: urutare/sync-service
+    build:
+      context: ./stockm-sync-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8080"
+      - "5000:5000"
+    restart: on-failure
+    container_name: sync-service
+    env_file:
+      - ./secrets/.env
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      - config-server
+    networks:
+      - urutare-inc-network
+
+  sms-gateway:
+    restart: on-failure
+    image: urutare/sms-service
+    build:
+      context: ./sms-gateway
+      dockerfile: Dockerfile
+    container_name: sms-gateway
+    env_file:
+      - ./secrets/.env
+      - ./secrets/.env.sms
+    ports:
+      - "8085:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    environment:
+      - LOCAL_PORT=8000
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - GATEWAY_BASE_URL=http://api-gateway:8080
+      - DATABASE_URL=postgresql+asyncpg://postgres:admin123!@postgres-db:5432/sms_db
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      - SPRING_APPLICATION_NAME=sms-service
+      - APP_NAME=sms-service
+      - INSTANCE_HOST=localhost
+    depends_on:
+      - config-server
+    networks:
+      - urutare-inc-network
+
+  payment-service:
+    image: 'urutare/payment-service'
+    build:
+      context: ./stockm-payment-service
+      dockerfile: Dockerfile
+    container_name: "payment-service"
+    restart: on-failure
+    ports:
+      - "8086:8086"
+    env_file:
+      - ./secrets/.env
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      - config-server
+    networks:
+      - urutare-inc-network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainers
+    restart: always
+    ports:
+      - "9001:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
+    networks:
+      - urutare-inc-network
 
 networks:
   urutare-inc-network:
