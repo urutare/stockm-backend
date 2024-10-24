@@ -1,18 +1,21 @@
-COMPOSE_FILE = docker-compose.yaml
+COMPOSE_FILE = docker-compose.prod.yaml
 APP = app
 DATABASE_NAME = postgres_db
 
 dev:
 	docker compose -f $(COMPOSE_FILE) up --build --remove-orphans
-
-start: 
+start:
 	docker compose -f $(COMPOSE_FILE) up -d --build --remove-orphans
+
+#start:
+#	docker compose -f $(COMPOSE_FILE) build --no-cache && \
+#	docker compose -f $(COMPOSE_FILE) up -d --remove-orphans
 
 dev-build:
 	docker-compose -f $(COMPOSE_FILE) build
 
 dev-up:
-	docker-compose -f $(COMPOSE_FILE) up -d
+	docker-compose -f $(COMPOSE_FILE) up
 
 hard-down:
 	docker-compose -f $(COMPOSE_FILE) down --remove-orphans && docker volume prune -f
@@ -23,7 +26,7 @@ up:
 	docker compose -f $(COMPOSE_FILE) up -d
 
 down:
-	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
+	docker compose -f $(COMPOSE_FILE) down --remove-orphans
 
 build:
 	docker compose -f $(COMPOSE_FILE) build --no-cache

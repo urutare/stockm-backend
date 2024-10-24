@@ -38,7 +38,7 @@ services:
       SPRING_CLOUD_GATEWAY_ROUTES[4]_ID: sync-service
       SPRING_CLOUD_GATEWAY_ROUTES[4]_URI: http://sync-service:8083
       SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[0]: Path=/api/v1/sync-service/**
-      SPRING_CLOUD_GATEWAY_ROUTES[5]_ID: sms-service
+      # SPRING_CLOUD_GATEWAY_ROUTES[5]_ID: sms-service
       # SPRING_CLOUD_GATEWAY_ROUTES[5]_URI: http://sms-service:8000
       # SPRING_CLOUD_GATEWAY_ROUTES[5]_PREDICATES[0]: Path=/api/v1/sms-service/**
       # SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[0]: ""
@@ -290,13 +290,15 @@ services:
   sync-service:
     image: 'urutare/sync-service:latest'
     ports:
-      - "8083:8083"
+      - "8083:8080"
+      - "5000:5000"
     restart: on-failure
     container_name: sync-service
     env_file:
       - ./secrets/.env
     environment:
-      - SERVER_PORT=8083
+      - SERVER_PORT=8080
+      - SOCKET_IO_PORT=5000
     depends_on:
       - discovery-server
       - api-gateway
