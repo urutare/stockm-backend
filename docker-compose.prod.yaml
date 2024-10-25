@@ -1,9 +1,6 @@
 services:
   discovery-server:
     image: urutare/service-discovery
-    build:
-      context: ./stockm-discovery-service
-      dockerfile: Dockerfile
     restart: always
     ports:
       - "8761:8761"
@@ -42,11 +39,8 @@ services:
 
   api-gateway:
     image: urutare/api-gateway
-    build:
-      context: ./stockm-api-gateway
-      dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8070:8080"
     env_file:
       - ./secrets/.env
     restart: on-failure
@@ -140,9 +134,6 @@ services:
 
   user-service:
     image: urutare/user-service
-    build:
-      context: ./stockm-auth-service
-      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "8081:8081"
@@ -162,9 +153,6 @@ services:
 
   category-service:
     image: urutare/category-service
-    build:
-      context: ./stockm-category-service
-      dockerfile: Dockerfile
     env_file:
       - ./secrets/.env
     ports:
@@ -180,9 +168,6 @@ services:
 
   stock-service:
     image: urutare/stock-service
-    build:
-      context: ./stockm-stock-service
-      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "8084:8084"
@@ -198,9 +183,6 @@ services:
 
   sync-service:
     image: urutare/sync-service
-    build:
-      context: ./stockm-sync-service
-      dockerfile: Dockerfile
     ports:
       - "8083:8080"
       - "5000:5000"
@@ -218,9 +200,6 @@ services:
   sms-gateway:
     restart: on-failure
     image: urutare/sms-service
-    build:
-      context: ./sms-gateway
-      dockerfile: Dockerfile
     container_name: sms-gateway
     env_file:
       - ./secrets/.env
@@ -249,9 +228,6 @@ services:
 
   payment-service:
     image: 'urutare/payment-service'
-    build:
-      context: ./stockm-payment-service
-      dockerfile: Dockerfile
     container_name: "payment-service"
     restart: on-failure
     ports:
