@@ -26,8 +26,8 @@
         <module>stockm-payment-service</module>
         <module>stockm-common-core</module>
         <module>stockm-config-server</module>
-        <!--        <module>POSFunctional</module>-->
-        <!--        <module>POSUtils</module>-->
+        <module>POSFunctional</module>
+        <module>POSUtils</module>
     </modules>
     <properties>
         <java.version>21</java.version>
