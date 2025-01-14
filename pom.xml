@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.5</version>
+        <version>3.3.4</version>
         <relativePath/>
         <!-- lookup parent from repository -->
     </parent>
@@ -26,9 +26,11 @@
         <module>stockm-payment-service</module>
         <module>stockm-common-core</module>
         <module>stockm-config-server</module>
+        <!--        <module>POSFunctional</module>-->
+        <!--        <module>POSUtils</module>-->
     </modules>
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
