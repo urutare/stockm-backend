@@ -28,6 +28,20 @@
         <module>stockm-config-server</module>
         <module>POSFunctional</module>
         <module>POSUtils</module>
+        <module>POSVSDC</module>
+        <module>POSStockCore</module>
+        <module>POSPurchaseCore</module>
+        <module>POSSaleCore</module>
+        <module>POSUserCore</module>
+        <module>POSAccountingCore</module>
+        <module>POSMainCore</module>
+        <module>POSDiscoveryCore</module>
+        <module>POSSecurityCore</module>
+        <module>POSTranslation</module>
+        <module>POSCore</module>
+        <module>POSDatabase</module>
+        <module>POSBase</module>
+        <module>POSIntegration</module>
     </modules>
     <properties>
         <java.version>21</java.version>
