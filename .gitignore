@@ -49,4 +49,5 @@ sms-gateway/
 *.log
 .env
 .env.dev
+.env.properties
 secrets
