@@ -52,3 +52,4 @@ sms-gateway/
 .env.dev
 .env.properties
 secrets
+.DS_Store
