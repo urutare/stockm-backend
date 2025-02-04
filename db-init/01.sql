@@ -1,6 +1,6 @@
-CREATE DATABASE user_db;
-CREATE DATABASE category_db;
-CREATE DATABASE sync_db;
-CREATE DATABASE stock_db;
-CREATE DATABASE payment_db;
-CREATE DATABASE sms_db;
+CREATE DATABASE stockm_user_db_dev;
+CREATE DATABASE stockm_category_db_dev;
+CREATE DATABASE stockm_sync_db_dev;
+CREATE DATABASE stockm_stock_db_dev;
+CREATE DATABASE stockm_payment_db_dev;
+CREATE DATABASE stockm_sms_db_dev;
