@@ -29,7 +29,8 @@ set repositories=(
 "POSCore",
 "POSDatabase",
 "POSBase",
-"POSIntegration"
+"POSIntegration",
+"POSIntegrationCore"
 )
 
 REM Base URL for the GitHub organization

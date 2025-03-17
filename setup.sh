@@ -28,6 +28,7 @@ repositories=(
 "POSDatabase"
 "POSBase"
 "POSIntegration"
+"POSIntegrationCore"
 )
 
 
