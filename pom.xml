@@ -41,7 +41,6 @@
         <module>POSCore</module>
         <module>POSDatabase</module>
         <module>POSBase</module>
-        <module>POSIntegration</module>
         <module>POSIntegrationCore</module>
     </modules>
     <properties>

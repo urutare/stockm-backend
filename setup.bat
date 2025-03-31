@@ -29,7 +29,6 @@ set repositories=(
 "POSCore",
 "POSDatabase",
 "POSBase",
-"POSIntegration",
 "POSIntegrationCore"
 )
 
