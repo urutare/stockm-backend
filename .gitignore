@@ -54,3 +54,4 @@ sms-gateway/
 secrets
 .DS_Store
 .env.jceks
+.dev.json
