@@ -26,6 +26,7 @@
         <module>stockm-payment-service</module>
         <module>stockm-common-core</module>
         <module>stockm-config-server</module>
+        <module>stockm-storage-service</module>
         <module>POSFunctional</module>
         <module>POSUtils</module>
         <module>POSVSDC</module>
