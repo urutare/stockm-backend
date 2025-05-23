@@ -13,6 +13,7 @@ set repositories=(
 "stockm-api-gateway",
 "stockm-payment-service",
 "stockm-common-core",
+"stockm-storage-service",
 "sms-gateway",
 "POSUtils",
 "POSFunctional",
