@@ -52,6 +52,8 @@ sms-gateway/
 .env.dev
 .env.properties
 .env.properties.prod
+.env.jceks
+.env.jceks.*
 secrets
 .DS_Store
 .env.jceks.orginal
