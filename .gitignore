@@ -58,3 +58,4 @@ secrets
 .DS_Store
 .env.jceks.orginal
 .dev.json
+.env.jceks
