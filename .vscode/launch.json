@@ -1,0 +1,120 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Launch Config Server",
+      "request": "launch",
+      "mainClass": "com.urutare.configserver.ConfigServerApplication",
+      "projectName": "stockm-config-server",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Discovery Service",
+      "request": "launch",
+      "mainClass": "com.urutare.discoveryservice.DiscoveryServiceApplication",
+      "projectName": "stockm-discovery-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch API Gateway",
+      "request": "launch",
+      "mainClass": "com.urutare.apigateway.ApiGatewayApplication",
+      "projectName": "stockm-api-gateway",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Auth Service",
+      "request": "launch",
+      "mainClass": "com.urutare.authservice.AuthServiceApplication",
+      "projectName": "stockm-auth-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Stock Service",
+      "request": "launch",
+      "mainClass": "com.urutare.stockservice.StockServiceApplication",
+      "projectName": "stockm-stock-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Category Service",
+      "request": "launch",
+      "mainClass": "com.urutare.stockmcategory.StockmCategoryApplication",
+      "projectName": "stockm-category-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Payment Service",
+      "request": "launch",
+      "mainClass": "com.urutare.payment_manager.PaymentManagerApplication",
+      "projectName": "stockm-payment-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Sync Service",
+      "request": "launch",
+      "mainClass": "com.urutare.syncservice.SyncServiceApplication",
+      "projectName": "stockm-sync-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Launch Storage Service",
+      "request": "launch",
+      "mainClass": "com.urutare.storageservice.StorageServiceApplication",
+      "projectName": "stockm-storage-service",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": "",
+      "vmArgs": "-Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Current File",
+      "request": "launch",
+      "mainClass": "${file}",
+      "projectName": ""
+    }
+  ]
+}

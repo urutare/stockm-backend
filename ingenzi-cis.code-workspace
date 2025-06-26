@@ -1,0 +1,146 @@
+{
+  "folders": [
+    {
+      "name": "Ingenzi-CIS-Root",
+      "path": "."
+    },
+    {
+      "name": "stockm-config-server",
+      "path": "./stockm-config-server"
+    },
+    {
+      "name": "stockm-discovery-service",
+      "path": "./stockm-discovery-service"
+    },
+    {
+      "name": "stockm-api-gateway",
+      "path": "./stockm-api-gateway"
+    },
+    {
+      "name": "stockm-auth-service",
+      "path": "./stockm-auth-service"
+    },
+    {
+      "name": "stockm-category-service",
+      "path": "./stockm-category-service"
+    },
+    {
+      "name": "stockm-stock-service",
+      "path": "./stockm-stock-service"
+    },
+    {
+      "name": "stockm-payment-service",
+      "path": "./stockm-payment-service"
+    },
+    {
+      "name": "stockm-sync-service",
+      "path": "./stockm-sync-service"
+    },
+    {
+      "name": "stockm-storage-service",
+      "path": "./stockm-storage-service"
+    },
+    {
+      "name": "stockm-common-core",
+      "path": "./stockm-common-core"
+    },
+    {
+      "name": "sms-gateway",
+      "path": "./sms-gateway"
+    },
+    {
+      "name": "POSFunctional",
+      "path": "./POSFunctional"
+    },
+    {
+      "name": "POSUtils",
+      "path": "./POSUtils"
+    },
+    {
+      "name": "POSVSDC",
+      "path": "./POSVSDC"
+    },
+    {
+      "name": "POSStockCore",
+      "path": "./POSStockCore"
+    },
+    {
+      "name": "POSPurchaseCore",
+      "path": "./POSPurchaseCore"
+    },
+    {
+      "name": "POSSaleCore",
+      "path": "./POSSaleCore"
+    },
+    {
+      "name": "POSUserCore",
+      "path": "./POSUserCore"
+    },
+    {
+      "name": "POSAccountingCore",
+      "path": "./POSAccountingCore"
+    },
+    {
+      "name": "POSMainCore",
+      "path": "./POSMainCore"
+    },
+    {
+      "name": "POSDiscoveryCore",
+      "path": "./POSDiscoveryCore"
+    },
+    {
+      "name": "POSSecurityCore",
+      "path": "./POSSecurityCore"
+    },
+    {
+      "name": "POSTranslation",
+      "path": "./POSTranslation"
+    },
+    {
+      "name": "POSCore",
+      "path": "./POSCore"
+    },
+    {
+      "name": "POSDatabase",
+      "path": "./POSDatabase"
+    },
+    {
+      "name": "POSBase",
+      "path": "./POSBase"
+    },
+    {
+      "name": "POSIntegrationCore",
+      "path": "./POSIntegrationCore"
+    }
+  ],
+  "settings": {
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.import.maven.enabled": true,
+    "java.maven.downloadSources": true,
+    "java.autobuild.enabled": true,
+    "java.maxConcurrentBuilds": 2,
+    "java.clean.workspace": false,
+    "maven.pomfile.autoUpdateEffectivePOM": true,
+    "java.configuration.workspaceCacheLimit": 90,
+    "java.server.launchMode": "Standard",
+    "kotlin.languageServer.enabled": true,
+    "files.exclude": {
+      "**/target": false,
+      "**/.classpath": true,
+      "**/.project": true,
+      "**/.settings": true,
+      "**/.factorypath": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "redhat.java",
+      "vscjava.vscode-java-debug",
+      "vscjava.vscode-maven",
+      "vscjava.vscode-java-pack",
+      "vmware.vscode-spring-boot",
+      "vmware.vscode-boot-dev-pack"
+    ]
+  }
+}
