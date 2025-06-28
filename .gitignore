@@ -56,3 +56,5 @@ secrets
 .env.jceks.orginal
 .dev.json
 .env.jceks
+
+storage/**
