@@ -17,16 +17,7 @@
     <name>stockm</name>
     <description>Stock Management Services</description>
     <modules>
-        <module>stockm-api-gateway</module>
-        <module>stockm-auth-service</module>
-        <module>stockm-category-service</module>
-        <module>stockm-discovery-service</module>
-        <module>stockm-stock-service</module>
-        <module>stockm-sync-service</module>
-        <module>stockm-payment-service</module>
         <module>stockm-common-core</module>
-        <module>stockm-config-server</module>
-        <module>stockm-storage-service</module>
         <module>POSFunctional</module>
         <module>POSUtils</module>
         <module>POSVSDC</module>
@@ -43,6 +34,15 @@
         <module>POSDatabase</module>
         <module>POSBase</module>
         <module>POSIntegrationCore</module>
+        <module>stockm-discovery-service</module>
+        <module>stockm-config-server</module>
+        <module>stockm-api-gateway</module>
+        <module>stockm-auth-service</module>
+        <module>stockm-sync-service</module>
+        <module>stockm-payment-service</module>
+        <module>stockm-storage-service</module>
+        <module>stockm-category-service</module>
+        <module>stockm-stock-service</module>
     </modules>
     <properties>
         <java.version>21</java.version>
