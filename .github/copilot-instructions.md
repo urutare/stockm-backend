@@ -8,7 +8,7 @@ This is the **Ingenzi Certificate Invoicing System (CIS)**, also known as **Stoc
 **Languages**: Java 21 (microservices), Python (SMS gateway)  
 **Framework**: Spring Boot 3.3.4 with Spring Cloud microservices  
 **Architecture**: Microservices with service discovery, API gateway, and event-driven messaging  
-**Size**: 46 Maven modules across 30+ separate repositories  
+**Size**: 46 Maven modules across 30+ separate repositories
 
 ## Critical Setup Requirements ⚠️
 
@@ -45,13 +45,14 @@ touch secrets/.env.sms  # Create empty file or copy SMS-specific variables
 
 - **Required**: Java 21 (specified in pom.xml)
 - **Current Environment**: Java 17 (incompatible)
-- **Setup Scripts Available**: 
+- **Setup Scripts Available**:
   - `setup-java.bat` / `setup-java.ps1` (Windows)
   - Manual installation required for Linux environments
 
 ## Build and Validation Instructions
 
 ### Prerequisites Validation
+
 ```bash
 # Check versions (requirements in parentheses)
 java -version        # (Java 21 required)
@@ -63,6 +64,7 @@ make --version      # (GNU Make for Docker operations)
 ### Development Workflow
 
 #### Option 1: Local Development (Maven-based)
+
 **ONLY after setup.sh completes successfully:**
 
 ```bash
@@ -80,6 +82,7 @@ mvn clean package -DskipTests
 ```
 
 #### Option 2: Containerized Development (Recommended)
+
 ```bash
 # 1. Start development environment
 make dev
@@ -128,6 +131,7 @@ make dev  # Start services first
 ## Project Architecture and Layout
 
 ### Core Microservices (stockm-*)
+
 - **stockm-discovery-service** (Port 8761): Eureka service registry
 - **stockm-config-server** (Port 8888): Centralized configuration
 - **stockm-api-gateway** (Port 8080): API gateway and routing
@@ -139,6 +143,7 @@ make dev  # Start services first
 - **stockm-storage-service**: File and media storage
 
 ### POS System Modules (POS*)
+
 Point of Sale system components:
 - **POSCore, POSBase**: Core POS framework
 - **POSDatabase**: Database abstraction layer
@@ -149,10 +154,12 @@ Point of Sale system components:
 - **POSMainCore**: Main POS application logic
 
 ### Supporting Services
+
 - **sms-gateway** (Port 8085): Python-based SMS service
 - **stockm-common-core**: Shared libraries and utilities
 
 ### Infrastructure Configuration
+
 - **docker-compose.prod.yaml**: Production Docker configuration
 - **docker-compose.dev.yaml**: Development environment
 - **Makefile**: Docker operation shortcuts
@@ -161,6 +168,7 @@ Point of Sale system components:
 - **Envs/**: Service-specific environment templates
 
 ### Key Configuration Files
+
 - **pom.xml**: Root Maven configuration with all 46 modules
 - **secrets/.env**: Environment variables (create from .env.example)
 - **.env.properties.example**: Property-based configuration template
@@ -168,6 +176,7 @@ Point of Sale system components:
 - **nginx.conf**: Load balancer configuration
 
 ### Development Tools
+
 - **vscode-setup.ps1/bat**: VS Code environment setup
 - **setup.sh/bat**: Repository and dependency setup
 - **setup-java.ps1/bat**: Java 21 installation scripts
@@ -177,6 +186,7 @@ Point of Sale system components:
 ## Validation and CI Information
 
 ### Pre-commit Validation
+
 ```bash
 # Build verification
 mvn clean verify -DskipTests
@@ -192,16 +202,18 @@ docker compose -f docker-compose.prod.yaml config  # Validate compose file
 ```
 
 ### Docker Health Checks
+
 All services include health check endpoints:
 - Discovery Server: `http://localhost:8761/actuator/health`
 - Config Server: `http://localhost:8888/actuator/health`
 - API Gateway: `http://localhost:8080/actuator/health`
 
 ### Service Dependencies
+
 **Critical startup order:**
 1. PostgreSQL, Redis, Kafka infrastructure
 2. Discovery Service (8761)
-3. Config Server (8888) 
+3. Config Server (8888)
 4. API Gateway (8080)
 5. All other microservices
 

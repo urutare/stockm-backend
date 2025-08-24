@@ -1,54 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
-        <relativePath/>
-        <!-- lookup parent from repository -->
-    </parent>
-    <groupId>com.urutare</groupId>
-    <artifactId>stockm</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>Ingenzi Certificate Invoicing System (StockM Backend)</name>
-    <description>Enterprise-grade microservices platform for stock management and point-of-sale operations</description>
-    <url>https://github.com/urutare/stockm-backend</url>
-    
-    <organization>
-        <name>Urutare</name>
-        <url>https://github.com/urutare</url>
-    </organization>
-    
-    <developers>
-        <developer>
-            <name>Urutare Team</name>
-            <organization>Urutare</organization>
-            <organizationUrl>https://github.com/urutare</organizationUrl>
-        </developer>
-    </developers>
-    
-    <scm>
-        <connection>scm:git:git://github.com/urutare/stockm-backend.git</connection>
-        <developerConnection>scm:git:ssh://github.com:urutare/stockm-backend.git</developerConnection>
-        <url>https://github.com/urutare/stockm-backend/tree/main</url>
-    </scm>
-    
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/urutare/stockm-backend/issues</url>
-    </issueManagement>
-    <modules>
-        <!-- Core Services -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.4</version>
+    <relativePath></relativePath>
+    <!-- lookup parent from repository -->
+  </parent>
+  <groupId>com.urutare</groupId>
+  <artifactId>stockm</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Ingenzi Certificate Invoicing System (StockM Backend)</name>
+  <description>Enterprise-grade microservices platform for stock management and point-of-sale operations</description>
+  <url>https://github.com/urutare/stockm-backend</url>
+
+  <organization>
+    <name>Urutare</name>
+    <url>https://github.com/urutare</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <name>Urutare Team</name>
+      <organization>Urutare</organization>
+      <organizationUrl>https://github.com/urutare</organizationUrl>
+    </developer>
+  </developers>
+  <modules>
+    <!-- Modules will be available after running ./setup.sh -->
+    <!-- Uncomment after cloning dependencies -->
+    <!--
         <module>stockm-common-core</module>
         <module>stockm-discovery-service</module>
         <module>stockm-config-server</module>
         <module>stockm-api-gateway</module>
         
-        <!-- Business Services -->
         <module>stockm-auth-service</module>
         <module>stockm-sync-service</module>
         <module>stockm-payment-service</module>
@@ -56,596 +44,589 @@
         <module>stockm-category-service</module>
         <module>stockm-stock-service</module>
         
-        <!-- POS Framework Modules -->
         <module>POSBase</module>
         <module>POSCore</module>
         <module>POSDatabase</module>
         <module>POSUtils</module>
         <module>POSFunctional</module>
         
-        <!-- POS Business Modules -->
         <module>POSUserCore</module>
         <module>POSSecurityCore</module>
         <module>POSStockCore</module>
         <module>POSPurchaseCore</module>
         <module>POSSaleCore</module>
         <module>POSAccountingCore</module>
-        <module>POSPaymentCore</module>
         
-        <!-- POS Integration & Extensions -->
         <module>POSMainCore</module>
         <module>POSDiscoveryCore</module>
         <module>POSIntegrationCore</module>
         <module>POSTranslation</module>
         <module>POSVSDC</module>
-    </modules>
-    <properties>
-        <!-- Java Version -->
-        <java.version>21</java.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        
-        <!-- Encoding -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        
-        <!-- Spring Cloud Version -->
-        <spring-cloud.version>2023.0.3</spring-cloud.version>
-        
-        <!-- Plugin Versions -->
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
-        <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
-        <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
-        <checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
-        <pmd-maven-plugin.version>3.21.2</pmd-maven-plugin.version>
-        <spotbugs-maven-plugin.version>4.7.3.6</spotbugs-maven-plugin.version>
-        <dependency-check-maven.version>8.4.2</dependency-check-maven.version>
-        <docker-maven-plugin.version>0.43.4</docker-maven-plugin.version>
-        
-        <!-- Quality Tool Versions -->
-        <checkstyle.version>10.12.4</checkstyle.version>
-        <pmd.version>6.55.0</pmd.version>
-        <spotbugs.version>4.7.3</spotbugs.version>
-        
-        <!-- Test Configuration -->
-        <skip.unit.tests>false</skip.unit.tests>
-        <skip.integration.tests>false</skip.integration.tests>
-        
-        <!-- Code Coverage -->
-        <jacoco.execution.data.file>${project.build.directory}/coverage-reports/jacoco.exec</jacoco.execution.data.file>
-        <jacoco.it.execution.data.file>${project.build.directory}/coverage-reports/jacoco-it.exec</jacoco.it.execution.data.file>
-        <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
-    </properties>
-    <dependencyManagement>
-        <dependencies>
-            <!-- Spring Cloud BOM -->
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            
-            <!-- Internal Project Dependencies -->
-            <dependency>
-                <groupId>com.urutare</groupId>
-                <artifactId>stockm-common-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-    
+        -->
+  </modules>
+
+  <scm>
+    <connection>scm:git:git://github.com/urutare/stockm-backend.git</connection>
+    <developerConnection>scm:git:ssh://github.com:urutare/stockm-backend.git</developerConnection>
+    <url>https://github.com/urutare/stockm-backend/tree/main</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/urutare/stockm-backend/issues</url>
+  </issueManagement>
+  <properties>
+    <checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
+
+    <!-- Quality Tool Versions -->
+    <checkstyle.version>10.12.4</checkstyle.version>
+    <dependency-check-maven.version>8.4.2</dependency-check-maven.version>
+    <docker-maven-plugin.version>0.43.4</docker-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+
+    <!-- Code Coverage -->
+    <jacoco.execution.data.file>${project.build.directory}/coverage-reports/jacoco.exec</jacoco.execution.data.file>
+    <jacoco.it.execution.data.file>${project.build.directory}/coverage-reports/jacoco-it.exec</jacoco.it.execution.data.file>
+    <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
+    <!-- Java Version -->
+    <java.version>21</java.version>
+
+    <!-- Plugin Versions -->
+    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+    <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
+    <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <pmd-maven-plugin.version>3.21.2</pmd-maven-plugin.version>
+    <pmd.version>6.55.0</pmd.version>
+
+    <!-- Encoding -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <skip.integration.tests>false</skip.integration.tests>
+
+    <!-- Test Configuration -->
+    <skip.unit.tests>false</skip.unit.tests>
+    <spotbugs-maven-plugin.version>4.7.3.6</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.7.3</spotbugs.version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+
+    <!-- Spring Cloud Version -->
+    <spring-cloud.version>2023.0.3</spring-cloud.version>
+  </properties>
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <!-- Spring Cloud BOM -->
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Internal Project Dependencies -->
+      <dependency>
+        <groupId>com.urutare</groupId>
+        <artifactId>stockm-common-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- Core Build Plugins -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin.version}</version>
-                    <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                        <compilerArgs>
-                            <arg>-parameters</arg>
-                            <arg>-Xlint:all,-processing</arg>
-                        </compilerArgs>
-                    </configuration>
-                </plugin>
-                
-                <!-- Test Plugins -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                    <configuration>
-                        <skipTests>${skip.unit.tests}</skipTests>
-                        <argLine>
-                            --add-opens java.base/java.lang=ALL-UNNAMED
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Core Build Plugins -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <encoding>${project.build.sourceEncoding}</encoding>
+            <compilerArgs>
+              <arg>-parameters</arg>
+              <arg>-Xlint:all,-processing</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+
+        <!-- Test Plugins -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <skipTests>${skip.unit.tests}</skipTests>
+            <argLine>--add-opens java.base/java.lang=ALL-UNNAMED
                             --add-opens java.base/java.util=ALL-UNNAMED
                             --add-opens java.base/java.time=ALL-UNNAMED
-                            @{argLine}
-                        </argLine>
-                    </configuration>
-                </plugin>
-                
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven-failsafe-plugin.version}</version>
-                    <configuration>
-                        <skipTests>${skip.integration.tests}</skipTests>
-                        <includes>
-                            <include>**/*IT.java</include>
-                            <include>**/*IntegrationTest.java</include>
-                        </includes>
-                        <argLine>
-                            --add-opens java.base/java.lang=ALL-UNNAMED
+                            @{argLine}</argLine>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+          <configuration>
+            <skipTests>${skip.integration.tests}</skipTests>
+            <includes>
+              <include>**/*IT.java</include>
+              <include>**/*IntegrationTest.java</include>
+            </includes>
+            <argLine>--add-opens java.base/java.lang=ALL-UNNAMED
                             --add-opens java.base/java.util=ALL-UNNAMED
                             --add-opens java.base/java.time=ALL-UNNAMED
-                            @{argLine}
-                        </argLine>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>integration-test</goal>
-                                <goal>verify</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <!-- Code Coverage -->
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco-maven-plugin.version}</version>
-                    <configuration>
-                        <destFile>${jacoco.execution.data.file}</destFile>
-                        <dataFile>${jacoco.execution.data.file}</dataFile>
-                        <excludes>
-                            <exclude>**/config/**</exclude>
-                            <exclude>**/dto/**</exclude>
-                            <exclude>**/entity/**</exclude>
-                            <exclude>**/model/**</exclude>
-                            <exclude>**/*Application.class</exclude>
-                        </excludes>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>prepare-agent</id>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>prepare-agent-integration</id>
-                            <goals>
-                                <goal>prepare-agent-integration</goal>
-                            </goals>
-                            <configuration>
-                                <destFile>${jacoco.it.execution.data.file}</destFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>report</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>report</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>check</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <rule>
-                                        <element>BUNDLE</element>
-                                        <limits>
-                                            <limit>
-                                                <counter>INSTRUCTION</counter>
-                                                <value>COVEREDRATIO</value>
-                                                <minimum>${jacoco.minimum.coverage}</minimum>
-                                            </limit>
-                                        </limits>
-                                    </rule>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <!-- Code Formatting with Spotless -->
-                <plugin>
-                    <groupId>com.diffplug.spotless</groupId>
-                    <artifactId>spotless-maven-plugin</artifactId>
-                    <version>${spotless-maven-plugin.version}</version>
-                    <configuration>
-                        <java>
-                            <!-- Google Java Format -->
-                            <googleJavaFormat>
-                                <version>1.18.1</version>
-                                <style>GOOGLE</style>
-                                <reflowLongStrings>true</reflowLongStrings>
-                            </googleJavaFormat>
-                            
-                            <!-- Import order -->
-                            <importOrder>
-                                <order>java|javax,org,com,</order>
-                            </importOrder>
-                            
-                            <!-- Remove unused imports -->
-                            <removeUnusedImports />
-                            
-                            <!-- Format annotations -->
-                            <formatAnnotations />
-                            
-                            <!-- Custom rules -->
-                            <custom>
-                                <name>Block comment style</name>
-                                <call>com.diffplug.spotless.generic.PipeStepPair.create</call>
-                                <with>
-                                    <name>spotless:off</name>
-                                    <search>spotless:off</search>
-                                    <replace>spotless:off</replace>
-                                </with>
-                            </custom>
-                            
-                            <!-- License header -->
-                            <licenseHeader>
-                                <content>/*
+                            @{argLine}</argLine>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- Code Coverage -->
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco-maven-plugin.version}</version>
+          <configuration>
+            <destFile>${jacoco.execution.data.file}</destFile>
+            <dataFile>${jacoco.execution.data.file}</dataFile>
+            <excludes>
+              <exclude>**/config/**</exclude>
+              <exclude>**/dto/**</exclude>
+              <exclude>**/entity/**</exclude>
+              <exclude>**/model/**</exclude>
+              <exclude>**/*Application.class</exclude>
+            </excludes>
+          </configuration>
+          <executions>
+            <execution>
+              <id>prepare-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>prepare-agent-integration</id>
+              <goals>
+                <goal>prepare-agent-integration</goal>
+              </goals>
+              <configuration>
+                <destFile>${jacoco.it.execution.data.file}</destFile>
+              </configuration>
+            </execution>
+            <execution>
+              <id>check</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>verify</phase>
+              <configuration>
+                <rules>
+                  <rule>
+                    <element>BUNDLE</element>
+                    <limits>
+                      <limit>
+                        <counter>INSTRUCTION</counter>
+                        <value>COVEREDRATIO</value>
+                        <minimum>${jacoco.minimum.coverage}</minimum>
+                      </limit>
+                    </limits>
+                  </rule>
+                </rules>
+              </configuration>
+            </execution>
+            <execution>
+              <id>report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+              <phase>verify</phase>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- Code Formatting with Spotless -->
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless-maven-plugin.version}</version>
+          <configuration>
+            <java>
+              <!-- Google Java Format -->
+              <googleJavaFormat>
+                <version>1.18.1</version>
+                <style>GOOGLE</style>
+                <reflowLongStrings>true</reflowLongStrings>
+              </googleJavaFormat>
+
+              <!-- Import order -->
+              <importOrder>
+                <order>java|javax,org,com,</order>
+              </importOrder>
+
+              <!-- Remove unused imports -->
+              <removeUnusedImports></removeUnusedImports>
+
+              <!-- Format annotations -->
+              <formatAnnotations></formatAnnotations>
+
+              <!-- License header -->
+              <licenseHeader>
+                <content>/*
  * Copyright (c) $YEAR Urutare. All rights reserved.
  * 
  * Licensed under the MIT License. You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at: https://opensource.org/licenses/MIT
  */</content>
-                            </licenseHeader>
-                        </java>
-                        
-                        <pom>
-                            <!-- Sort POM -->
-                            <sortPom>
-                                <encoding>UTF-8</encoding>
-                                <lineSeparator>${line.separator}</lineSeparator>
-                                <expandEmptyElements>true</expandEmptyElements>
-                                <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
-                                <keepBlankLines>true</keepBlankLines>
-                                <indentBlankLines>false</indentBlankLines>
-                                <indentSchemaLocation>false</indentSchemaLocation>
-                                <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
-                                <sortProperties>true</sortProperties>
-                                <sortModules>true</sortModules>
-                                <sortExecutions>true</sortExecutions>
-                            </sortPom>
-                        </pom>
-                        
-                        <markdown>
-                            <includes>
-                                <include>**/*.md</include>
-                            </includes>
-                            <flexmark />
-                        </markdown>
-                        
-                        <yaml>
-                            <includes>
-                                <include>**/*.yml</include>
-                                <include>**/*.yaml</include>
-                            </includes>
-                            <jackson />
-                        </yaml>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <!-- Static Analysis Tools -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>${checkstyle-maven-plugin.version}</version>
-                    <configuration>
-                        <configLocation>checkstyle.xml</configLocation>
-                        <encoding>UTF-8</encoding>
-                        <consoleOutput>true</consoleOutput>
-                        <failsOnError>true</failsOnError>
-                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>${checkstyle.version}</version>
-                        </dependency>
-                    </dependencies>
-                    <executions>
-                        <execution>
-                            <id>validate</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-pmd-plugin</artifactId>
-                    <version>${pmd-maven-plugin.version}</version>
-                    <configuration>
-                        <sourceEncoding>UTF-8</sourceEncoding>
-                        <minimumTokens>100</minimumTokens>
-                        <targetJdk>${java.version}</targetJdk>
-                        <includeTests>true</includeTests>
-                        <failOnViolation>true</failOnViolation>
-                        <printFailingErrors>true</printFailingErrors>
-                        <rulesets>
-                            <ruleset>/category/java/bestpractices.xml</ruleset>
-                            <ruleset>/category/java/codestyle.xml</ruleset>
-                            <ruleset>/category/java/design.xml</ruleset>
-                            <ruleset>/category/java/errorprone.xml</ruleset>
-                            <ruleset>/category/java/performance.xml</ruleset>
-                            <ruleset>/category/java/security.xml</ruleset>
-                        </rulesets>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>net.sourceforge.pmd</groupId>
-                            <artifactId>pmd-core</artifactId>
-                            <version>${pmd.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>net.sourceforge.pmd</groupId>
-                            <artifactId>pmd-java</artifactId>
-                            <version>${pmd.version}</version>
-                        </dependency>
-                    </dependencies>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                                <goal>cpd-check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <plugin>
-                    <groupId>com.github.spotbugs</groupId>
-                    <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>${spotbugs-maven-plugin.version}</version>
-                    <configuration>
-                        <effort>Max</effort>
-                        <threshold>Low</threshold>
-                        <failOnError>true</failOnError>
-                        <includeFilterFile>spotbugs-include.xml</includeFilterFile>
-                        <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.github.spotbugs</groupId>
-                            <artifactId>spotbugs</artifactId>
-                            <version>${spotbugs.version}</version>
-                        </dependency>
-                    </dependencies>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <!-- Security Analysis -->
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>${dependency-check-maven.version}</version>
-                    <configuration>
-                        <suppressionFiles>
-                            <suppressionFile>owasp-dependency-check-suppressions.xml</suppressionFile>
-                        </suppressionFiles>
-                        <failBuildOnCVSS>8</failBuildOnCVSS>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                
-                <!-- Docker Plugin -->
-                <plugin>
-                    <groupId>io.fabric8</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <version>${docker-maven-plugin.version}</version>
-                    <configuration>
-                        <images>
-                            <image>
-                                <name>%g/%a:%v</name>
-                                <build>
-                                    <dockerFile>Dockerfile</dockerFile>
-                                    <args>
-                                        <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
-                                    </args>
-                                </build>
-                            </image>
-                        </images>
-                    </configuration>
-                </plugin>
-                
-                <!-- Spring Boot Plugin -->
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <configuration>
-                        <excludes>
-                            <exclude>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok</artifactId>
-                            </exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        
-        <!-- Default plugins applied to all modules -->
+              </licenseHeader>
+            </java>
+
+            <pom>
+              <!-- Sort POM -->
+              <sortPom>
+                <encoding>UTF-8</encoding>
+                <lineSeparator>${line.separator}</lineSeparator>
+                <expandEmptyElements>true</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
+                <keepBlankLines>true</keepBlankLines>
+                <indentBlankLines>false</indentBlankLines>
+                <indentSchemaLocation>false</indentSchemaLocation>
+                <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                <sortProperties>true</sortProperties>
+                <sortModules>true</sortModules>
+                <sortExecutions>true</sortExecutions>
+              </sortPom>
+            </pom>
+
+            <markdown>
+              <includes>
+                <include>**/*.md</include>
+              </includes>
+              <flexmark></flexmark>
+            </markdown>
+
+            <yaml>
+              <includes>
+                <include>**/*.yml</include>
+                <include>**/*.yaml</include>
+              </includes>
+              <jackson></jackson>
+            </yaml>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- Static Analysis Tools -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${checkstyle-maven-plugin.version}</version>
+          <configuration>
+            <configLocation>checkstyle.xml</configLocation>
+            <encoding>UTF-8</encoding>
+            <consoleOutput>true</consoleOutput>
+            <failsOnError>true</failsOnError>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${checkstyle.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>validate</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>validate</phase>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>${pmd-maven-plugin.version}</version>
+          <configuration>
+            <sourceEncoding>UTF-8</sourceEncoding>
+            <minimumTokens>100</minimumTokens>
+            <targetJdk>${java.version}</targetJdk>
+            <includeTests>true</includeTests>
+            <failOnViolation>true</failOnViolation>
+            <printFailingErrors>true</printFailingErrors>
+            <rulesets>
+              <ruleset>/category/java/bestpractices.xml</ruleset>
+              <ruleset>/category/java/codestyle.xml</ruleset>
+              <ruleset>/category/java/design.xml</ruleset>
+              <ruleset>/category/java/errorprone.xml</ruleset>
+              <ruleset>/category/java/performance.xml</ruleset>
+              <ruleset>/category/java/security.xml</ruleset>
+            </rulesets>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>net.sourceforge.pmd</groupId>
+              <artifactId>pmd-core</artifactId>
+              <version>${pmd.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.pmd</groupId>
+              <artifactId>pmd-java</artifactId>
+              <version>${pmd.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+                <goal>cpd-check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs-maven-plugin.version}</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>Low</threshold>
+            <failOnError>true</failOnError>
+            <includeFilterFile>spotbugs-include.xml</includeFilterFile>
+            <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.github.spotbugs</groupId>
+              <artifactId>spotbugs</artifactId>
+              <version>${spotbugs.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- Security Analysis -->
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>${dependency-check-maven.version}</version>
+          <configuration>
+            <suppressionFiles>
+              <suppressionFile>owasp-dependency-check-suppressions.xml</suppressionFile>
+            </suppressionFiles>
+            <failBuildOnCVSS>8</failBuildOnCVSS>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- Docker Plugin -->
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${docker-maven-plugin.version}</version>
+          <configuration>
+            <images>
+              <image>
+                <name>%g/%a:%v</name>
+                <build>
+                  <dockerFile>Dockerfile</dockerFile>
+                  <args>
+                    <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
+                  </args>
+                </build>
+              </image>
+            </images>
+          </configuration>
+        </plugin>
+
+        <!-- Spring Boot Plugin -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+              </exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <!-- Default plugins applied to all modules -->
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- Build Profiles -->
+  <profiles>
+    <!-- Development Profile -->
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <jacoco.minimum.coverage>0.70</jacoco.minimum.coverage>
+        <skip.integration.tests>true</skip.integration.tests>
+        <spring.profiles.active>dev</spring.profiles.active>
+      </properties>
+    </profile>
+
+    <!-- Production Profile -->
+    <profile>
+      <id>prod</id>
+      <properties>
+        <jacoco.minimum.coverage>0.85</jacoco.minimum.coverage>
+        <skip.integration.tests>false</skip.integration.tests>
+        <skip.unit.tests>false</skip.unit.tests>
+        <spring.profiles.active>prod</spring.profiles.active>
+      </properties>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-            </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+          </plugin>
         </plugins>
-    </build>
-    
-    <!-- Build Profiles -->
-    <profiles>
-        <!-- Development Profile -->
-        <profile>
-            <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <spring.profiles.active>dev</spring.profiles.active>
-                <skip.integration.tests>true</skip.integration.tests>
-                <jacoco.minimum.coverage>0.70</jacoco.minimum.coverage>
-            </properties>
-        </profile>
-        
-        <!-- Production Profile -->
-        <profile>
-            <id>prod</id>
-            <properties>
-                <spring.profiles.active>prod</spring.profiles.active>
-                <skip.unit.tests>false</skip.unit.tests>
-                <skip.integration.tests>false</skip.integration.tests>
-                <jacoco.minimum.coverage>0.85</jacoco.minimum.coverage>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-checkstyle-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-pmd-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs-maven-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        
-        <!-- Testing Profile -->
-        <profile>
-            <id>test</id>
-            <properties>
-                <spring.profiles.active>test</spring.profiles.active>
-                <skip.unit.tests>false</skip.unit.tests>
-                <skip.integration.tests>false</skip.integration.tests>
-            </properties>
-        </profile>
-        
-        <!-- Docker Profile -->
-        <profile>
-            <id>docker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>build-image</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>build</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        
-        <!-- Code Quality Profile -->
-        <profile>
-            <id>quality</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-checkstyle-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-pmd-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs-maven-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        
-        <!-- Quick Build Profile (Skip tests and quality checks) -->
-        <profile>
-            <id>quick</id>
-            <properties>
-                <skip.unit.tests>true</skip.unit.tests>
-                <skip.integration.tests>true</skip.integration.tests>
-                <spotless.check.skip>true</spotless.check.skip>
-                <checkstyle.skip>true</checkstyle.skip>
-                <pmd.skip>true</pmd.skip>
-                <spotbugs.skip>true</spotbugs.skip>
-                <dependency-check.skip>true</dependency-check.skip>
-            </properties>
-        </profile>
-    </profiles>
+      </build>
+    </profile>
+
+    <!-- Testing Profile -->
+    <profile>
+      <id>test</id>
+      <properties>
+        <skip.integration.tests>false</skip.integration.tests>
+        <skip.unit.tests>false</skip.unit.tests>
+        <spring.profiles.active>test</spring.profiles.active>
+      </properties>
+    </profile>
+
+    <!-- Docker Profile -->
+    <profile>
+      <id>docker</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-image</id>
+                <goals>
+                  <goal>build</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Code Quality Profile -->
+    <profile>
+      <id>quality</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Quick Build Profile (Skip tests and quality checks) -->
+    <profile>
+      <id>quick</id>
+      <properties>
+        <checkstyle.skip>true</checkstyle.skip>
+        <dependency-check.skip>true</dependency-check.skip>
+        <pmd.skip>true</pmd.skip>
+        <skip.integration.tests>true</skip.integration.tests>
+        <skip.unit.tests>true</skip.unit.tests>
+        <spotbugs.skip>true</spotbugs.skip>
+        <spotless.check.skip>true</spotless.check.skip>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

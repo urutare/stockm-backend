@@ -39,3 +39,4 @@ Account type will have this new fields:
 - optinalAccounts - boolean: this will enforce user to select account while creating a transaction.
   -originBusinessId - string: this will be used to identify the business id of business created the account type.
 - unverified (Optional): if true, will be visible only to the origin business
+

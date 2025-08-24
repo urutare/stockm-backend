@@ -85,6 +85,7 @@ make down
 ## 📁 Project Structure
 
 ### Core Microservices
+
 ```
 stockm-backend/
 ├── stockm-discovery-service/    # Eureka service registry (Port 8761)
@@ -101,6 +102,7 @@ stockm-backend/
 ```
 
 ### POS System Modules
+
 ```
 POS Framework/
 ├── POSBase/                     # Base POS framework
@@ -289,7 +291,7 @@ Interactive API documentation available at:
 ### Test Categories
 
 1. **Unit Tests** - Fast, isolated component tests
-2. **Integration Tests** - Service integration validation  
+2. **Integration Tests** - Service integration validation
 3. **Contract Tests** - API contract verification
 4. **End-to-End Tests** - Full workflow validation
 
@@ -349,6 +351,7 @@ kubectl apply -f k8s.yaml
    - VS Code: Use `ingenzi-cis.code-workspace`
    - IntelliJ: Import as Maven project
 3. Run code quality checks before committing:
+
    ```bash
    ./mvnw spotless:apply
    ./mvnw verify -Pquality

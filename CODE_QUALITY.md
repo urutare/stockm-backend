@@ -27,6 +27,7 @@ The project enforces strict code quality standards through automated tools and p
 - Markdown and YAML formatting
 
 **Usage**:
+
 ```bash
 # Check formatting
 ./mvnw spotless:check
@@ -60,6 +61,7 @@ The project enforces strict code quality standards through automated tools and p
 **Suppressions**: `checkstyle-suppressions.xml` for legitimate exceptions
 
 **Usage**:
+
 ```bash
 # Run Checkstyle analysis
 ./mvnw checkstyle:check
@@ -83,6 +85,7 @@ The project enforces strict code quality standards through automated tools and p
 - Security
 
 **Usage**:
+
 ```bash
 # Run PMD analysis
 ./mvnw pmd:check
@@ -98,7 +101,7 @@ The project enforces strict code quality standards through automated tools and p
 
 **Purpose**: Static analysis to find potential bugs and security vulnerabilities
 
-**Configuration**: 
+**Configuration**:
 - Include file: `spotbugs-include.xml`
 - Exclude file: `spotbugs-exclude.xml`
 
@@ -110,6 +113,7 @@ The project enforces strict code quality standards through automated tools and p
 - Bad practices
 
 **Usage**:
+
 ```bash
 # Run SpotBugs analysis
 ./mvnw spotbugs:check
@@ -134,6 +138,7 @@ The project enforces strict code quality standards through automated tools and p
 - Class coverage
 
 **Usage**:
+
 ```bash
 # Run tests with coverage
 ./mvnw test
@@ -158,6 +163,7 @@ The project enforces strict code quality standards through automated tools and p
 - CI/CD integration
 
 **Usage**:
+
 ```bash
 # Run security scan
 ./mvnw org.owasp:dependency-check-maven:check
@@ -169,18 +175,22 @@ The project enforces strict code quality standards through automated tools and p
 ## 🎯 Build Profiles
 
 ### Development Profile (default)
+
 ```bash
 ./mvnw clean package
 ```
+
 - Spotless formatting check
 - JaCoCo coverage collection
 - Unit tests only
 - Minimum coverage: 70%
 
 ### Production Profile
+
 ```bash
 ./mvnw clean package -Pprod
 ```
+
 - All quality tools enabled
 - Full test suite (unit + integration)
 - Minimum coverage: 85%
@@ -188,18 +198,22 @@ The project enforces strict code quality standards through automated tools and p
 - Docker image building
 
 ### Quality Profile
+
 ```bash
 ./mvnw clean package -Pquality
 ```
+
 - Comprehensive quality analysis
 - All static analysis tools
 - Detailed reporting
 - Quality gate enforcement
 
 ### Quick Profile
+
 ```bash
 ./mvnw clean package -Pquick
 ```
+
 - Skip all quality checks
 - Skip tests
 - Fast build for development
@@ -207,39 +221,44 @@ The project enforces strict code quality standards through automated tools and p
 ## 📊 Quality Metrics and Thresholds
 
 ### Code Coverage Targets
-| Component Type | Minimum Coverage |
-|---|---|
-| Service Classes | 90% |
-| Repository Classes | 85% |
-| Controller Classes | 80% |
-| Utility Classes | 95% |
-| DTOs/Entities | Excluded |
+
+|   Component Type   | Minimum Coverage |
+|--------------------|------------------|
+| Service Classes    | 90%              |
+| Repository Classes | 85%              |
+| Controller Classes | 80%              |
+| Utility Classes    | 95%              |
+| DTOs/Entities      | Excluded         |
 
 ### Code Quality Thresholds
-| Metric | Threshold |
-|---|---|
-| Cyclomatic Complexity | < 10 |
-| Method Length | < 50 lines |
-| Class Length | < 500 lines |
-| Parameter Count | < 7 |
-| Nested Depth | < 4 |
+
+|        Metric         |  Threshold  |
+|-----------------------|-------------|
+| Cyclomatic Complexity | < 10        |
+| Method Length         | < 50 lines  |
+| Class Length          | < 500 lines |
+| Parameter Count       | < 7         |
+| Nested Depth          | < 4         |
 
 ### Security Standards
-| Check | Requirement |
-|---|---|
-| CVSS Score | < 8.0 (High) |
-| Known Vulnerabilities | 0 Critical |
-| Security Hotspots | Manual Review |
-| Hardcoded Secrets | Not Allowed |
+
+|         Check         |  Requirement  |
+|-----------------------|---------------|
+| CVSS Score            | < 8.0 (High)  |
+| Known Vulnerabilities | 0 Critical    |
+| Security Hotspots     | Manual Review |
+| Hardcoded Secrets     | Not Allowed   |
 
 ## 🔄 Quality Gate Workflow
 
 ### Pre-commit Checks
+
 1. **Spotless** formatting validation
 2. **Unit tests** execution
 3. **Basic coverage** check (70%)
 
 ### CI/CD Pipeline
+
 1. **Build** compilation
 2. **Unit tests** with coverage
 3. **Integration tests**
@@ -249,6 +268,7 @@ The project enforces strict code quality standards through automated tools and p
 7. **Artifact** generation
 
 ### Quality Gate Criteria
+
 - ✅ All tests pass
 - ✅ Coverage ≥ threshold
 - ✅ No high-severity security issues
@@ -258,12 +278,14 @@ The project enforces strict code quality standards through automated tools and p
 ## 🛡️ Security Standards
 
 ### Dependency Management
+
 - Regular dependency updates
 - Vulnerability scanning
 - License compliance
 - Supply chain security
 
 ### Code Security
+
 - Input validation
 - SQL injection prevention
 - XSS protection
@@ -271,6 +293,7 @@ The project enforces strict code quality standards through automated tools and p
 - Secure configuration
 
 ### Secrets Management
+
 - No hardcoded secrets
 - Environment-based configuration
 - Encrypted sensitive data
@@ -279,18 +302,21 @@ The project enforces strict code quality standards through automated tools and p
 ## 📝 Documentation Standards
 
 ### JavaDoc Requirements
+
 - All public APIs documented
 - Parameter and return descriptions
 - Exception documentation
 - Example usage where applicable
 
 ### Code Comments
+
 - Explain complex business logic
 - Document assumptions
 - Clarify non-obvious implementations
 - Avoid obvious comments
 
 ### Architecture Documentation
+
 - Module interactions
 - Design decisions
 - API contracts
@@ -299,13 +325,14 @@ The project enforces strict code quality standards through automated tools and p
 ## 🚀 IDE Configuration
 
 ### VS Code Setup
+
 1. Install extensions:
    - Extension Pack for Java
    - Spotless
    - SonarLint
    - Checkstyle
-
 2. Configure settings:
+
    ```json
    {
      "java.format.settings.url": "./checkstyle.xml",
@@ -315,12 +342,12 @@ The project enforces strict code quality standards through automated tools and p
    ```
 
 ### IntelliJ IDEA Setup
+
 1. Install plugins:
    - Google Java Format
    - Checkstyle-IDEA
    - SonarLint
    - PMD
-
 2. Import code style from `checkstyle.xml`
 3. Enable format on save
 4. Configure quality tool integrations
@@ -330,6 +357,7 @@ The project enforces strict code quality standards through automated tools and p
 ### Common Issues
 
 **Spotless Formatting Failures**
+
 ```bash
 # Fix automatically
 ./mvnw spotless:apply
@@ -339,6 +367,7 @@ The project enforces strict code quality standards through automated tools and p
 ```
 
 **Checkstyle Violations**
+
 ```bash
 # Generate detailed report
 ./mvnw checkstyle:checkstyle
@@ -347,6 +376,7 @@ The project enforces strict code quality standards through automated tools and p
 ```
 
 **Coverage Below Threshold**
+
 ```bash
 # Check coverage report
 ./mvnw jacoco:report
@@ -355,6 +385,7 @@ The project enforces strict code quality standards through automated tools and p
 ```
 
 **Security Vulnerabilities**
+
 ```bash
 # Update dependencies
 ./mvnw versions:display-dependency-updates
@@ -366,16 +397,19 @@ The project enforces strict code quality standards through automated tools and p
 ### Quality Tool Debugging
 
 **Enable Verbose Output**
+
 ```bash
 ./mvnw clean package -Pquality -X
 ```
 
 **Skip Specific Tools**
+
 ```bash
 ./mvnw clean package -Dcheckstyle.skip=true -Dpmd.skip=true
 ```
 
 **Generate All Reports**
+
 ```bash
 ./mvnw clean verify site
 ```
@@ -383,18 +417,21 @@ The project enforces strict code quality standards through automated tools and p
 ## 📈 Continuous Improvement
 
 ### Regular Tasks
+
 - Weekly dependency updates
 - Monthly quality metrics review
 - Quarterly tool version updates
 - Annual standards review
 
 ### Quality Metrics Tracking
+
 - Code coverage trends
 - Security vulnerability counts
 - Code smell evolution
 - Test execution performance
 
 ### Tool Updates
+
 - Monitor tool releases
 - Evaluate new quality tools
 - Update configurations

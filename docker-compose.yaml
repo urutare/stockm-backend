@@ -1,388 +1,389 @@
+---
 services:
   discovery-server:
-    image: urutare/service-discovery
-    restart: always
+    image: "urutare/service-discovery"
+    restart: "always"
     ports:
-      - "8761:8761"
-    container_name: discovery-server
+    - "8761:8761"
+    container_name: "discovery-server"
     environment:
-      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
+    - "EUREKA_SERVER_URL=http://discovery-server:8761/eureka"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     deploy:
       resources:
         limits:
-          memory: 256M  # Limiting memory usage
-
+          memory: "256M"
   api-gateway:
-    image: 'urutare/api-gateway-service:latest'
+    image: "urutare/api-gateway-service:latest"
     ports:
-      - "8080:8080"
-    restart: on-failure
-    container_name: api-gateway
+    - "8080:8080"
+    restart: "on-failure"
+    container_name: "api-gateway"
     environment:
-      SPRING_APPLICATION_NAME: api-gateway
-      SPRING_CLOUD_GATEWAY_DEFAULT_FILTERS[0]: AuthenticationFilter
-      SPRING_CLOUD_GATEWAY_ROUTES[0]_ID: payment-service
-      SPRING_CLOUD_GATEWAY_ROUTES[0]_URI: http://payment-service:8086
-      SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]: Path=/api/v1/payment-service/**
-      SPRING_CLOUD_GATEWAY_ROUTES[1]_ID: user-service
-      SPRING_CLOUD_GATEWAY_ROUTES[1]_URI: http://user-service:8081
-      SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]: Path=/api/v1/user-service/**
-      SPRING_CLOUD_GATEWAY_ROUTES[2]_ID: category-service
-      SPRING_CLOUD_GATEWAY_ROUTES[2]_URI: http://category-service:8082
-      SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[0]: Path=/api/v1/category-service/**
-      SPRING_CLOUD_GATEWAY_ROUTES[3]_ID: stock-service
-      SPRING_CLOUD_GATEWAY_ROUTES[3]_URI: http://stock-service:8084
-      SPRING_CLOUD_GATEWAY_ROUTES[3]_PREDICATES[0]: Path=/api/v1/stock-service/**
-      SPRING_CLOUD_GATEWAY_ROUTES[4]_ID: sync-service
-      SPRING_CLOUD_GATEWAY_ROUTES[4]_URI: http://sync-service:8083
-      SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[0]: Path=/api/v1/sync-service/**
-      # SPRING_CLOUD_GATEWAY_ROUTES[5]_ID: sms-service
-      # SPRING_CLOUD_GATEWAY_ROUTES[5]_URI: http://sms-service:8000
-      # SPRING_CLOUD_GATEWAY_ROUTES[5]_PREDICATES[0]: Path=/api/v1/sms-service/**
-      # SPRING_CLOUD_GATEWAY_ROUTES[5]_FILTERS[0]: ""
+      SPRING_APPLICATION_NAME: "api-gateway"
+      SPRING_CLOUD_GATEWAY_DEFAULT_FILTERS[0]: "AuthenticationFilter"
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_ID: "payment-service"
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_URI: "http://payment-service:8086"
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]: "Path=/api/v1/payment-service/**"
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_ID: "user-service"
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_URI: "http://user-service:8081"
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]: "Path=/api/v1/user-service/**"
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_ID: "category-service"
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_URI: "http://category-service:8082"
+      SPRING_CLOUD_GATEWAY_ROUTES[2]_PREDICATES[0]: "Path=/api/v1/category-service/**"
+      SPRING_CLOUD_GATEWAY_ROUTES[3]_ID: "stock-service"
+      SPRING_CLOUD_GATEWAY_ROUTES[3]_URI: "http://stock-service:8084"
+      SPRING_CLOUD_GATEWAY_ROUTES[3]_PREDICATES[0]: "Path=/api/v1/stock-service/**"
+      SPRING_CLOUD_GATEWAY_ROUTES[4]_ID: "sync-service"
+      SPRING_CLOUD_GATEWAY_ROUTES[4]_URI: "http://sync-service:8083"
+      SPRING_CLOUD_GATEWAY_ROUTES[4]_PREDICATES[0]: "Path=/api/v1/sync-service/**"
     depends_on:
-      - discovery-server
+    - "discovery-server"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Setting memory limit for API Gateway
-
+          memory: "512M"
   postgres-db:
-    image: 'postgres:16'
-    container_name: postgres-db
-    restart: always
+    image: "postgres:16"
+    container_name: "postgres-db"
+    restart: "always"
     ports:
-      - "5435:5432"
+    - "5435:5432"
     environment:
-      - POSTGRES_DB=kong
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=admin123!
-    command: [ "postgres", "-c", "max_connections=200", "-c", "timezone=Etc/UTC", "-c", "default_text_search_config=pg_catalog.english" ]
+    - "POSTGRES_DB=kong"
+    - "POSTGRES_USER=postgres"
+    - "POSTGRES_PASSWORD=admin123!"
+    command:
+    - "postgres"
+    - "-c"
+    - "max_connections=200"
+    - "-c"
+    - "timezone=Etc/UTC"
+    - "-c"
+    - "default_text_search_config=pg_catalog.english"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d
+    - "postgres-data:/var/lib/postgresql/data"
+    - "./db-init:/docker-entrypoint-initdb.d"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for Postgres
-
+          memory: "512M"
   mysql_db:
-    image: 'mysql:9.0.1'
-    container_name: mysql_db
-    restart: always
+    image: "mysql:9.0.1"
+    container_name: "mysql_db"
+    restart: "always"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: PMS_db
-      MYSQL_USER: laravel_user
-      MYSQL_PASSWORD: laravel_password
+      MYSQL_ROOT_PASSWORD: "rootpassword"
+      MYSQL_DATABASE: "PMS_db"
+      MYSQL_USER: "laravel_user"
+      MYSQL_PASSWORD: "laravel_password"
     ports:
-      - "2306:3306"
+    - "2306:3306"
     volumes:
-      - dbdata:/var/lib/mysql
+    - "dbdata:/var/lib/mysql"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword" ]
-      interval: 10s
-      timeout: 5s
+      test:
+      - "CMD"
+      - "mysqladmin"
+      - "ping"
+      - "-h"
+      - "localhost"
+      - "-u"
+      - "root"
+      - "-prootpassword"
+      interval: "10s"
+      timeout: "5s"
       retries: 3
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for MySQL
-
+          memory: "512M"
   memcached:
-    image: 'memcached:alpine'
-    container_name: memcached
-    restart: always
+    image: "memcached:alpine"
+    container_name: "memcached"
+    restart: "always"
     ports:
-      - "11211:11211"
+    - "11211:11211"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     healthcheck:
-      test: [ "CMD", "echo", "stats" ]  # Health check for Memcached
-      interval: 10s
-      timeout: 5s
+      test:
+      - "CMD"
+      - "echo"
+      - "stats"
+      interval: "10s"
+      timeout: "5s"
       retries: 3
     deploy:
       resources:
         limits:
-          memory: 128M  # Limiting memory for Memcached
-
+          memory: "128M"
   redis_cache:
-    container_name: redis
-    image: 'bitnami/redis:latest'
-    restart: always
+    container_name: "redis"
+    image: "bitnami/redis:latest"
+    restart: "always"
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
+    - "ALLOW_EMPTY_PASSWORD=yes"
     ports:
-      - "7379:6379"
+    - "7379:6379"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
+      test:
+      - "CMD"
+      - "redis-cli"
+      - "ping"
+      interval: "10s"
+      timeout: "5s"
       retries: 3
     deploy:
       resources:
         limits:
-          memory: 256M  # Limiting memory for Redis
-
+          memory: "256M"
   zookeeper-server:
-    image: 'bitnami/zookeeper:latest'
+    image: "bitnami/zookeeper:latest"
     container_name: "zookeeper-server"
     ports:
-      - '2181:2181'
+    - "2181:2181"
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+    - "ALLOW_ANONYMOUS_LOGIN=yes"
     networks:
-      - kafka-network
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 256M  # Limiting memory for Zookeeper
-
+          memory: "256M"
   kafka-broker:
-    image: 'bitnami/kafka:latest'
+    image: "bitnami/kafka:latest"
     container_name: "kafka-broker"
     ports:
-      - '19092:9092'
-      - '9093:9093'
-      - '29092:29092'
+    - "19092:9092"
+    - "9093:9093"
+    - "29092:29092"
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://137.184.26.162:29092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE
-      - KAFKA_CFG_BROKER_ID=1
-      - ALLOW_PLAINTEXT_LISTENER=yes
+    - "KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181"
+    - "KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka-broker:9092,OUTSIDE://137.184.26.162:29092"
+    - "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_CFG_LISTENERS=INSIDE://:9092,OUTSIDE://:29092"
+    - "KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CFG_BROKER_ID=1"
+    - "ALLOW_PLAINTEXT_LISTENER=yes"
     depends_on:
-      - zookeeper-server
+    - "zookeeper-server"
     networks:
-      - kafka-network
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for Kafka
-
+          memory: "512M"
   kafdrop:
-    image: 'obsidiandynamics/kafdrop:latest'
-    container_name: kafdrop
+    image: "obsidiandynamics/kafdrop:latest"
+    container_name: "kafdrop"
     ports:
-      - '9000:9000'
+    - "9000:9000"
     environment:
-      KAFKA_BROKERCONNECT: kafka-broker:9092
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
+      KAFKA_BROKERCONNECT: "kafka-broker:9092"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://localhost:8761/eureka"
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
     depends_on:
-      - kafka-broker
+    - "kafka-broker"
     networks:
-      - kafka-network
-      - urutare-inc-network
+    - "kafka-network"
+    - "urutare-inc-network"
     deploy:
       resources:
         limits:
-          memory: 128M  # Limiting memory for Kafdrop
-
+          memory: "128M"
   portainer:
-    image: 'portainer/portainer-ce:latest'
-    container_name: portainer
-    restart: always
+    image: "portainer/portainer-ce:latest"
+    container_name: "portainer"
+    restart: "always"
     ports:
-      - "9001:9000"
+    - "9001:9000"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "portainer_data:/data"
+    - "/var/run/docker.sock:/var/run/docker.sock"
+    - "portainer_data:/data"
     depends_on:
-      - api-gateway
+    - "api-gateway"
     networks:
-      - urutare-inc-network
+    - "urutare-inc-network"
     deploy:
       resources:
         limits:
-          memory: 128M  # Limiting memory for Portainer
-
+          memory: "128M"
   user-service:
-    image: 'urutare/user-service:latest'
-    restart: on-failure
+    image: "urutare/user-service:latest"
+    restart: "on-failure"
     ports:
-      - "8081:8081"
-    container_name: user-service
+    - "8081:8081"
+    container_name: "user-service"
     env_file:
-      - ./secrets/.env
+    - "./secrets/.env"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_APPLICATION_NAME=user-service
-      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/"
+    - "SPRING_APPLICATION_NAME=user-service"
+    - "EUREKA_INSTANCE_PREFER_IP_ADDRESS=true"
     depends_on:
-      - api-gateway
-      - postgres-db
-      - kafka-broker
+    - "api-gateway"
+    - "postgres-db"
+    - "kafka-broker"
     networks:
-      - urutare-inc-network
-      - kafka-network
+    - "urutare-inc-network"
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for User Service
-
+          memory: "512M"
   category-service:
-    image: 'urutare/category-service:latest'
+    image: "urutare/category-service:latest"
     ports:
-      - "8082:8082"
-    restart: on-failure
-    container_name: category-service
+    - "8082:8082"
+    restart: "on-failure"
+    container_name: "category-service"
     env_file:
-      - ./secrets/.env
+    - "./secrets/.env"
     depends_on:
-      - api-gateway
-      - kafka-broker
-      - postgres-db
+    - "api-gateway"
+    - "kafka-broker"
+    - "postgres-db"
     networks:
-      - urutare-inc-network
-      - kafka-network
+    - "urutare-inc-network"
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for Category Service
-
+          memory: "512M"
   stock-service:
-    image: 'urutare/stock-service:latest'
-    restart: on-failure
+    image: "urutare/stock-service:latest"
+    restart: "on-failure"
     ports:
-      - "8084:8084"
-    container_name: stock-service
+    - "8084:8084"
+    container_name: "stock-service"
     env_file:
-      - ./secrets/.env
+    - "./secrets/.env"
     environment:
-      - SERVER_PORT=8084
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
-      - SPRING_APPLICATION_NAME=stock-service
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/stock_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=admin123!
-      - SPRING_JPA_SHOW_SQL=true
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
-      - SPRING_GRAPHQL_GRAPHIQL_ENABLED=true
-      - SPRING_GRAPHQL_GRAPHIQL_PATH=/graphiql
+    - "SERVER_PORT=8084"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka"
+    - "SPRING_APPLICATION_NAME=stock-service"
+    - "SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/stock_db"
+    - "SPRING_DATASOURCE_USERNAME=postgres"
+    - "SPRING_DATASOURCE_PASSWORD=admin123!"
+    - "SPRING_JPA_SHOW_SQL=true"
+    - "SPRING_JPA_HIBERNATE_DDL_AUTO=update"
+    - "LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug"
+    - "SPRING_GRAPHQL_GRAPHIQL_ENABLED=true"
+    - "SPRING_GRAPHQL_GRAPHIQL_PATH=/graphiql"
     depends_on:
-      - api-gateway
-      - discovery-server
-      - postgres-db
+    - "api-gateway"
+    - "discovery-server"
+    - "postgres-db"
     networks:
-      - urutare-inc-network
-      - kafka-network
+    - "urutare-inc-network"
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for Stock Service
-
+          memory: "512M"
   sync-service:
-    image: 'urutare/sync-service:latest'
+    image: "urutare/sync-service:latest"
     ports:
-      - "8083:8080"
-      - "5000:5000"
-    restart: on-failure
-    container_name: sync-service
+    - "8083:8080"
+    - "5000:5000"
+    restart: "on-failure"
+    container_name: "sync-service"
     env_file:
-      - ./secrets/.env
+    - "./secrets/.env"
     environment:
-      - SERVER_PORT=8080
-      - SOCKET_IO_PORT=5000
+    - "SERVER_PORT=8080"
+    - "SOCKET_IO_PORT=5000"
     depends_on:
-      - discovery-server
-      - api-gateway
-      - postgres-db
-      - kafka-broker
+    - "discovery-server"
+    - "api-gateway"
+    - "postgres-db"
+    - "kafka-broker"
     networks:
-      - urutare-inc-network
-      - kafka-network
+    - "urutare-inc-network"
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for Sync Service
-
+          memory: "512M"
   sms-service:
-    restart: on-failure
-    image: 'urutare/sms-service:latest'
-    container_name: sms-service
+    restart: "on-failure"
+    image: "urutare/sms-service:latest"
+    container_name: "sms-service"
     env_file:
-      - ./secrets/.env
-      - ./secrets/.env.sms
+    - "./secrets/.env"
+    - "./secrets/.env.sms"
     ports:
-      - "7001:8000"
+    - "7001:8000"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for SMS Service
+          memory: "512M"
     depends_on:
-      - discovery-server
-      - postgres-db
+    - "discovery-server"
+    - "postgres-db"
     networks:
-      - urutare-inc-network
-      - kafka-network
-
+    - "urutare-inc-network"
+    - "kafka-network"
   payment-service:
-    image: 'urutare/payment-service:latest'
+    image: "urutare/payment-service:latest"
     container_name: "payment-service"
-    restart: on-failure
+    restart: "on-failure"
     env_file:
-      - ./secrets/.env
+    - "./secrets/.env"
     environment:
-      - SERVER_PORT=8086
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - SPRING_APPLICATION_NAME=payment-service
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/payment_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=admin123!
-      - SPRING_JPA_SHOW_SQL=true
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug
-      - ENVIRONMENT=${ENVIRONMENT:-local}
-      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL}
-      - EMAIL_HOST=${EMAIL_HOST:-sandbox.smtp.mailtrap.io}
-      - EMAIL_PORT=${EMAIL_PORT:-2525}
-      - EMAIL_USERNAME=${EMAIL_USERNAME:-705d2be64f2ce5}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-a8ab4c437a6cff}
-      - MTN_MOMO_API=${MTN_MOMO_API}
-      - MTN_API_USER=${MTN_API_USER}
-      - MTN_API_KEY=${MTN_API_KEY}
-      - MTN_PRIMARY_KEY=${MTN_PRIMARY_KEY}
-      - MTN_SECONDARY_KEY=${MTN_SECONDARY_KEY}
-      - MTN_TARGET_ENV=${MTN_TARGET_ENV}
-      - MTN_CALLBACK_URL=${MTN_CALLBACK_URL}
+    - "SERVER_PORT=8086"
+    - "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/"
+    - "EUREKA_INSTANCE_PREFER_IP_ADDRESS=true"
+    - "SPRING_APPLICATION_NAME=payment-service"
+    - "SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/payment_db"
+    - "SPRING_DATASOURCE_USERNAME=postgres"
+    - "SPRING_DATASOURCE_PASSWORD=admin123!"
+    - "SPRING_JPA_SHOW_SQL=true"
+    - "SPRING_JPA_HIBERNATE_DDL_AUTO=update"
+    - "LOGGING_LEVEL_ORG_HIBERNATE_SQL=debug"
+    - "ENVIRONMENT=${ENVIRONMENT:-local}"
+    - "KAFKA_BROKER_URL=${KAFKA_BROKER_URL}"
+    - "EMAIL_HOST=${EMAIL_HOST:-sandbox.smtp.mailtrap.io}"
+    - "EMAIL_PORT=${EMAIL_PORT:-2525}"
+    - "EMAIL_USERNAME=${EMAIL_USERNAME:-705d2be64f2ce5}"
+    - "EMAIL_PASSWORD=${EMAIL_PASSWORD:-a8ab4c437a6cff}"
+    - "MTN_MOMO_API=${MTN_MOMO_API}"
+    - "MTN_API_USER=${MTN_API_USER}"
+    - "MTN_API_KEY=${MTN_API_KEY}"
+    - "MTN_PRIMARY_KEY=${MTN_PRIMARY_KEY}"
+    - "MTN_SECONDARY_KEY=${MTN_SECONDARY_KEY}"
+    - "MTN_TARGET_ENV=${MTN_TARGET_ENV}"
+    - "MTN_CALLBACK_URL=${MTN_CALLBACK_URL}"
     depends_on:
-      - discovery-server
-      - api-gateway
-      - postgres-db
-      - kafka-broker
+    - "discovery-server"
+    - "api-gateway"
+    - "postgres-db"
+    - "kafka-broker"
     networks:
-      - urutare-inc-network
-      - kafka-network
+    - "urutare-inc-network"
+    - "kafka-network"
     deploy:
       resources:
         limits:
-          memory: 512M  # Limiting memory for Payment Service
-
+          memory: "512M"
 networks:
   urutare-inc-network:
-    driver: bridge
+    driver: "bridge"
   kafka-network:
-    driver: bridge
-
+    driver: "bridge"
 volumes:
-  postgres-data:
-  kafka-data:
-  portainer_data:
-  dbdata:
+  postgres-data: null
+  kafka-data: null
+  portainer_data: null
+  dbdata: null
