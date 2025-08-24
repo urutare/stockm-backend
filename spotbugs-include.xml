@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Include high-priority security and correctness bugs -->
+    <Match>
+        <Bug category="SECURITY"/>
+    </Match>
+    <Match>
+        <Bug category="CORRECTNESS"/>
+    </Match>
+    <Match>
+        <Bug category="PERFORMANCE"/>
+    </Match>
+    <Match>
+        <Bug category="MT_CORRECTNESS"/>
+    </Match>
+    
+    <!-- Include specific patterns we want to catch -->
+    <Match>
+        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"/>
+    </Match>
+    <Match>
+        <Bug pattern="HARD_CODE_PASSWORD"/>
+    </Match>
+    <Match>
+        <Bug pattern="DMI_CONSTANT_DB_PASSWORD"/>
+    </Match>
+    <Match>
+        <Bug pattern="PATH_TRAVERSAL_IN"/>
+    </Match>
+    <Match>
+        <Bug pattern="PATH_TRAVERSAL_OUT"/>
+    </Match>
+</FindBugsFilter>

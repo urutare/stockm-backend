@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude test files from certain checks -->
+    <Match>
+        <Class name="~.*Test.*"/>
+        <Bug pattern="DM_NEXTINT_VIA_NEXTDOUBLE"/>
+    </Match>
+    <Match>
+        <Class name="~.*Test.*"/>
+        <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE"/>
+    </Match>
+    
+    <!-- Exclude generated code -->
+    <Match>
+        <Source name="~.*generated.*"/>
+    </Match>
+    <Match>
+        <Source name="~.*target.*"/>
+    </Match>
+    
+    <!-- Exclude DTOs and entities from certain checks -->
+    <Match>
+        <Class name="~.*DTO"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="~.*DTO"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="~.*Entity"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="~.*Entity"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    
+    <!-- Exclude Spring Boot configuration classes -->
+    <Match>
+        <Class name="~.*Configuration"/>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+    </Match>
+    <Match>
+        <Class name="~.*Config"/>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+    </Match>
+    
+    <!-- Exclude Spring Boot main application classes -->
+    <Match>
+        <Class name="~.*Application"/>
+        <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME"/>
+    </Match>
+    
+    <!-- Common false positives -->
+    <Match>
+        <Bug pattern="SE_BAD_FIELD"/>
+        <Field type="org.slf4j.Logger"/>
+    </Match>
+    <Match>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+        <Field annotation="org.springframework.beans.factory.annotation.Autowired"/>
+    </Match>
+    <Match>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+        <Field annotation="org.springframework.beans.factory.annotation.Value"/>
+    </Match>
+    <Match>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+        <Field annotation="javax.inject.Inject"/>
+    </Match>
+</FindBugsFilter>
