@@ -314,8 +314,9 @@ GITHUB_API_TOKEN=ghp_your_token_here ./deployment-monitor.sh monitor production
 ### Common Issues and Solutions
 
 #### 1. Repository Cloning Failures
-- **Cause**: GitHub access issues or rate limiting
-- **Solution**: Create a Personal Access Token at https://github.com/settings/tokens and use it with GITHUB_API_TOKEN environment variable
+- **Cause**: GitHub authentication issues or rate limiting
+- **Solution**: Workflows now automatically configure git authentication using the built-in `${{ secrets.GITHUB_TOKEN }}`
+- **Additional**: Ensure all repositories in the organization are accessible to the token
 
 #### 2. Docker Build Failures
 - **Cause**: Missing dependencies or build context
