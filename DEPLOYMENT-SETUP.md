@@ -228,6 +228,8 @@ git push origin dev
 
 ## Monitoring and Troubleshooting
 
+## Monitoring and Troubleshooting
+
 ### Service Health Endpoints
 
 After deployment, verify services at:
@@ -242,6 +244,49 @@ http://your-production-ip:8080/actuator/health  # API Gateway
 http://your-development-ip:8761/actuator/health
 http://your-development-ip:8888/actuator/health
 http://your-development-ip:8080/actuator/health
+```
+
+### Monitoring Tools
+
+#### Health Check Script
+Use the included health check script to monitor service status:
+
+```bash
+# Check all services in both environments
+./health-check.sh
+
+# Check production only
+./health-check.sh prod
+
+# Check development with custom host
+./health-check.sh -d dev.example.com dev
+
+# Verbose output with Docker status
+./health-check.sh -v both
+```
+
+#### Deployment Status Monitor
+Monitor GitHub Actions workflow status in real-time:
+
+```bash
+# Show deployment dashboard
+./deployment-monitor.sh
+
+# Monitor production deployment in real-time
+./deployment-monitor.sh monitor production
+
+# Get development workflow status
+./deployment-monitor.sh status development
+
+# Monitor with custom settings
+GITHUB_TOKEN=ghp_xxx ./deployment-monitor.sh monitor dev -i 10
+```
+
+**Note**: The deployment monitor requires `jq` for JSON processing:
+```bash
+# Install jq
+sudo apt-get install jq        # Ubuntu/Debian
+brew install jq                # macOS
 ```
 
 ### Common Issues and Solutions
