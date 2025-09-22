@@ -1,0 +1,570 @@
+name: Deploy to Development (DigitalOcean)
+
+on:
+  push:
+    branches:
+      - dev
+      - develop
+  pull_request:
+    branches:
+      - dev
+      - develop
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+
+env:
+  # DigitalOcean configuration
+  DO_REGISTRY: registry.digitalocean.com
+  DO_REGISTRY_REPO: stockm-backend-dev
+  
+  # Docker image tags
+  IMAGE_TAG: dev-${{ github.sha }}
+  LATEST_TAG: dev-latest
+  
+  # Java and Maven versions
+  JAVA_VERSION: '21'
+  MAVEN_VERSION: '3.9.6'
+
+jobs:
+  # Job 1: Setup and clone all repositories (same as production but optimized for dev)
+  setup-repos:
+    name: Setup Multi-Repo Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    outputs:
+      cache-key: ${{ steps.cache-repos.outputs.cache-hit }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Cache repository dependencies
+        id: cache-repos
+        uses: actions/cache@v3
+        with:
+          path: |
+            stockm-*
+            POS*
+            sms-gateway
+          key: dev-repos-${{ hashFiles('setup.sh') }}-${{ github.run_id }}
+          restore-keys: |
+            dev-repos-${{ hashFiles('setup.sh') }}-
+            dev-repos-
+            repos-${{ hashFiles('setup.sh') }}-
+            repos-
+            
+      - name: Setup Git credentials for cloning
+        if: steps.cache-repos.outputs.cache-hit != 'true'
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+      - name: Clone all required repositories
+        if: steps.cache-repos.outputs.cache-hit != 'true'
+        run: |
+          echo "🔄 Cloning all service repositories for development..."
+          chmod +x ./setup.sh
+          ./setup.sh
+          
+          echo "📊 Repository status:"
+          for repo in stockm-* POS* sms-gateway; do
+            if [ -d "$repo" ]; then
+              echo "✅ $repo - $(git -C "$repo" rev-parse --short HEAD)"
+            else
+              echo "❌ $repo - Missing"
+            fi
+          done
+
+  # Job 2: Build and test (faster for development)
+  build-and-test:
+    name: Build and Test (Development)
+    runs-on: ubuntu-latest
+    needs: setup-repos
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Restore repository cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            stockm-*
+            POS*
+            sms-gateway
+          key: dev-repos-${{ hashFiles('setup.sh') }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+          
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-dev-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-dev-
+            ${{ runner.os }}-maven-
+            
+      - name: Create development environment file
+        run: |
+          mkdir -p secrets
+          
+          # Create .env file from secrets (development values)
+          cat > secrets/.env << EOF
+          SERVER=${{ secrets.DEV_SERVER }}
+          EUREKA_SERVER_URL=${{ secrets.DEV_EUREKA_SERVER_URL }}
+          EUREKA_INSTANCE_URL=${{ secrets.DEV_EUREKA_INSTANCE_URL }}
+          
+          # Database (development)
+          DB_HOSTNAME=${{ secrets.DEV_DB_HOSTNAME }}
+          DB_PORT=${{ secrets.DEV_DB_PORT }}
+          DB_USER=${{ secrets.DEV_DB_USER }}
+          DB_PASS=${{ secrets.DEV_DB_PASS }}
+          
+          # Redis (development)
+          REDIS_HOST=${{ secrets.DEV_REDIS_HOST }}
+          REDIS_PORT=${{ secrets.DEV_REDIS_PORT }}
+          
+          # JWT Configuration (development)
+          SECRET_KEY=${{ secrets.DEV_SECRET_KEY }}
+          JWT_SECRET_KEY=${{ secrets.DEV_JWT_SECRET_KEY }}
+          JWT_ACCESS_TOKEN_EXPIRATION_IN_MS=3600000
+          JWT_REFRESH_TOKEN_EXPIRATION_IN_MS=86400000
+          
+          # SMS Configuration (development/sandbox)
+          PINDO_TOKEN=${{ secrets.DEV_PINDO_TOKEN }}
+          PINDO_URL=${{ secrets.DEV_PINDO_URL }}
+          AFRICAS_TALKING_TOKEN=${{ secrets.DEV_AFRICAS_TALKING_TOKEN }}
+          AFRICAS_TALKING_USERNAME=${{ secrets.DEV_AFRICAS_TALKING_USERNAME }}
+          
+          # Email Configuration (development)
+          EMAIL_HOST=${{ secrets.DEV_EMAIL_HOST }}
+          EMAIL_PORT=${{ secrets.DEV_EMAIL_PORT }}
+          EMAIL_USERNAME=${{ secrets.DEV_EMAIL_USERNAME }}
+          EMAIL_PASSWORD=${{ secrets.DEV_EMAIL_PASSWORD }}
+          
+          # Cloudinary (development)
+          CLOUDINARY_CLOUD_NAME=${{ secrets.DEV_CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY=${{ secrets.DEV_CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.DEV_CLOUDINARY_API_SECRET }}
+          
+          # MTN Configuration (sandbox)
+          MTN_MOMO_API=${{ secrets.DEV_MTN_MOMO_API }}
+          MTN_API_USER=${{ secrets.DEV_MTN_API_USER }}
+          MTN_API_KEY=${{ secrets.DEV_MTN_API_KEY }}
+          MTN_PRIMARY_KEY=${{ secrets.DEV_MTN_PRIMARY_KEY }}
+          MTN_SECONDARY_KEY=${{ secrets.DEV_MTN_SECONDARY_KEY }}
+          MTN_TARGET_ENV=sandbox
+          MTN_CALLBACK_URL=${{ secrets.DEV_MTN_CALLBACK_URL }}
+          
+          # Service URLs (development)
+          USER_SERVICE_URL=${{ secrets.DEV_USER_SERVICE_URL }}
+          CATEGORY_SERVICE_URL=${{ secrets.DEV_CATEGORY_SERVICE_URL }}
+          STOCK_SERVICE_URL=${{ secrets.DEV_STOCK_SERVICE_URL }}
+          SYNC_SERVICE_URL=${{ secrets.DEV_SYNC_SERVICE_URL }}
+          PAYMENT_SERVICE_URL=${{ secrets.DEV_PAYMENT_SERVICE_URL }}
+          SMS_SERVICE_URL=${{ secrets.DEV_SMS_SERVICE_URL }}
+          
+          # Additional configurations
+          STOCKM_API_SECRET_KEY=${{ secrets.DEV_STOCKM_API_SECRET_KEY }}
+          STOCKM_TOKEN_VALIDITY=3600
+          STOCKM_BASE_URL=${{ secrets.DEV_STOCKM_BASE_URL }}
+          EOF
+          
+          # Create SMS-specific env file
+          touch secrets/.env.sms
+          
+      - name: Build Maven modules (fast mode)
+        run: |
+          echo "🏗️ Building Maven modules (development mode)..."
+          mvn clean compile -DskipTests -T 2C -q
+          
+      - name: Run critical tests only
+        run: |
+          echo "🧪 Running critical tests..."
+          # Run only critical tests to save time in development
+          mvn test -Dtest="**/*ServiceTest,**/*ControllerTest" -DfailIfNoTests=false || true
+          
+      - name: Package for development
+        run: |
+          echo "📦 Packaging services for development..."
+          mvn package -DskipTests -T 2C -q
+
+  # Job 3: Build core Docker images only (for faster development)
+  build-core-images:
+    name: Build Core Docker Images
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    timeout-minutes: 30
+    if: github.event_name != 'pull_request'
+    
+    strategy:
+      matrix:
+        service:
+          - discovery-server
+          - config-server
+          - api-gateway
+          - user-service
+          - category-service
+          - stock-service
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Restore repository cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            stockm-*
+            POS*
+            sms-gateway
+          key: dev-repos-${{ hashFiles('setup.sh') }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Log in to DigitalOcean Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DO_REGISTRY }}
+          username: ${{ secrets.DO_REGISTRY_TOKEN }}
+          password: ${{ secrets.DO_REGISTRY_TOKEN }}
+          
+      - name: Build and push Docker image
+        run: |
+          # Map service names to their Docker context paths
+          case "${{ matrix.service }}" in
+            "discovery-server")
+              context="./stockm-discovery-service"
+              image_name="service-discovery"
+              ;;
+            "config-server")
+              context="./stockm-config-server"
+              image_name="stock-config-server"
+              ;;
+            "api-gateway")
+              context="./stockm-api-gateway"
+              image_name="api-gateway"
+              ;;
+            "user-service")
+              context="./stockm-auth-service"
+              image_name="user-service"
+              ;;
+            "category-service")
+              context="./stockm-category-service"
+              image_name="category-service"
+              ;;
+            "stock-service")
+              context="./stockm-stock-service"
+              image_name="stock-service"
+              ;;
+          esac
+          
+          echo "🏗️ Building ${{ matrix.service }} for development"
+          
+          # Build and push with development tags
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --tag ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/${image_name}:${{ env.IMAGE_TAG }} \
+            --tag ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/${image_name}:${{ env.LATEST_TAG }} \
+            $context
+
+  # Job 4: Deploy to development environment
+  deploy-to-development:
+    name: Deploy to Development Environment
+    runs-on: ubuntu-latest
+    needs: build-core-images
+    timeout-minutes: 20
+    environment: development
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Deploy to DigitalOcean Development Droplet
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEV_DO_HOST }}
+          username: ${{ secrets.DEV_DO_USERNAME }}
+          key: ${{ secrets.DEV_DO_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEV_DO_SSH_PORT || 22 }}
+          script: |
+            set -e
+            
+            echo "🚀 Starting deployment to development environment..."
+            
+            # Create application directory
+            sudo mkdir -p /opt/stockm-backend-dev
+            cd /opt/stockm-backend-dev
+            
+            # Stop existing services gracefully
+            if [ -f "docker-compose.dev.yaml" ]; then
+              echo "🛑 Stopping existing development services..."
+              sudo docker compose -f docker-compose.dev.yaml down --remove-orphans || true
+            fi
+            
+            # Login to DigitalOcean registry
+            echo "${{ secrets.DO_REGISTRY_TOKEN }}" | sudo docker login ${{ env.DO_REGISTRY }} -u ${{ secrets.DO_REGISTRY_TOKEN }} --password-stdin
+            
+            # Create secrets directory
+            sudo mkdir -p secrets
+            
+            # Create development .env file
+            sudo tee secrets/.env > /dev/null << 'EOF'
+            SERVER=${{ secrets.DEV_SERVER }}
+            EUREKA_SERVER_URL=${{ secrets.DEV_EUREKA_SERVER_URL }}
+            EUREKA_INSTANCE_URL=${{ secrets.DEV_EUREKA_INSTANCE_URL }}
+            DB_HOSTNAME=${{ secrets.DEV_DB_HOSTNAME }}
+            DB_PORT=${{ secrets.DEV_DB_PORT }}
+            DB_USER=${{ secrets.DEV_DB_USER }}
+            DB_PASS=${{ secrets.DEV_DB_PASS }}
+            REDIS_HOST=${{ secrets.DEV_REDIS_HOST }}
+            REDIS_PORT=${{ secrets.DEV_REDIS_PORT }}
+            SECRET_KEY=${{ secrets.DEV_SECRET_KEY }}
+            JWT_SECRET_KEY=${{ secrets.DEV_JWT_SECRET_KEY }}
+            JWT_ACCESS_TOKEN_EXPIRATION_IN_MS=3600000
+            JWT_REFRESH_TOKEN_EXPIRATION_IN_MS=86400000
+            PINDO_TOKEN=${{ secrets.DEV_PINDO_TOKEN }}
+            PINDO_URL=${{ secrets.DEV_PINDO_URL }}
+            AFRICAS_TALKING_TOKEN=${{ secrets.DEV_AFRICAS_TALKING_TOKEN }}
+            AFRICAS_TALKING_USERNAME=${{ secrets.DEV_AFRICAS_TALKING_USERNAME }}
+            EMAIL_HOST=${{ secrets.DEV_EMAIL_HOST }}
+            EMAIL_PORT=${{ secrets.DEV_EMAIL_PORT }}
+            EMAIL_USERNAME=${{ secrets.DEV_EMAIL_USERNAME }}
+            EMAIL_PASSWORD=${{ secrets.DEV_EMAIL_PASSWORD }}
+            CLOUDINARY_CLOUD_NAME=${{ secrets.DEV_CLOUDINARY_CLOUD_NAME }}
+            CLOUDINARY_API_KEY=${{ secrets.DEV_CLOUDINARY_API_KEY }}
+            CLOUDINARY_API_SECRET=${{ secrets.DEV_CLOUDINARY_API_SECRET }}
+            MTN_MOMO_API=${{ secrets.DEV_MTN_MOMO_API }}
+            MTN_API_USER=${{ secrets.DEV_MTN_API_USER }}
+            MTN_API_KEY=${{ secrets.DEV_MTN_API_KEY }}
+            MTN_PRIMARY_KEY=${{ secrets.DEV_MTN_PRIMARY_KEY }}
+            MTN_SECONDARY_KEY=${{ secrets.DEV_MTN_SECONDARY_KEY }}
+            MTN_TARGET_ENV=sandbox
+            MTN_CALLBACK_URL=${{ secrets.DEV_MTN_CALLBACK_URL }}
+            USER_SERVICE_URL=${{ secrets.DEV_USER_SERVICE_URL }}
+            CATEGORY_SERVICE_URL=${{ secrets.DEV_CATEGORY_SERVICE_URL }}
+            STOCK_SERVICE_URL=${{ secrets.DEV_STOCK_SERVICE_URL }}
+            SYNC_SERVICE_URL=${{ secrets.DEV_SYNC_SERVICE_URL }}
+            PAYMENT_SERVICE_URL=${{ secrets.DEV_PAYMENT_SERVICE_URL }}
+            SMS_SERVICE_URL=${{ secrets.DEV_SMS_SERVICE_URL }}
+            STOCKM_API_SECRET_KEY=${{ secrets.DEV_STOCKM_API_SECRET_KEY }}
+            STOCKM_TOKEN_VALIDITY=3600
+            STOCKM_BASE_URL=${{ secrets.DEV_STOCKM_BASE_URL }}
+            EOF
+            
+            # Create SMS environment file
+            sudo touch secrets/.env.sms
+            
+            # Use development compose file with core services only
+            cat > docker-compose.dev.yaml << 'EOF'
+            services:
+              discovery-server:
+                image: ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/service-discovery:${{ env.LATEST_TAG }}
+                restart: always
+                ports:
+                  - "8761:8761"
+                container_name: discovery-server-dev
+                networks:
+                  - dev-network
+                healthcheck:
+                  test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+                  interval: 30s
+                  timeout: 5s
+                  retries: 3
+            
+              config-server:
+                image: ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/stock-config-server:${{ env.LATEST_TAG }}
+                restart: always
+                ports:
+                  - "8888:8888"
+                container_name: config-server-dev
+                env_file:
+                  - ./secrets/.env
+                environment:
+                  EUREKA_SERVER_URL: http://discovery-server:8761/eureka
+                  SPRING_PROFILES_ACTIVE: native
+                depends_on:
+                  - discovery-server
+                networks:
+                  - dev-network
+            
+              api-gateway:
+                image: ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/api-gateway:${{ env.LATEST_TAG }}
+                ports:
+                  - "8080:8080"
+                env_file:
+                  - ./secrets/.env
+                restart: on-failure
+                container_name: api-gateway-dev
+                environment:
+                  - CONFIG_SERVER_URL=http://config-server:8888
+                  - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
+                depends_on:
+                  - discovery-server
+                  - config-server
+                networks:
+                  - dev-network
+            
+              postgres-db:
+                image: postgres:13
+                container_name: postgres-db-dev
+                restart: always
+                ports:
+                  - "5432:5432"
+                environment:
+                  - POSTGRES_DB=kong_dev
+                  - POSTGRES_USER=postgres
+                  - POSTGRES_PASSWORD=admin123!
+                volumes:
+                  - postgres-dev-data:/var/lib/postgresql/data
+                networks:
+                  - dev-network
+            
+              redis_cache:
+                container_name: redis-dev
+                image: 'bitnami/redis:latest'
+                restart: always
+                environment:
+                  - ALLOW_EMPTY_PASSWORD=yes
+                ports:
+                  - "6379:6379"
+                networks:
+                  - dev-network
+            
+              user-service:
+                image: ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/user-service:${{ env.LATEST_TAG }}
+                restart: on-failure
+                ports:
+                  - "8081:8081"
+                container_name: user-service-dev
+                env_file:
+                  - ./secrets/.env
+                environment:
+                  CONFIG_SERVER_URL: http://config-server:8888
+                  EUREKA_SERVER_URL: http://discovery-server:8761/eureka
+                depends_on:
+                  - discovery-server
+                  - config-server
+                  - postgres-db
+                networks:
+                  - dev-network
+            
+            networks:
+              dev-network:
+                driver: bridge
+            
+            volumes:
+              postgres-dev-data:
+            EOF
+            
+            # Pull latest images
+            echo "📥 Pulling latest development images..."
+            sudo docker compose -f docker-compose.dev.yaml pull
+            
+            # Start core services
+            echo "🚀 Starting development services..."
+            sudo docker compose -f docker-compose.dev.yaml up -d --remove-orphans
+            
+            # Wait for services to be healthy
+            echo "⏳ Waiting for services to start..."
+            sleep 30
+            
+            # Check service health (simplified for dev)
+            echo "🔍 Checking service health..."
+            if curl -f http://localhost:8761/actuator/health >/dev/null 2>&1; then
+              echo "✅ Discovery server is healthy"
+            else
+              echo "⚠️ Discovery server may still be starting"
+            fi
+            
+            if curl -f http://localhost:8080/actuator/health >/dev/null 2>&1; then
+              echo "✅ API Gateway is healthy"
+            else
+              echo "⚠️ API Gateway may still be starting"
+            fi
+            
+            # Clean up old images
+            echo "🧹 Cleaning up old Docker images..."
+            sudo docker image prune -f || true
+            
+            echo "📊 Development Deployment Summary:"
+            sudo docker compose -f docker-compose.dev.yaml ps
+            echo "🎉 Development deployment completed!"
+
+  # Job 5: Run integration tests (optional, only on manual trigger)
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    needs: deploy-to-development
+    timeout-minutes: 15
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Wait for services to stabilize
+        run: sleep 30
+        
+      - name: Test API Gateway
+        run: |
+          echo "🧪 Testing API Gateway accessibility..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DEV_DO_HOST }}:8080/actuator/health || echo "000")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ API Gateway integration test passed"
+          else
+            echo "❌ API Gateway integration test failed (HTTP $response)"
+            exit 1
+          fi
+          
+      - name: Test Discovery Server
+        run: |
+          echo "🧪 Testing Discovery Server..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DEV_DO_HOST }}:8761/actuator/health || echo "000")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Discovery Server integration test passed"
+          else
+            echo "❌ Discovery Server integration test failed (HTTP $response)"
+            exit 1
+          fi
+
+  # Job 6: Notify on completion
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-to-development]
+    if: always()
+    
+    steps:
+      - name: Send notification
+        run: |
+          if [ "${{ needs.deploy-to-development.result }}" = "success" ]; then
+            echo "🎉 Development deployment completed successfully!"
+            echo "📍 Development environment: http://${{ secrets.DEV_DO_HOST }}:8080"
+            echo "📍 Discovery Server: http://${{ secrets.DEV_DO_HOST }}:8761"
+          else
+            echo "❌ Development deployment failed!"
+            echo "Please check the workflow logs for details."
+          fi

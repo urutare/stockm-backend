@@ -1,0 +1,539 @@
+name: Deploy to Production (DigitalOcean)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  # DigitalOcean configuration
+  DO_REGISTRY: registry.digitalocean.com
+  DO_REGISTRY_REPO: stockm-backend
+  
+  # Docker image tags
+  IMAGE_TAG: ${{ github.sha }}
+  LATEST_TAG: latest
+  
+  # Java and Maven versions
+  JAVA_VERSION: '21'
+  MAVEN_VERSION: '3.9.6'
+
+jobs:
+  # Job 1: Setup and clone all repositories
+  setup-repos:
+    name: Setup Multi-Repo Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    outputs:
+      cache-key: ${{ steps.cache-repos.outputs.cache-hit }}
+      
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Cache repository dependencies
+        id: cache-repos
+        uses: actions/cache@v3
+        with:
+          path: |
+            stockm-*
+            POS*
+            sms-gateway
+          key: repos-${{ hashFiles('setup.sh') }}-${{ github.run_id }}
+          restore-keys: |
+            repos-${{ hashFiles('setup.sh') }}-
+            repos-
+            
+      - name: Setup Git credentials for cloning
+        if: steps.cache-repos.outputs.cache-hit != 'true'
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+      - name: Clone all required repositories
+        if: steps.cache-repos.outputs.cache-hit != 'true'
+        run: |
+          echo "🔄 Cloning all service repositories..."
+          chmod +x ./setup.sh
+          ./setup.sh
+          
+          echo "📊 Repository status:"
+          for repo in stockm-* POS* sms-gateway; do
+            if [ -d "$repo" ]; then
+              echo "✅ $repo - $(git -C "$repo" rev-parse --short HEAD)"
+            else
+              echo "❌ $repo - Missing"
+            fi
+          done
+          
+      - name: Verify all repositories are present
+        run: |
+          echo "🔍 Verifying all required repositories..."
+          missing_repos=()
+          
+          # Define expected repositories from setup.sh
+          expected_repos=(
+            "stockm-config-server" "stockm-category-service" "stockm-sync-service"
+            "stockm-stock-service" "stockm-discovery-service" "stockm-auth-service"
+            "stockm-api-gateway" "stockm-payment-service" "stockm-common-core"
+            "stockm-storage-service" "sms-gateway" "POSUtils" "POSFunctional"
+            "POSVSDC" "POSStockCore" "POSPurchaseCore" "POSSaleCore"
+            "POSUserCore" "POSAccountingCore" "POSMainCore" "POSDiscoveryCore"
+            "POSSecurityCore" "POSTranslation" "POSCore" "POSDatabase"
+            "POSBase" "POSIntegrationCore"
+          )
+          
+          for repo in "${expected_repos[@]}"; do
+            if [ ! -d "$repo" ]; then
+              missing_repos+=("$repo")
+            fi
+          done
+          
+          if [ ${#missing_repos[@]} -gt 0 ]; then
+            echo "❌ Missing repositories:"
+            printf '%s\n' "${missing_repos[@]}"
+            exit 1
+          else
+            echo "✅ All repositories successfully cloned"
+          fi
+
+  # Job 2: Build and test
+  build-and-test:
+    name: Build and Test All Services
+    runs-on: ubuntu-latest
+    needs: setup-repos
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        
+      - name: Restore repository cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            stockm-*
+            POS*
+            sms-gateway
+          key: repos-${{ hashFiles('setup.sh') }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+          
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+            
+      - name: Create production environment file
+        run: |
+          mkdir -p secrets
+          
+          # Create .env file from secrets
+          cat > secrets/.env << EOF
+          SERVER=${{ secrets.SERVER }}
+          EUREKA_SERVER_URL=${{ secrets.EUREKA_SERVER_URL }}
+          EUREKA_INSTANCE_URL=${{ secrets.EUREKA_INSTANCE_URL }}
+          
+          # Database
+          DB_HOSTNAME=${{ secrets.DB_HOSTNAME }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASS=${{ secrets.DB_PASS }}
+          
+          # Redis
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          
+          # JWT Configuration
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          JWT_ACCESS_TOKEN_EXPIRATION_IN_MS=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_IN_MS }}
+          JWT_REFRESH_TOKEN_EXPIRATION_IN_MS=${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION_IN_MS }}
+          
+          # SMS Configuration
+          PINDO_TOKEN=${{ secrets.PINDO_TOKEN }}
+          PINDO_URL=${{ secrets.PINDO_URL }}
+          AFRICAS_TALKING_TOKEN=${{ secrets.AFRICAS_TALKING_TOKEN }}
+          AFRICAS_TALKING_USERNAME=${{ secrets.AFRICAS_TALKING_USERNAME }}
+          
+          # Email Configuration
+          EMAIL_HOST=${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT=${{ secrets.EMAIL_PORT }}
+          EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+          
+          # Cloudinary
+          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+          
+          # MTN Configuration
+          MTN_MOMO_API=${{ secrets.MTN_MOMO_API }}
+          MTN_API_USER=${{ secrets.MTN_API_USER }}
+          MTN_API_KEY=${{ secrets.MTN_API_KEY }}
+          MTN_PRIMARY_KEY=${{ secrets.MTN_PRIMARY_KEY }}
+          MTN_SECONDARY_KEY=${{ secrets.MTN_SECONDARY_KEY }}
+          MTN_TARGET_ENV=${{ secrets.MTN_TARGET_ENV }}
+          MTN_CALLBACK_URL=${{ secrets.MTN_CALLBACK_URL }}
+          
+          # Service URLs
+          USER_SERVICE_URL=${{ secrets.USER_SERVICE_URL }}
+          CATEGORY_SERVICE_URL=${{ secrets.CATEGORY_SERVICE_URL }}
+          STOCK_SERVICE_URL=${{ secrets.STOCK_SERVICE_URL }}
+          SYNC_SERVICE_URL=${{ secrets.SYNC_SERVICE_URL }}
+          PAYMENT_SERVICE_URL=${{ secrets.PAYMENT_SERVICE_URL }}
+          SMS_SERVICE_URL=${{ secrets.SMS_SERVICE_URL }}
+          
+          # Additional configurations
+          STOCKM_API_SECRET_KEY=${{ secrets.STOCKM_API_SECRET_KEY }}
+          STOCKM_TOKEN_VALIDITY=${{ secrets.STOCKM_TOKEN_VALIDITY }}
+          STOCKM_BASE_URL=${{ secrets.STOCKM_BASE_URL }}
+          EOF
+          
+          # Create SMS-specific env file
+          touch secrets/.env.sms
+          
+      - name: Build all Maven modules
+        run: |
+          echo "🏗️ Building all Maven modules..."
+          mvn clean compile -DskipTests -T 1C
+          
+      - name: Run unit tests
+        run: |
+          echo "🧪 Running unit tests..."
+          mvn test -DfailIfNoTests=false -T 1C
+          
+      - name: Package all services
+        run: |
+          echo "📦 Packaging all services..."
+          mvn clean package -DskipTests -T 1C
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: maven-build-artifacts
+          path: |
+            target/
+            */target/
+          retention-days: 1
+
+  # Job 3: Build Docker images
+  build-docker-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    timeout-minutes: 60
+    
+    strategy:
+      matrix:
+        service:
+          - discovery-server
+          - config-server
+          - api-gateway
+          - user-service
+          - category-service
+          - stock-service
+          - sync-service
+          - payment-service
+          - sms-gateway
+    
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        
+      - name: Restore repository cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            stockm-*
+            POS*
+            sms-gateway
+          key: repos-${{ hashFiles('setup.sh') }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+          
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: maven-build-artifacts
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Log in to DigitalOcean Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DO_REGISTRY }}
+          username: ${{ secrets.DO_REGISTRY_TOKEN }}
+          password: ${{ secrets.DO_REGISTRY_TOKEN }}
+          
+      - name: Build and push Docker image
+        run: |
+          # Map service names to their Docker context paths
+          case "${{ matrix.service }}" in
+            "discovery-server")
+              context="./stockm-discovery-service"
+              image_name="service-discovery"
+              ;;
+            "config-server")
+              context="./stockm-config-server"
+              image_name="stock-config-server"
+              ;;
+            "api-gateway")
+              context="./stockm-api-gateway"
+              image_name="api-gateway"
+              ;;
+            "user-service")
+              context="./stockm-auth-service"
+              image_name="user-service"
+              ;;
+            "category-service")
+              context="./stockm-category-service"
+              image_name="category-service"
+              ;;
+            "stock-service")
+              context="./stockm-stock-service"
+              image_name="stock-service"
+              ;;
+            "sync-service")
+              context="./stockm-sync-service"
+              image_name="sync-service"
+              ;;
+            "payment-service")
+              context="./stockm-payment-service"
+              image_name="payment-service"
+              ;;
+            "sms-gateway")
+              context="./sms-gateway"
+              image_name="sms-service"
+              ;;
+          esac
+          
+          echo "🏗️ Building ${{ matrix.service }} from $context"
+          
+          # Build and push with both tags
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --tag ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/${image_name}:${{ env.IMAGE_TAG }} \
+            --tag ${{ env.DO_REGISTRY }}/${{ env.DO_REGISTRY_REPO }}/${image_name}:${{ env.LATEST_TAG }} \
+            $context
+
+  # Job 4: Deploy to DigitalOcean
+  deploy-to-digitalocean:
+    name: Deploy to DigitalOcean Droplet
+    runs-on: ubuntu-latest
+    needs: build-docker-images
+    timeout-minutes: 30
+    environment: production
+    
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        
+      - name: Create deployment package
+        run: |
+          # Create deployment directory
+          mkdir -p deployment
+          
+          # Copy essential files for deployment
+          cp docker-compose.prod.yaml deployment/
+          cp Makefile deployment/
+          cp -r db-init deployment/
+          cp nginx.conf deployment/
+          cp prometheus.yml deployment/
+          
+      - name: Upload deployment package
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-package
+          path: deployment/
+          
+      - name: Deploy to DigitalOcean Droplet
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DO_SSH_PORT || 22 }}
+          script: |
+            set -e
+            
+            echo "🚀 Starting deployment to production..."
+            
+            # Create application directory
+            sudo mkdir -p /opt/stockm-backend
+            cd /opt/stockm-backend
+            
+            # Stop existing services gracefully
+            if [ -f "docker-compose.prod.yaml" ]; then
+              echo "🛑 Stopping existing services..."
+              sudo docker compose -f docker-compose.prod.yaml down --remove-orphans || true
+            fi
+            
+            # Login to DigitalOcean registry
+            echo "${{ secrets.DO_REGISTRY_TOKEN }}" | sudo docker login ${{ env.DO_REGISTRY }} -u ${{ secrets.DO_REGISTRY_TOKEN }} --password-stdin
+            
+            # Create secrets directory
+            sudo mkdir -p secrets
+            
+            # Create production .env file
+            sudo tee secrets/.env > /dev/null << 'EOF'
+            SERVER=${{ secrets.SERVER }}
+            EUREKA_SERVER_URL=${{ secrets.EUREKA_SERVER_URL }}
+            EUREKA_INSTANCE_URL=${{ secrets.EUREKA_INSTANCE_URL }}
+            DB_HOSTNAME=${{ secrets.DB_HOSTNAME }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASS=${{ secrets.DB_PASS }}
+            REDIS_HOST=${{ secrets.REDIS_HOST }}
+            REDIS_PORT=${{ secrets.REDIS_PORT }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            JWT_ACCESS_TOKEN_EXPIRATION_IN_MS=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_IN_MS }}
+            JWT_REFRESH_TOKEN_EXPIRATION_IN_MS=${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION_IN_MS }}
+            PINDO_TOKEN=${{ secrets.PINDO_TOKEN }}
+            PINDO_URL=${{ secrets.PINDO_URL }}
+            AFRICAS_TALKING_TOKEN=${{ secrets.AFRICAS_TALKING_TOKEN }}
+            AFRICAS_TALKING_USERNAME=${{ secrets.AFRICAS_TALKING_USERNAME }}
+            EMAIL_HOST=${{ secrets.EMAIL_HOST }}
+            EMAIL_PORT=${{ secrets.EMAIL_PORT }}
+            EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }}
+            EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+            CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+            CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+            CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+            MTN_MOMO_API=${{ secrets.MTN_MOMO_API }}
+            MTN_API_USER=${{ secrets.MTN_API_USER }}
+            MTN_API_KEY=${{ secrets.MTN_API_KEY }}
+            MTN_PRIMARY_KEY=${{ secrets.MTN_PRIMARY_KEY }}
+            MTN_SECONDARY_KEY=${{ secrets.MTN_SECONDARY_KEY }}
+            MTN_TARGET_ENV=${{ secrets.MTN_TARGET_ENV }}
+            MTN_CALLBACK_URL=${{ secrets.MTN_CALLBACK_URL }}
+            USER_SERVICE_URL=${{ secrets.USER_SERVICE_URL }}
+            CATEGORY_SERVICE_URL=${{ secrets.CATEGORY_SERVICE_URL }}
+            STOCK_SERVICE_URL=${{ secrets.STOCK_SERVICE_URL }}
+            SYNC_SERVICE_URL=${{ secrets.SYNC_SERVICE_URL }}
+            PAYMENT_SERVICE_URL=${{ secrets.PAYMENT_SERVICE_URL }}
+            SMS_SERVICE_URL=${{ secrets.SMS_SERVICE_URL }}
+            STOCKM_API_SECRET_KEY=${{ secrets.STOCKM_API_SECRET_KEY }}
+            STOCKM_TOKEN_VALIDITY=${{ secrets.STOCKM_TOKEN_VALIDITY }}
+            STOCKM_BASE_URL=${{ secrets.STOCKM_BASE_URL }}
+            EOF
+            
+            # Create SMS environment file
+            sudo touch secrets/.env.sms
+            
+            # Pull latest images
+            echo "📥 Pulling latest Docker images..."
+            sudo docker compose -f docker-compose.prod.yaml pull
+            
+            # Start services
+            echo "🚀 Starting services..."
+            sudo docker compose -f docker-compose.prod.yaml up -d --remove-orphans
+            
+            # Wait for services to be healthy
+            echo "⏳ Waiting for services to start..."
+            sleep 30
+            
+            # Check service health
+            echo "🔍 Checking service health..."
+            services_healthy=true
+            
+            for service in discovery-server config-server api-gateway; do
+              case $service in
+                "discovery-server") port=8761 ;;
+                "config-server") port=8888 ;;
+                "api-gateway") port=8080 ;;
+              esac
+              
+              for i in {1..12}; do
+                if curl -f http://localhost:$port/actuator/health >/dev/null 2>&1; then
+                  echo "✅ $service is healthy"
+                  break
+                elif [ $i -eq 12 ]; then
+                  echo "❌ $service failed to start properly"
+                  services_healthy=false
+                else
+                  echo "⏳ Waiting for $service (attempt $i/12)..."
+                  sleep 10
+                fi
+              done
+            done
+            
+            if [ "$services_healthy" = true ]; then
+              echo "🎉 Deployment successful! All core services are healthy."
+            else
+              echo "⚠️ Deployment completed but some services may not be fully healthy."
+              sudo docker compose -f docker-compose.prod.yaml ps
+              exit 1
+            fi
+            
+            # Clean up old images
+            echo "🧹 Cleaning up old Docker images..."
+            sudo docker image prune -f || true
+            
+            echo "📊 Deployment Summary:"
+            sudo docker compose -f docker-compose.prod.yaml ps
+
+  # Job 5: Post-deployment verification
+  post-deployment-check:
+    name: Post-Deployment Verification
+    runs-on: ubuntu-latest
+    needs: deploy-to-digitalocean
+    timeout-minutes: 10
+    
+    steps:
+      - name: Wait for services to stabilize
+        run: sleep 60
+        
+      - name: Verify API Gateway accessibility
+        run: |
+          echo "🔍 Verifying API Gateway..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DO_HOST }}:8080/actuator/health || echo "000")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ API Gateway is accessible and healthy"
+          else
+            echo "❌ API Gateway health check failed (HTTP $response)"
+            exit 1
+          fi
+          
+      - name: Verify Discovery Server
+        run: |
+          echo "🔍 Verifying Discovery Server..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DO_HOST }}:8761/actuator/health || echo "000")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Discovery Server is accessible and healthy"
+          else
+            echo "❌ Discovery Server health check failed (HTTP $response)"
+            exit 1
+          fi
+          
+      - name: Send deployment notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "🎉 Production deployment completed successfully!"
+            echo "📍 Services available at: http://${{ secrets.DO_HOST }}:8080"
+          else
+            echo "❌ Production deployment verification failed!"
+          fi

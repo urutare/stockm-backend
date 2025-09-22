@@ -1,6 +1,12 @@
-# StockM User Service
+# StockM Backend - Multi-Microservice Architecture
 
-StockM User Service is a Spring Boot application designed to manage user accounts and authentication for the Stock Management project. This service provides RESTful APIs to create, update, and retrieve user information, as well as handle authentication and authorization.
+[![Production Deployment](https://github.com/urutare/stockm-backend/actions/workflows/deploy-production.yml/badge.svg?branch=main)](https://github.com/urutare/stockm-backend/actions/workflows/deploy-production.yml)
+[![Development Deployment](https://github.com/urutare/stockm-backend/actions/workflows/deploy-development.yml/badge.svg?branch=dev)](https://github.com/urutare/stockm-backend/actions/workflows/deploy-development.yml)
+[![Java Version](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/temurin/releases/?version=21)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-green.svg)](https://spring.io/projects/spring-boot)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+The **Ingenzi Certificate Invoicing System (StockM Backend)** is a comprehensive enterprise-grade microservices platform for stock management and point-of-sale operations. This repository serves as the parent orchestrator for 27+ individual service repositories, providing automated deployment and centralized configuration management.
 ## Architecture
 ![Alt text](<chrome-capture-2023-7-25 (3).gif>)
 ### Requirements
@@ -71,9 +77,44 @@ For a complete list of API endpoints and usage, please refer to the API document
 
 See [CHANGELOG.md](CHANGELOG.md) for a detailed list of changes, new features, and version history.
 
+## 🚀 Automated Deployment
+
+The StockM Backend includes automated GitHub Actions workflows for seamless deployment to DigitalOcean:
+
+### Production Deployment
+- **Trigger**: Push to `main` branch
+- **Environment**: Production DigitalOcean droplet
+- **Services**: Full microservices stack (27+ services)
+- **Features**: Complete health checks, post-deployment verification
+
+### Development Deployment  
+- **Trigger**: Push to `dev`/`develop` branches
+- **Environment**: Development DigitalOcean droplet
+- **Services**: Core services only for faster deployment
+- **Features**: Rapid iteration, pull request validation
+
+### Deployment Status
+- 🟢 **Production**: Last deployment status shown in badge above
+- 🟡 **Development**: Continuous deployment for testing
+- 📊 **Monitoring**: Health endpoints at `:8080/actuator/health`
+
+### Quick Deployment Commands
+```bash
+# Deploy to production
+git push origin main
+
+# Deploy to development
+git push origin dev
+
+# Manual deployment
+# Go to Actions → Select workflow → Run workflow
+```
+
+For detailed deployment setup instructions, see [DEPLOYMENT-SETUP.md](DEPLOYMENT-SETUP.md).
+
 ## Contributing
 
-If you'd like to contribute to the StockM User Service, please follow the standard GitHub workflow:
+If you'd like to contribute to the StockM Backend, please follow the standard GitHub workflow:
 
 1. Fork the repository
 2. Create a new branch for your changes
@@ -81,7 +122,12 @@ If you'd like to contribute to the StockM User Service, please follow the standa
 4. Create a pull request to merge your changes into the main repository
 5. Address any feedback and resolve conflicts, if necessary
 
+### Development Workflow
+1. Push changes to `dev` branch for automatic testing
+2. Verify deployment in development environment
+3. Create PR to `main` for production deployment
+
 ## License
 
-StockM User Service is released under the [MIT License](https://opensource.org/licenses/MIT).
+StockM Backend is released under the [MIT License](https://opensource.org/licenses/MIT).
 
