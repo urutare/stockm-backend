@@ -125,8 +125,8 @@ show_dashboard() {
     fi
     
     # Check development deployment
-    echo -e "\n${PURPLE}🧪 Development Deployment (dev branch):${NC}"
-    dev_status=$(get_workflow_status "deploy-development.yml" "dev" 2>/dev/null)
+    echo -e "\n${PURPLE}🧪 Development Deployment (develop branch):${NC}"
+    dev_status=$(get_workflow_status "deploy-development.yml" "develop" 2>/dev/null)
     
     if [ $? -eq 0 ]; then
         dev_status_text=$(echo "$dev_status" | jq -r '.status')
@@ -191,11 +191,11 @@ COMMANDS:
   
 WORKFLOWS:
   production, prod       deploy-production.yml
-  development, dev       deploy-development.yml
+  development, develop   deploy-development.yml
 
 OPTIONS:
   -h, --help            Show this help message
-  -b, --branch BRANCH   Specify branch (default: main for prod, dev for dev)
+  -b, --branch BRANCH   Specify branch (default: main for prod, develop for dev)
   -i, --interval SEC    Monitor check interval in seconds (default: 30)
   -r, --repo OWNER/NAME Repository (default: urutare/stockm-backend)
   -t, --token TOKEN     GitHub API token
@@ -209,7 +209,7 @@ EXAMPLES:
   $0                                    # Show dashboard
   $0 dashboard                          # Show dashboard
   $0 status production                  # Get production workflow status
-  $0 monitor dev -i 10                  # Monitor dev workflow every 10 seconds
+  $0 monitor develop -i 10                  # Monitor develop workflow every 10 seconds
   $0 -t ghp_xxx dashboard               # Use specific GitHub token
 
 NOTES:
@@ -266,9 +266,9 @@ while [[ $# -gt 0 ]]; do
             BRANCH="${BRANCH:-main}"
             shift
             ;;
-        development|dev)
+        development|develop)
             WORKFLOW="deploy-development.yml"
-            BRANCH="${BRANCH:-dev}"
+            BRANCH="${BRANCH:-develop}"
             shift
             ;;
         *)

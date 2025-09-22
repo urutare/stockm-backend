@@ -1,7 +1,7 @@
 # StockM Backend - Multi-Microservice Architecture
 
 [![Production Deployment](https://github.com/urutare/stockm-backend/actions/workflows/deploy-production.yml/badge.svg?branch=main)](https://github.com/urutare/stockm-backend/actions/workflows/deploy-production.yml)
-[![Development Deployment](https://github.com/urutare/stockm-backend/actions/workflows/deploy-development.yml/badge.svg?branch=dev)](https://github.com/urutare/stockm-backend/actions/workflows/deploy-development.yml)
+[![Development Deployment](https://github.com/urutare/stockm-backend/actions/workflows/deploy-development.yml/badge.svg?branch=develop)](https://github.com/urutare/stockm-backend/actions/workflows/deploy-development.yml)
 [![Java Version](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/temurin/releases/?version=21)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-green.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -88,7 +88,7 @@ The StockM Backend includes automated GitHub Actions workflows for seamless depl
 - **Features**: Complete health checks, post-deployment verification
 
 ### Development Deployment  
-- **Trigger**: Push to `dev`/`develop` branches
+- **Trigger**: Push to `develop` branch
 - **Environment**: Development DigitalOcean droplet
 - **Services**: Core services only for faster deployment
 - **Features**: Rapid iteration, pull request validation
@@ -104,7 +104,7 @@ The StockM Backend includes automated GitHub Actions workflows for seamless depl
 git push origin main
 
 # Deploy to development
-git push origin dev
+git push origin develop
 
 # Manual deployment
 # Go to Actions → Select workflow → Run workflow
@@ -123,7 +123,7 @@ If you'd like to contribute to the StockM Backend, please follow the standard Gi
 5. Address any feedback and resolve conflicts, if necessary
 
 ### Development Workflow
-1. Push changes to `dev` branch for automatic testing
+1. Push changes to `develop` branch for automatic testing
 2. Verify deployment in development environment
 3. Create PR to `main` for production deployment
 

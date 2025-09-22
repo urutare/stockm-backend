@@ -3,11 +3,9 @@ name: Deploy to Development (DigitalOcean)
 on:
   push:
     branches:
-      - dev
       - develop
   pull_request:
     branches:
-      - dev
       - develop
     types: [opened, synchronize, reopened]
   workflow_dispatch:

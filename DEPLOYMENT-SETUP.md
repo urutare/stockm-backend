@@ -7,7 +7,7 @@ This document explains how to configure GitHub Actions workflows for deploying t
 The deployment system includes two main workflows:
 
 1. **Production Deployment** (`deploy-production.yml`) - Triggered on pushes to `main` branch
-2. **Development Deployment** (`deploy-development.yml`) - Triggered on pushes to `dev`/`develop` branches
+2. **Development Deployment** (`deploy-development.yml`) - Triggered on pushes to `develop` branch
 
 ## Key Features
 
@@ -218,7 +218,7 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@your-development-droplet-ip
 git push origin main
 
 # Development deployment
-git push origin dev
+git push origin develop
 ```
 
 #### Manual Triggers:
@@ -259,7 +259,7 @@ Use the included health check script to monitor service status:
 ./health-check.sh prod
 
 # Check development with custom host
-./health-check.sh -d dev.example.com dev
+./health-check.sh -d dev.example.com develop
 
 # Verbose output with Docker status
 ./health-check.sh -v both
@@ -279,7 +279,7 @@ Monitor GitHub Actions workflow status in real-time:
 ./deployment-monitor.sh status development
 
 # Monitor with custom settings
-GITHUB_TOKEN=ghp_xxx ./deployment-monitor.sh monitor dev -i 10
+GITHUB_TOKEN=ghp_xxx ./deployment-monitor.sh monitor develop -i 10
 ```
 
 **Note**: The deployment monitor requires `jq` for JSON processing:
