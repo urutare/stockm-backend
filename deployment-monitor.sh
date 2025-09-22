@@ -8,7 +8,7 @@ set -e
 # Configuration
 REPO_OWNER="${REPO_OWNER:-urutare}"
 REPO_NAME="${REPO_NAME:-stockm-backend}"
-GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+GITHUB_API_TOKEN="${GITHUB_API_TOKEN:-}"
 
 # Colors
 RED='\033[0;31m'
@@ -28,8 +28,8 @@ github_api() {
     local endpoint=$1
     local auth_header=""
     
-    if [ -n "$GITHUB_TOKEN" ]; then
-        auth_header="-H \"Authorization: token $GITHUB_TOKEN\""
+    if [ -n "$GITHUB_API_TOKEN" ]; then
+        auth_header="-H \"Authorization: token $GITHUB_API_TOKEN\""
     fi
     
     eval "curl -s $auth_header \"$endpoint\""
@@ -201,7 +201,7 @@ OPTIONS:
   -t, --token TOKEN     GitHub API token
 
 ENVIRONMENT VARIABLES:
-  GITHUB_TOKEN          GitHub API token for authentication
+  GITHUB_API_TOKEN      GitHub API token for authentication
   REPO_OWNER            Repository owner (default: urutare)
   REPO_NAME             Repository name (default: stockm-backend)
 
@@ -216,6 +216,7 @@ NOTES:
   - GitHub token is recommended for higher API rate limits
   - Create token at: https://github.com/settings/tokens
   - Token needs 'repo' or 'public_repo' permissions
+  - Use GITHUB_API_TOKEN environment variable or -t flag
 EOF
 }
 
@@ -244,7 +245,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -t|--token)
-            GITHUB_TOKEN="$2"
+            GITHUB_API_TOKEN="$2"
             shift 2
             ;;
         dashboard)

@@ -279,7 +279,7 @@ Monitor GitHub Actions workflow status in real-time:
 ./deployment-monitor.sh status development
 
 # Monitor with custom settings
-GITHUB_TOKEN=ghp_xxx ./deployment-monitor.sh monitor develop -i 10
+GITHUB_API_TOKEN=ghp_xxx ./deployment-monitor.sh monitor develop -i 10
 ```
 
 **Note**: The deployment monitor requires `jq` for JSON processing:
@@ -289,11 +289,33 @@ sudo apt-get install jq        # Ubuntu/Debian
 brew install jq                # macOS
 ```
 
+#### GitHub Token Configuration
+
+**Important**: Do NOT create a secret named `GITHUB_TOKEN` - this is reserved by GitHub.
+
+For the deployment workflows, `${{ secrets.GITHUB_TOKEN }}` is automatically provided by GitHub Actions.
+
+For the monitoring tools, create a Personal Access Token:
+1. Go to https://github.com/settings/tokens
+2. Click "Generate new token (classic)"
+3. Give it a name like "StockM Deployment Monitor"
+4. Select scopes: `repo` (for private repos) or `public_repo` (for public repos)
+5. Copy the token and use it as `GITHUB_API_TOKEN` environment variable
+
+```bash
+# Use with monitoring tools
+export GITHUB_API_TOKEN=ghp_your_token_here
+./deployment-monitor.sh dashboard
+
+# Or pass directly
+GITHUB_API_TOKEN=ghp_your_token_here ./deployment-monitor.sh monitor production
+```
+
 ### Common Issues and Solutions
 
 #### 1. Repository Cloning Failures
-- **Cause**: GitHub access issues
-- **Solution**: Verify GITHUB_TOKEN has access to all repositories
+- **Cause**: GitHub access issues or rate limiting
+- **Solution**: Create a Personal Access Token at https://github.com/settings/tokens and use it with GITHUB_API_TOKEN environment variable
 
 #### 2. Docker Build Failures
 - **Cause**: Missing dependencies or build context
