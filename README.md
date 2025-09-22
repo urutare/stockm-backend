@@ -67,6 +67,10 @@ Here are some of the main API endpoints:
 
 For a complete list of API endpoints and usage, please refer to the API documentation.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a detailed list of changes, new features, and version history.
+
 ## Contributing
 
 If you'd like to contribute to the StockM User Service, please follow the standard GitHub workflow:
