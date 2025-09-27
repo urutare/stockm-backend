@@ -30,7 +30,14 @@ set repositories=(
 "POSCore",
 "POSDatabase",
 "POSBase",
-"POSIntegrationCore"
+"POSIntegrationCore",
+"POSExportBase",
+"POSUserExport",
+"POSStockExport",
+"POSPurchaseExport",
+"POSSaleExport",
+"POSAccountingExport",
+"POSMainExport"
 )
 
 REM Base URL for the GitHub organization

@@ -29,6 +29,13 @@ repositories=(
 "POSDatabase"
 "POSBase"
 "POSIntegrationCore"
+"POSExportBase"
+"POSUserExport"
+"POSStockExport"
+"POSPurchaseExport"
+"POSSaleExport"
+"POSAccountingExport"
+"POSMainExport"
 )
 
 
