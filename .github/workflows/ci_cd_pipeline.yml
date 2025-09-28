@@ -11,7 +11,7 @@ on:
       - develop
 
 env:
-  MOTHER_REPO_URL: https://github.com/your-org/mother-repo.git
+  MOTHER_REPO_URL: https://github.com/urutare/stockm-backend.git
   REMOTE_BASE_DIR: /root/stock
   DEV_DIR: /root/stock/dev
   PROD_DIR: /root/stock/production
@@ -149,8 +149,8 @@ jobs:
             mvn -version
             
             # Set JAVA_HOME
-            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-            echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> ~/.bashrc
+            export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+            echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.bashrc
 
       - name: Build All Services and Modules
         uses: appleboy/ssh-action@v1.0.3
