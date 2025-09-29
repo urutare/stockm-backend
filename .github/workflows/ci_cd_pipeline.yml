@@ -59,6 +59,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             # Create base directory structure
             mkdir -p ${{ steps.vars.outputs.target_dir }}
             
@@ -75,6 +77,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             cd ${{ steps.vars.outputs.target_dir }}
             
             # Remove existing mother repo if it exists
@@ -102,6 +106,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
             # Check if setup.sh exists
@@ -127,6 +133,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             # Update package manager
             apt-get update
             
@@ -159,6 +167,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
             # Set environment variables
@@ -195,6 +205,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
+            
             cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
             echo "Verifying JAR files in target directories..."
@@ -219,6 +232,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
             # Check if docker-compose file exists
@@ -244,6 +259,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
             # Determine docker-compose file
@@ -291,6 +308,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
             # Determine docker-compose file
@@ -326,6 +345,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             echo "Cleaning up Maven build cache..."
             rm -rf ~/.m2/repository/com/yourcompany/* || true
             
@@ -342,6 +363,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Run as root user
+            sudo su -
             echo "==================================="
             echo "Deployment Summary"
             echo "==================================="
