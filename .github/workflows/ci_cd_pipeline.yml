@@ -100,7 +100,6 @@ jobs:
               echo \"Successfully cloned mother repository on branch: ${{ steps.vars.outputs.branch }}\"
               ls -la
             "
-
       - name: Setup Services and Modules
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -108,26 +107,32 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            # Run as root user
-            sudo sh -c "
+            sudo sh -c '
               cd ${{ steps.vars.outputs.target_dir }}/mother-repo
             
-              # Check if setup.sh exists
-              if [ ! -f \"setup.sh\" ]; then
-                echo \"Error: setup.sh not found in mother repository\"
+              if [ ! -f "setup.sh" ]; then
+                echo "Error: setup.sh not found in mother repository"
                 exit 1
               fi
             
-              # Make setup.sh executable
               chmod +x setup.sh
             
-              # Run setup script to clone all necessary services and modules
-              echo \"Running setup.sh to clone all services and modules...\"
+              echo "Injecting GitHub credentials..."
+              export GIT_ASKPASS=/bin/echo
+              export GIT_USERNAME=${{ secrets.GH_USERNAME }}
+              export GIT_PASSWORD=${{ secrets.GH_PAT }}
+            
+              git config --global credential.helper store
+              git config --global user.name "$GIT_USERNAME"
+              git config --global user.password "$GIT_PASSWORD"
+            
+              echo "Running setup.sh..."
               ./setup.sh
             
-              echo \"Setup completed successfully\"
+              echo "Setup completed successfully"
               ls -la
-            "
+            '
+
 
       - name: Install Java and Maven on Remote Server
         uses: appleboy/ssh-action@v1.0.3
