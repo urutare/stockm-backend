@@ -67,7 +67,7 @@ jobs:
             sudo chmod 755 ${{ steps.vars.outputs.target_dir }}
             
             echo "Created directory structure for ${{ steps.vars.outputs.environment }} environment"
-            ls -la ${{ env.REMOTE_BASE_DIR }}
+            sudo ls -la ${{ env.REMOTE_BASE_DIR }}
 
       - name: Clone Mother Repository on Remote Server
         uses: appleboy/ssh-action@v1.0.3
