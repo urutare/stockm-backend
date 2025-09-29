@@ -100,6 +100,7 @@ jobs:
               echo \"Successfully cloned mother repository on branch: ${{ steps.vars.outputs.branch }}\"
               ls -la
             "
+
       - name: Setup Services and Modules
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -109,29 +110,28 @@ jobs:
           script: |
             sudo sh -c '
               cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
+
               if [ ! -f "setup.sh" ]; then
                 echo "Error: setup.sh not found in mother repository"
                 exit 1
               fi
-            
+
               chmod +x setup.sh
-            
+
               echo "Injecting GitHub credentials..."
-              export GIT_ASKPASS=/bin/echo
-              export GIT_USERNAME=${{ secrets.GH_USERNAME }}
-              export GIT_PASSWORD=${{ secrets.GH_PAT }}
-            
-              git config --global credential.helper store
-              git config --global user.name "$GIT_USERNAME"
-              git config --global user.password "$GIT_PASSWORD"
-            
+              export GH_USERNAME="${{ secrets.GH_USERNAME }}"
+              export GH_PAT="${{ secrets.GH_PAT }}"
+
+              # Rewrite setup.sh so it uses HTTPS with PAT
+              sed -i "s#https://github.com/#https://$GH_USERNAME:$GH_PAT@github.com/#g" setup.sh
+
               echo "Running setup.sh..."
               ./setup.sh
-            
+
               echo "Setup completed successfully"
               ls -la
             '
+
 
 
       - name: Install Java and Maven on Remote Server
