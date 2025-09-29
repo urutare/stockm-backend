@@ -60,12 +60,11 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
             # Create base directory structure
-            mkdir -p ${{ steps.vars.outputs.target_dir }}
+            sudo mkdir -p ${{ steps.vars.outputs.target_dir }}
             
             # Set proper permissions
-            chmod 755 ${{ steps.vars.outputs.target_dir }}
+            sudo chmod 755 ${{ steps.vars.outputs.target_dir }}
             
             echo "Created directory structure for ${{ steps.vars.outputs.environment }} environment"
             ls -la ${{ env.REMOTE_BASE_DIR }}
@@ -78,26 +77,27 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            cd ${{ steps.vars.outputs.target_dir }}
-            
-            # Remove existing mother repo if it exists
-            if [ -d "mother-repo" ]; then
-              echo "Removing existing mother repository..."
-              rm -rf mother-repo
-            fi
-            
-            # Clone the mother repository
-            echo "Cloning mother repository..."
-            git clone ${{ env.MOTHER_REPO_URL }} mother-repo
-            
-            cd mother-repo
-            
-            # Checkout the appropriate branch
-            git checkout ${{ steps.vars.outputs.branch }}
-            
-            echo "Successfully cloned mother repository on branch: ${{ steps.vars.outputs.branch }}"
-            ls -la
+            sudo sh -c "
+              cd ${{ steps.vars.outputs.target_dir }}
+              
+              # Remove existing mother repo if it exists
+              if [ -d "mother-repo" ]; then
+                echo "Removing existing mother repository..."
+                rm -rf mother-repo
+              fi
+              
+              # Clone the mother repository
+              echo "Cloning mother repository..."
+              git clone ${{ env.MOTHER_REPO_URL }} mother-repo
+              
+              cd mother-repo
+              
+              # Checkout the appropriate branch
+              git checkout ${{ steps.vars.outputs.branch }}
+              
+              echo "Successfully cloned mother repository on branch: ${{ steps.vars.outputs.branch }}"
+              ls -la
+            "
 
       - name: Setup Services and Modules
         uses: appleboy/ssh-action@v1.0.3
@@ -107,24 +107,25 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
-            # Check if setup.sh exists
-            if [ ! -f "setup.sh" ]; then
-              echo "Error: setup.sh not found in mother repository"
-              exit 1
-            fi
-            
-            # Make setup.sh executable
-            chmod +x setup.sh
-            
-            # Run setup script to clone all necessary services and modules
-            echo "Running setup.sh to clone all services and modules..."
-            ./setup.sh
-            
-            echo "Setup completed successfully"
-            ls -la
+            sudo sh -c "
+              cd ${{ steps.vars.outputs.target_dir }}/mother-repo
+              
+              # Check if setup.sh exists
+              if [ ! -f "setup.sh" ]; then
+                echo "Error: setup.sh not found in mother repository"
+                exit 1
+              fi
+              
+              # Make setup.sh executable
+              chmod +x setup.sh
+              
+              # Run setup script to clone all necessary services and modules
+              echo "Running setup.sh to clone all services and modules..."
+              ./setup.sh
+              
+              echo "Setup completed successfully"
+              ls -la
+            "
 
       - name: Install Java and Maven on Remote Server
         uses: appleboy/ssh-action@v1.0.3
@@ -134,31 +135,32 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            # Update package manager
-            apt-get update
-            
-            # Install OpenJDK 21 if not already installed
-            if ! java -version 2>&1 | grep -q "openjdk version \"21"; then
-              echo "Installing OpenJDK 21..."
-              apt-get install -y openjdk-21-jdk
-            fi
-            
-            # Install Maven if not already installed
-            if ! mvn -version 2>&1 | grep -q "Apache Maven"; then
-              echo "Installing Maven..."
-              apt-get install -y maven
-            fi
-            
-            # Verify installations
-            echo "Java version:"
-            java -version
-            echo "Maven version:"
-            mvn -version
-            
-            # Set JAVA_HOME
-            export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-            echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.bashrc
+            sudo sh -c "
+              # Update package manager
+              apt-get update
+              
+              # Install OpenJDK 21 if not already installed
+              if ! java -version 2>&1 | grep -q "openjdk version \"21"; then
+                echo "Installing OpenJDK 21..."
+                apt-get install -y openjdk-21-jdk
+              fi
+              
+              # Install Maven if not already installed
+              if ! mvn -version 2>&1 | grep -q "Apache Maven"; then
+                echo "Installing Maven..."
+                apt-get install -y maven
+              fi
+              
+              # Verify installations
+              echo "Java version:"
+              java -version
+              echo "Maven version:"
+              mvn -version
+              
+              # Set JAVA_HOME
+              export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+              echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.bashrc
+            "
 
       - name: Build All Services and Modules
         uses: appleboy/ssh-action@v1.0.3
@@ -168,35 +170,36 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
-            # Set environment variables
-            export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-            export MAVEN_OPTS="${{ env.MAVEN_OPTS }}"
-            
-            # Check if pom.xml exists
-            if [ ! -f "pom.xml" ]; then
-              echo "Error: pom.xml not found in mother repository"
-              exit 1
-            fi
-            
-            echo "Starting Maven build for all services and modules..."
-            echo "Active profile: ${{ steps.vars.outputs.profile }}"
-            
-            # Clean and install all modules with the appropriate profile
-            mvn clean install -DskipTests -P${{ steps.vars.outputs.profile }} -e
-            
-            if [ $? -eq 0 ]; then
-              echo "Maven build completed successfully!"
-            
-              # List generated JAR files
-              echo "Generated JAR files:"
-              find . -name "*.jar" -type f | grep -E "(target/|build/)" | head -20
-            else
-              echo "Maven build failed!"
-              exit 1
-            fi
+            sudo sh -c "
+              cd ${{ steps.vars.outputs.target_dir }}/mother-repo
+              
+              # Set environment variables
+              export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+              export MAVEN_OPTS="${{ env.MAVEN_OPTS }}"
+              
+              # Check if pom.xml exists
+              if [ ! -f "pom.xml" ]; then
+                echo "Error: pom.xml not found in mother repository"
+                exit 1
+              fi
+              
+              echo "Starting Maven build for all services and modules..."
+              echo "Active profile: ${{ steps.vars.outputs.profile }}"
+              
+              # Clean and install all modules with the appropriate profile
+              mvn clean install -DskipTests -P${{ steps.vars.outputs.profile }} -e
+              
+              if [ $? -eq 0 ]; then
+                echo "Maven build completed successfully!"
+              
+                # List generated JAR files
+                echo "Generated JAR files:"
+                find . -name "*.jar" -type f | grep -E "(target/|build/)" | head -20
+              else
+                echo "Maven build failed!"
+                exit 1
+              fi
+            "
 
       - name: Verify JAR Files Generation
         uses: appleboy/ssh-action@v1.0.3
@@ -206,24 +209,25 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
+            sudo sh -c "
             
-            cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
-            echo "Verifying JAR files in target directories..."
-            
-            # Count total JAR files
-            JAR_COUNT=$(find . -name "*.jar" -type f | grep target/ | wc -l)
-            echo "Total JAR files found: $JAR_COUNT"
-            
-            if [ $JAR_COUNT -eq 0 ]; then
-              echo "Error: No JAR files found! Build may have failed."
-              exit 1
-            fi
-            
-            # List all target directories with JAR files
-            echo "Services with generated JARs:"
-            find . -name "*.jar" -type f | grep target/ | xargs dirname | sort | uniq
+              cd ${{ steps.vars.outputs.target_dir }}/mother-repo
+              
+              echo "Verifying JAR files in target directories..."
+              
+              # Count total JAR files
+              JAR_COUNT=$(find . -name "*.jar" -type f | grep target/ | wc -l)
+              echo "Total JAR files found: $JAR_COUNT"
+              
+              if [ $JAR_COUNT -eq 0 ]; then
+                echo "Error: No JAR files found! Build may have failed."
+                exit 1
+              fi
+              
+              # List all target directories with JAR files
+              echo "Services with generated JARs:"
+              find . -name "*.jar" -type f | grep target/ | xargs dirname | sort | uniq
+            "
 
       - name: Stop Existing Containers
         uses: appleboy/ssh-action@v1.0.3
@@ -233,24 +237,25 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
-            # Check if docker-compose file exists
-            if [ -f "docker-compose.yml" ]; then
-              COMPOSE_FILE="docker-compose.yml"
-            elif [ -f "docker-compose.yaml" ]; then
-              COMPOSE_FILE="docker-compose.yaml"
-            else
-              echo "Error: No docker-compose file found!"
-              exit 1
-            fi
-            
-            echo "Stopping existing containers..."
-            docker compose -f $COMPOSE_FILE down --remove-orphans || true
-            
-            echo "Cleaning up unused Docker resources..."
-            docker system prune -f || true
+            sudo sh -c "
+              cd ${{ steps.vars.outputs.target_dir }}/mother-repo
+              
+              # Check if docker-compose file exists
+              if [ -f "docker-compose.yml" ]; then
+                COMPOSE_FILE="docker-compose.yml"
+              elif [ -f "docker-compose.yaml" ]; then
+                COMPOSE_FILE="docker-compose.yaml"
+              else
+                echo "Error: No docker-compose file found!"
+                exit 1
+              fi
+              
+              echo "Stopping existing containers..."
+              docker compose -f $COMPOSE_FILE down --remove-orphans || true
+              
+              echo "Cleaning up unused Docker resources..."
+              docker system prune -f || true
+            "
 
       - name: Build and Start Docker Services
         uses: appleboy/ssh-action@v1.0.3
@@ -260,46 +265,47 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
-            # Determine docker-compose file
-            if [ -f "docker-compose.yml" ]; then
-              COMPOSE_FILE="docker-compose.yml"
-            elif [ -f "docker-compose.yaml" ]; then
-              COMPOSE_FILE="docker-compose.yaml"
-            else
-              echo "Error: No docker-compose file found!"
-              exit 1
-            fi
-            
-            echo "Building and starting Docker services with profile: ${{ steps.vars.outputs.profile }}"
-            
-            # Set environment variables for docker-compose
-            export SPRING_PROFILES_ACTIVE=${{ steps.vars.outputs.profile }}
-            export ENVIRONMENT=${{ steps.vars.outputs.environment }}
-            
-            # Build and start all services
-            docker compose -f $COMPOSE_FILE build --no-cache
-            docker compose -f $COMPOSE_FILE up -d
-            
-            echo "Waiting for services to start..."
-            sleep 30
-            
-            # Check container status
-            echo "Container status:"
-            docker compose -f $COMPOSE_FILE ps
-            
-            # Check if all containers are running
-            FAILED_CONTAINERS=$(docker compose -f $COMPOSE_FILE ps --filter "status=exited" --format "table {{.Service}}")
-            if [ ! -z "$FAILED_CONTAINERS" ] && [ "$FAILED_CONTAINERS" != "SERVICE" ]; then
-              echo "Some containers failed to start:"
-              echo "$FAILED_CONTAINERS"
-              docker compose -f $COMPOSE_FILE logs --tail=50
-              exit 1
-            fi
-            
-            echo "All services started successfully!"
+            sudo sh -c "
+              cd ${{ steps.vars.outputs.target_dir }}/mother-repo
+              
+              # Determine docker-compose file
+              if [ -f "docker-compose.yml" ]; then
+                COMPOSE_FILE="docker-compose.yml"
+              elif [ -f "docker-compose.yaml" ]; then
+                COMPOSE_FILE="docker-compose.yaml"
+              else
+                echo "Error: No docker-compose file found!"
+                exit 1
+              fi
+              
+              echo "Building and starting Docker services with profile: ${{ steps.vars.outputs.profile }}"
+              
+              # Set environment variables for docker-compose
+              export SPRING_PROFILES_ACTIVE=${{ steps.vars.outputs.profile }}
+              export ENVIRONMENT=${{ steps.vars.outputs.environment }}
+              
+              # Build and start all services
+              docker compose -f $COMPOSE_FILE build --no-cache
+              docker compose -f $COMPOSE_FILE up -d
+              
+              echo "Waiting for services to start..."
+              sleep 30
+              
+              # Check container status
+              echo "Container status:"
+              docker compose -f $COMPOSE_FILE ps
+              
+              # Check if all containers are running
+              FAILED_CONTAINERS=$(docker compose -f $COMPOSE_FILE ps --filter "status=exited" --format "table {{.Service}}")
+              if [ ! -z "$FAILED_CONTAINERS" ] && [ "$FAILED_CONTAINERS" != "SERVICE" ]; then
+                echo "Some containers failed to start:"
+                echo "$FAILED_CONTAINERS"
+                docker compose -f $COMPOSE_FILE logs --tail=50
+                exit 1
+              fi
+              
+              echo "All services started successfully!"
+            "
 
       - name: Health Check and Verification
         uses: appleboy/ssh-action@v1.0.3
@@ -309,34 +315,35 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            cd ${{ steps.vars.outputs.target_dir }}/mother-repo
-            
-            # Determine docker-compose file
-            if [ -f "docker-compose.yml" ]; then
-              COMPOSE_FILE="docker-compose.yml"
-            else
-              COMPOSE_FILE="docker-compose.yaml"
-            fi
-            
-            echo "Performing health checks..."
-            
-            # Wait a bit more for full startup
-            sleep 60
-            
-            # Final container status
-            echo "Final container status:"
-            docker compose -f $COMPOSE_FILE ps
-            
-            # Check logs for any obvious errors
-            echo "Checking for errors in container logs..."
-            docker compose -f $COMPOSE_FILE logs --tail=20 | grep -i error || echo "No errors found in recent logs"
-            
-            # Display resource usage
-            echo "Container resource usage:"
-            docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
-            
-            echo "Deployment completed successfully for ${{ steps.vars.outputs.environment }} environment!"
+            sudo sh -c "
+              cd ${{ steps.vars.outputs.target_dir }}/mother-repo
+              
+              # Determine docker-compose file
+              if [ -f "docker-compose.yml" ]; then
+                COMPOSE_FILE="docker-compose.yml"
+              else
+                COMPOSE_FILE="docker-compose.yaml"
+              fi
+              
+              echo "Performing health checks..."
+              
+              # Wait a bit more for full startup
+              sleep 60
+              
+              # Final container status
+              echo "Final container status:"
+              docker compose -f $COMPOSE_FILE ps
+              
+              # Check logs for any obvious errors
+              echo "Checking for errors in container logs..."
+              docker compose -f $COMPOSE_FILE logs --tail=20 | grep -i error || echo "No errors found in recent logs"
+              
+              # Display resource usage
+              echo "Container resource usage:"
+              docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+              
+              echo "Deployment completed successfully for ${{ steps.vars.outputs.environment }} environment!"
+            "
 
       - name: Cleanup Build Artifacts (Optional)
         uses: appleboy/ssh-action@v1.0.3
@@ -346,14 +353,15 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            echo "Cleaning up Maven build cache..."
-            rm -rf ~/.m2/repository/com/yourcompany/* || true
-            
-            echo "Cleaning up Docker build cache..."
-            docker builder prune -f || true
-            
-            echo "Cleanup completed!"
+            sudo sh -c "
+              echo "Cleaning up Maven build cache..."
+              rm -rf ~/.m2/repository/com/yourcompany/* || true
+              
+              echo "Cleaning up Docker build cache..."
+              docker builder prune -f || true
+              
+              echo "Cleanup completed!"
+            "
 
       - name: Send Deployment Notification
         if: always()
@@ -364,13 +372,14 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Run as root user
-            sudo su -
-            echo "==================================="
-            echo "Deployment Summary"
-            echo "==================================="
-            echo "Branch: ${{ steps.vars.outputs.branch }}"
-            echo "Environment: ${{ steps.vars.outputs.environment }}"
-            echo "Target Directory: ${{ steps.vars.outputs.target_dir }}"
-            echo "Profile: ${{ steps.vars.outputs.profile }}"
-            echo "Timestamp: $(date)"
-            echo "==================================="
+            sudo sh -c "
+              echo "==================================="
+              echo "Deployment Summary"
+              echo "==================================="
+              echo "Branch: ${{ steps.vars.outputs.branch }}"
+              echo "Environment: ${{ steps.vars.outputs.environment }}"
+              echo "Target Directory: ${{ steps.vars.outputs.target_dir }}"
+              echo "Profile: ${{ steps.vars.outputs.profile }}"
+              echo "Timestamp: $(date)"
+              echo "==================================="
+            "
