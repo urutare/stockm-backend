@@ -3,13 +3,6 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
-        <relativePath/>
-        <!-- lookup parent from repository -->
-    </parent>
     <groupId>com.urutare</groupId>
     <artifactId>stockm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -17,7 +10,6 @@
     <name>stockm</name>
     <description>Stock Management Services</description>
     <modules>
-        <module>stockm-common-core</module>
         <module>POSFunctional</module>
         <module>POSUtils</module>
         <module>POSVSDC</module>
@@ -41,6 +33,7 @@
         <module>POSSaleExport</module>
         <module>POSAccountingExport</module>
         <module>POSMainExport</module>
+        <module>stockm-common-core</module>
         <module>stockm-discovery-service</module>
         <module>stockm-config-server</module>
         <module>stockm-api-gateway</module>
@@ -53,17 +46,29 @@
     </modules>
     <properties>
         <java.version>21</java.version>
+        <spring.boot.version>3.3.4</spring.boot.version>
     </properties>
-    <dependencies>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
-        <plugins>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>
