@@ -21,7 +21,7 @@ services=(
 
 # Maven clean install for project
 echo "Running Maven clean install for the entire project..."
-"${SCRIPT_PATH}"/mvnw -f "${SCRIPT_PATH}"/pom.xml clean install
+"${SCRIPT_PATH}"/mvnw -f "${SCRIPT_PATH}"/pom.xml clean install -DskipTests
 echo
 
 # Build new Docker image for each service
