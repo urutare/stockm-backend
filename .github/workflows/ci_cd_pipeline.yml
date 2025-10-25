@@ -122,6 +122,8 @@ jobs:
 
               echo "Build by running build.sh..."
               ./build.sh
+
+              BRANCH_NAME=${GITHUB_REF##*/}
               
               if [ "$BRANCH_NAME" = "main" ]; then
                 # Delete possibly existing container (but retain volumes)
