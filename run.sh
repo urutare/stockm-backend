@@ -21,8 +21,8 @@ services=(
 )
 
 # Docker-compose command
-DCOMPOSE="docker-compose -f ${SCRIPT_PATH}/docker-compose.yml"
-echo "Using docker-compose file: ${SCRIPT_PATH}/docker-compose.yml"
+DCOMPOSE="docker-compose -f ${SCRIPT_PATH}/docker-compose.yaml"
+echo "Using docker-compose file: ${SCRIPT_PATH}/docker-compose.yaml"
 
 # Build new Docker image for each service
 for service in "${services[@]}"; do
