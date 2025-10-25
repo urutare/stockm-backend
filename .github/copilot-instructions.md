@@ -18,10 +18,7 @@ This is the **Ingenzi Certificate Invoicing System (CIS)**, also known as **Stoc
 
 ```bash
 # Clone all required microservice repositories
-./setup.sh          # Linux/Mac
-# OR
-./setup.bat         # Windows
-
+./setup.sh          # Linux/Macs
 # This clones 30+ repositories including:
 # - stockm-* services (core microservices)  
 # - POS* modules (Point of Sale system)
