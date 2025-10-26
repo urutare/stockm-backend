@@ -1,0 +1,119 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  MOTHER_REPO_URL: https://github.com/urutare/stockm-backend.git
+  TARGET_DIR: /root/stock/dev
+  ENVIRONMENT: development
+  PROFILE: dev
+  COMPOSE_FILE: docker-compose.dev.yaml
+  JAVA_VERSION: '21'
+  MAVEN_OPTS: '-Xmx2048m -XX:MaxMetaspaceSize=512m'
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Create Remote Directory Structure
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            sudo sh -c "
+              mkdir -p ${{ env.TARGET_DIR }}
+              chmod 755 ${{ env.TARGET_DIR }}
+              echo \"Created and set permissions for directory: ${{ env.TARGET_DIR }}\"
+            "
+
+      - name: Clone and Setup Repository
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            sudo sh -c "
+              cd ${{ env.TARGET_DIR }}
+            
+              # Remove existing repo if it exists
+              if [ -d \"mother-repo\" ]; then
+                echo \"Removing existing repository...\"
+                rm -rf mother-repo
+              fi
+            
+              # Clone the repository
+              echo \"Cloning repository...\"
+              git clone ${{ env.MOTHER_REPO_URL }} mother-repo
+            
+              cd mother-repo
+              git checkout develop
+            
+              echo \"Successfully cloned repository on develop branch\"
+            "
+
+      - name: Build and Deploy Services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            sudo sh -c '
+              cd ${{ env.TARGET_DIR }}/mother-repo
+
+              if [ ! -f "setup.sh" ]; then
+                echo "Error: setup.sh not found"
+                exit 1
+              fi
+
+              chmod +x mvnw setup.sh build.sh
+
+              # Inject GitHub credentials
+              export GH_USERNAME="${{ secrets.GH_USERNAME }}"
+              export GH_PAT="${{ secrets.GH_PAT }}"
+
+              # Configure GitHub authentication
+              sed -i "s#https://github.com/#https://$GH_USERNAME:$GH_PAT@github.com/#g" setup.sh
+
+              echo "Running setup and build processes..."
+              ./setup.sh > /dev/null 2>&1
+              ./build.sh > /dev/null 2>&1
+
+              echo "Deploying development services..."
+              
+              # Stop existing containers
+              docker-compose -f ${{ env.COMPOSE_FILE }} down > /dev/null 2>&1 || true
+              
+              # Start new containers
+              docker-compose -f ${{ env.COMPOSE_FILE }} up -d > /dev/null 2>&1
+              
+              echo "Development deployment completed successfully"
+            '
+
+      - name: Deployment Summary
+        if: always()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            sudo sh -c "
+              echo \"===================================\"
+              echo \"Development Deployment Summary\"
+              echo \"===================================\"
+              echo \"Branch: develop\"
+              echo \"Environment: ${{ env.ENVIRONMENT }}\"
+              echo \"Target Directory: ${{ env.TARGET_DIR }}\"
+              echo \"Profile: ${{ env.PROFILE }}\"
+              echo \"Timestamp: \$(date)\"
+              echo \"===================================\"
+            "
