@@ -57,8 +57,7 @@ jobs:
               # Set proper permissions
               chmod 755 ${{ steps.vars.outputs.target_dir }}
               
-              echo "Created directory structure for ${{ steps.vars.outputs.environment }} environment"
-              ls -la ${{ env.REMOTE_BASE_DIR }}
+              echo \"Created and set permissions for directory: ${{ steps.vars.outputs.target_dir }}\"
             "
 
       - name: Clone Mother Repository on Remote Server
@@ -123,8 +122,8 @@ jobs:
               echo "Build by running build.sh..."
               ./build.sh
 
-              BRANCH_NAME=${GITHUB_REF##*/}
-              echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+              BRANCH_NAME="${{ steps.vars.outputs.branch }}"
+              echo "Deploying branch: $BRANCH_NAME"
               
               if [ "$BRANCH_NAME" = "main" ]; then
                 # Delete possibly existing container (but retain volumes)
