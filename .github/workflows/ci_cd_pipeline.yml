@@ -109,56 +109,33 @@ jobs:
               chmod +x setup.sh
               chmod +x build.sh
 
-              echo "Injecting GitHub credentials..."
+              # Inject GitHub credentials silently
               export GH_USERNAME="${{ secrets.GH_USERNAME }}"
               export GH_PAT="${{ secrets.GH_PAT }}"
 
               # Rewrite setup.sh so it uses HTTPS with PAT
               sed -i "s#https://github.com/#https://$GH_USERNAME:$GH_PAT@github.com/#g" setup.sh
 
-              echo "Clone by running setup.sh..."
-              ./setup.sh
-
-              echo "Build by running build.sh..."
-              ./build.sh
+              echo "Running setup and build processes..."
+              ./setup.sh > /dev/null 2>&1
+              ./build.sh > /dev/null 2>&1
 
               BRANCH_NAME="${{ steps.vars.outputs.branch }}"
-              echo "Deploying branch: $BRANCH_NAME"
+              echo "Deploying services for branch: $BRANCH_NAME"
               
               if [ "$BRANCH_NAME" = "main" ]; then
                 # Delete possibly existing container (but retain volumes)
-                docker-compose -f docker-compose.prod.yaml down || true
+                docker-compose -f docker-compose.prod.yaml down > /dev/null 2>&1 || true
                 # Start docker-compose file
-                docker-compose -f docker-compose.prod.yaml up -d
+                docker-compose -f docker-compose.prod.yaml up -d > /dev/null 2>&1
               elif [ "$BRANCH_NAME" = "develop" ]; then
                 # Delete possibly existing container (but retain volumes)
-                docker-compose -f docker-compose.dev.yaml down || true
+                docker-compose -f docker-compose.dev.yaml down > /dev/null 2>&1 || true
                 # Start docker-compose file
-                docker-compose -f docker-compose.dev.yaml up -d
+                docker-compose -f docker-compose.dev.yaml up -d > /dev/null 2>&1
               else
                 echo "Unsupported branch: $BRANCH_NAME"
                 exit 1
               fi
             '
-
-      - name: Send Deployment Notification
-        if: always()
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_SERVER }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          script: |
-            # Run as root user
-            sudo sh -c "
-              echo \"===================================\"
-              echo \"Deployment Summary\"
-              echo \"===================================\"
-              echo \"Branch: ${{ steps.vars.outputs.branch }}\"
-              echo \"Environment: ${{ steps.vars.outputs.environment }}\"
-              echo \"Target Directory: ${{ steps.vars.outputs.target_dir }}\"
-              echo \"Profile: ${{ steps.vars.outputs.profile }}\"
-              echo \"Timestamp: $(date)\"
-              echo \"===================================\"
-            "
   
