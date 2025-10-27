@@ -1,10 +1,9 @@
 services:
   discovery-server:
     image: stockm-discovery-service:latest
-    restart: always
     ports:
       - "9761:8761"
-    container_name: stockm-discovery-service-prod
+    container_name: stockm-discovery-service
     environment:
       EUREKA_HOSTNAME: discovery-server
       JAVA_OPTS: "-Xms128m -Xmx256m"
@@ -13,7 +12,7 @@ services:
         limits:
           memory: 512M
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
       interval: 30s
@@ -25,8 +24,7 @@ services:
 
   config-server:
     image: stockm-config-service:latest
-    container_name: stockm-config-service-prod
-    restart: always
+    container_name: stockm-config-service
     ports:
       - "9888:8888"
     env_file:
@@ -38,7 +36,7 @@ services:
       discovery-server:
         condition: service_healthy
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 30s
@@ -48,8 +46,7 @@ services:
 
   api-gateway:
     image: stockm-gateway-service:latest
-    container_name: stockm-gateway-service-prod
-    restart: on-failure
+    container_name: stockm-gateway-service
     ports:
       - "9080:8080"
     environment:
@@ -69,7 +66,7 @@ services:
       - ../environments/prod/secrets/.env.properties:/app/.env.properties
       - ../environments/prod/secrets/.env.prod.jceks:/app/.env.jceks
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -79,10 +76,9 @@ services:
 
   user-service:
     image: stockm-user-service:latest
-    restart: on-failure:5
     ports:
       - "9081:8081"
-    container_name: stockm-user-service-prod
+    container_name: stockm-user-service
     environment:
       SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
@@ -99,7 +95,7 @@ services:
       retries: 3
       start_period: 10s  # Allow some time for the server to start
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
     volumes:
       - ./stockm-config-server/src/main/resources/config:/home/app/config
       - ../environments/prod/secrets/.env.properties:/app/.env.properties
@@ -112,8 +108,7 @@ services:
       - ../environments/prod/secrets/envs/.env.common
     ports:
       - "9082:8082"
-    restart: on-failure:5
-    container_name: stockm-category-service-prod
+    container_name: stockm-category-service
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -131,7 +126,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
     volumes:
       - ./stockm-config-server/src/main/resources/config:/home/app/config
       - ../environments/prod/secrets/.env.properties:/app/.env.properties
@@ -139,13 +134,12 @@ services:
 
   stock-service:
     image: stockm-stock-service:latest
-    restart: on-failure:5
     ports:
       - "9084:8080"
     environment:
       SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
-    container_name: stockm-stock-service-prod
+    container_name: stockm-stock-service
     env_file:
       - ../environments/prod/secrets/envs/.env.stock
       - ../environments/prod/secrets/envs/.env.common
@@ -166,18 +160,17 @@ services:
       - ../environments/prod/secrets/.env.properties:/app/.env.properties
       - ./../../env.prod.jceks:/app/.env.jceks
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
 
   sync-service:
     image: stockm-sync-service:latest
     ports:
       - "9083:8080"
       - "6000:5000"
-    restart: on-failure:5
     environment:
       SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
-    container_name: stockm-sync-service-prod
+    container_name: stockm-sync-service
     env_file:
       - ../environments/prod/secrets/envs/.env.sync
       - ../environments/prod/secrets/envs/.env.common
@@ -198,12 +191,11 @@ services:
       - ./../../env.prod.jceks:/app/.env.jceks
       - ../environments/prod/secrets/.env.properties:/app/.env.properties
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
 
   payment-service:
     image: stockm-payment-service:latest
-    container_name: stockm-payment-service-prod
-    restart: on-failure:5
+    container_name: stockm-payment-service
     ports:
       - "9086:8080"
     environment:
@@ -229,12 +221,12 @@ services:
       - ./../../env.prod.jceks:/app/.env.jceks
       - ../environments/prod/secrets/.env.properties:/app/.env.properties
     networks:
-      - urutare-stock-prod-network
+      - urutare-stock-network
       - urutare-db-network
 
 networks:
-  urutare-stock-prod-network:
-    name: urutare-stock-prod-network
+  urutare-stock-network:
+    name: urutare-stock-network
     driver: bridge
 
   urutare-db-network:
