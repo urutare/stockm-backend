@@ -1,16 +1,35 @@
+version: "3.9"
+
+x-common-environment: &common-environment
+  JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+  JAVA_OPTS: "-Xms128m -Xmx256m"
+  SERVER_PORT: 8080
+
+x-healthcheck-template: &healthcheck-template
+  test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 15s
+
+x-common-deploy: &common-deploy
+  deploy:
+    resources:
+      limits:
+        memory: 512M
+        cpus: "0.25"
+
 services:
   discovery-server-dev:
     image: stockm-discovery-service:latest
+    container_name: stockm-discovery-service-dev
     ports:
       - "9761:8761"
-    container_name: stockm-discovery-service-dev
     environment:
+      <<: *common-environment
       EUREKA_HOSTNAME: discovery-server
-      JAVA_OPTS: "-Xms128m -Xmx256m"
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+      SERVER_PORT: 8761
+    <<: *common-deploy
     networks:
       - urutare-stock-network-dev
     healthcheck:
@@ -30,8 +49,9 @@ services:
     env_file:
       - ../environments/dev/secrets/envs/.env.config
     environment:
+      <<: *common-environment
       SPRING_APPLICATION_NAME: config-server
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SERVER_PORT: 8888
     depends_on:
       discovery-server-dev:
         condition: service_healthy
@@ -42,58 +62,50 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 15s  # Allow some time for the server to start
+      start_period: 15s
 
   api-gateway-dev:
     image: stockm-gateway-service:latest
     container_name: stockm-gateway-service-dev
     ports:
       - "9080:8080"
-    environment:
-      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
-      - JAVA_OPTS= "-Xms128m -Xmx256m"
     env_file:
       - ../environments/dev/secrets/envs/.env.gateway
       - ../environments/dev/secrets/envs/.env.common
+    environment:
+      <<: *common-environment
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
     depends_on:
       discovery-server-dev:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 768M # Slightly higher for gateway
     volumes:
       - ../environments/dev/secrets/.env.properties:/app/.env.properties
       - ../environments/dev/secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-network-dev
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s  # Allow some time for the service to start
+      <<: *healthcheck-template
 
   user-service-dev:
     image: stockm-user-service:latest
-    ports:
-      - "9081:8081"
     container_name: stockm-user-service-dev
-    environment:
-      SERVER_PORT: 8080
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+    ports:
+      - "9081:8080"
     env_file:
       - ../environments/dev/secrets/envs/.env.user
       - ../environments/dev/secrets/envs/.env.common
+    environment:
+      <<: *common-environment
     depends_on:
       discovery-server-dev:
         condition: service_healthy
+    <<: *common-deploy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s  # Allow some time for the server to start
+      <<: *healthcheck-template
     networks:
       - urutare-stock-network-dev
     volumes:
@@ -103,28 +115,20 @@ services:
 
   category-service-dev:
     image: stockm-category-service:latest
+    container_name: stockm-category-service-dev
+    ports:
+      - "9082:8080"
     env_file:
       - ../environments/dev/secrets/envs/.env.category
       - ../environments/dev/secrets/envs/.env.common
-    ports:
-      - "9082:8082"
-    container_name: stockm-category-service-dev
+    environment:
+      <<: *common-environment
     depends_on:
       discovery-server-dev:
         condition: service_healthy
-    environment:
-      SERVER_PORT: 8080
-      JAVA_OPTS: "-Xms128m -Xmx256m"
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+    <<: *common-deploy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      <<: *healthcheck-template
     networks:
       - urutare-stock-network-dev
     volumes:
@@ -134,28 +138,20 @@ services:
 
   stock-service-dev:
     image: stockm-stock-service:latest
+    container_name: stockm-stock-service-dev
     ports:
       - "9084:8080"
-    environment:
-      SERVER_PORT: 8080
-      JAVA_OPTS: "-Xms128m -Xmx256m"
-    container_name: stockm-stock-service-dev
     env_file:
       - ../environments/dev/secrets/envs/.env.stock
       - ../environments/dev/secrets/envs/.env.common
+    environment:
+      <<: *common-environment
     depends_on:
       discovery-server-dev:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+    <<: *common-deploy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      <<: *healthcheck-template
     volumes:
       - ../environments/dev/secrets/.env.properties:/app/.env.properties
       - ./../../env.dev.jceks:/app/.env.jceks
@@ -164,29 +160,21 @@ services:
 
   sync-service-dev:
     image: stockm-sync-service:latest
+    container_name: stockm-sync-service-dev
     ports:
       - "9083:8080"
       - "6000:5000"
-    environment:
-      SERVER_PORT: 8080
-      JAVA_OPTS: "-Xms128m -Xmx256m"
-    container_name: stockm-sync-service-dev
     env_file:
       - ../environments/dev/secrets/envs/.env.sync
       - ../environments/dev/secrets/envs/.env.common
+    environment:
+      <<: *common-environment
     depends_on:
       discovery-server-dev:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+    <<: *common-deploy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s  # Allow some time for the server to start
+      <<: *healthcheck-template
     volumes:
       - ./../../env.dev.jceks:/app/.env.jceks
       - ../environments/dev/secrets/.env.properties:/app/.env.properties
@@ -198,25 +186,17 @@ services:
     container_name: stockm-payment-service-dev
     ports:
       - "9086:8080"
-    environment:
-      SERVER_PORT: 8080
-      JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ../environments/dev/secrets/envs/.env.payment
       - ../environments/dev/secrets/envs/.env.common
+    environment:
+      <<: *common-environment
     depends_on:
       discovery-server-dev:
         condition: service_healthy
+    <<: *common-deploy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s  # Allow some time for the server to start
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+      <<: *healthcheck-template
     volumes:
       - ./../../env.dev.jceks:/app/.env.jceks
       - ../environments/dev/secrets/.env.properties:/app/.env.properties
@@ -231,4 +211,3 @@ networks:
 
   urutare-db-network:
     external: true
-
