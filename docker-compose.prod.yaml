@@ -2,8 +2,6 @@ services:
   discovery-server-prod:
     image: stockm-discovery-service:latest
     restart: always
-    ports:
-      - "9761:8761"
     container_name: discovery-server-prod
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -35,8 +33,6 @@ services:
     image: stockm-config-service:latest
     container_name: config-server-prod
     restart: always
-    ports:
-      - "9888:8888"
     env_file:
       - ./secrets/envs/.env.config
     environment:
@@ -93,7 +89,7 @@ services:
           memory: 1024M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./secrets/.env.prod.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
     healthcheck:
@@ -112,12 +108,9 @@ services:
   user-service-prod:
     image: stockm-user-service:latest
     restart: on-failure:3
-    ports:
-      - "9081:8081"
     privileged: true
     container_name: user-service-prod
     environment:
-      SERVER_PORT: 8081
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.user
@@ -127,31 +120,11 @@ services:
         condition: service_healthy
       config-server-prod:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8080/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s # Allow some time for the server to start
-    dns: # Add this
-      - 8.8.8.8
-      - 1.1.1.1
-    #deploy:
-    #  resources:
-    #    limits:
-    #      memory: 512M
     networks:
       - urutare-stock-prod-network
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.prod.jceks:/app/.env.jceks
+      - ./../../env.dev.jceks:/app/.env.jceks
 
   category-service-prod:
     image: stockm-category-service:latest
@@ -160,14 +133,13 @@ services:
       - ./secrets/envs/.env.common
 
     restart: on-failure:3
-    container_name: category-service-dev
+    container_name: category-service-prod
     depends_on:
       discovery-server-prod:
         condition: service_healthy
       config-server-prod:
         condition: service_healthy
     environment:
-      SERVER_PORT: 8082
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:
@@ -178,16 +150,13 @@ services:
     volumes:
       - ./stockm-config-server/src/main/resources/config:/home/app/config
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.prod.jceks:/app/.env.jceks
+      - ./../../env.dev.jceks:/app/.env.jceks
 
   stock-service-prod:
     image: stockm-stock-service:latest
     restart: on-failure:3
-    ports:
-      - "9084:8080"
     container_name: stock-service-prod
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.stock
@@ -201,33 +170,17 @@ services:
       resources:
         limits:
           memory: 512M
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8080/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.prod.jceks:/app/.env.jceks
+      - ./../../env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
 
   sync-service-prod:
     image: stockm-sync-service:latest
-    ports:
-      - "9083:8080"
     restart: on-failure:3
     container_name: sync-service-prod
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.sync
@@ -241,22 +194,9 @@ services:
       resources:
         limits:
           memory: 512M
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8080/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s # Allow some time for the server to start
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.prod.jceks:/app/.env.jceks
+      - ./../../env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
 
@@ -264,10 +204,7 @@ services:
     image: stockm-payment-service:latest
     container_name: "payment-service-prod"
     restart: on-failure:3
-    ports:
-      - "9085:8080"
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.payment
@@ -279,26 +216,13 @@ services:
         condition: service_healthy
       api-gateway-prod:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8080/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s # Allow some time for the server to start
     deploy:
       resources:
         limits:
           memory: 512M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.prod.jceks:/app/.env.jceks
+      - ./../../env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
       - urutare-db-network
@@ -306,11 +230,8 @@ services:
   storage-service-prod:
     image: stockm-storage-service:latest
     restart: on-failure:3
-    ports:
-      - "9086:8080"
     container_name: storage-service-prod
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.storage
@@ -324,22 +245,9 @@ services:
       resources:
         limits:
           memory: 512M
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8080/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.prod.jceks:/app/.env.jceks
+      - ./../../env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
 
@@ -351,21 +259,15 @@ services:
       - ./secrets/envs/.env.sms
       - ./secrets/envs/.env.common
     environment:
-      CONFIG_SERVER_URL: http://config-server:9888
+      CONFIG_SERVER_URL: http://config-server:8888
       DB_DATABASE: stockm_sms_db_prod
     ports:
-      - "8085:8000"
+      - "8086:8000"
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 512M
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s # Allow some time for the server to start
     depends_on:
       discovery-server-prod:
         condition: service_healthy
