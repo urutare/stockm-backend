@@ -11,8 +11,8 @@ env:
   ENVIRONMENT: production
   PROFILE: prod
   COMPOSE_FILE: docker-compose.prod.yaml
-  JAVA_VERSION: '21'
-  MAVEN_OPTS: '-Xmx2048m -XX:MaxMetaspaceSize=512m'
+  JAVA_VERSION: "21"
+  MAVEN_OPTS: "-Xmx2048m -XX:MaxMetaspaceSize=512m"
 
 jobs:
   deploy-prod:
@@ -42,20 +42,20 @@ jobs:
           script: |
             sudo sh -c "
               cd ${{ env.TARGET_DIR }}
-            
+
               # Remove existing repo if it exists
               if [ -d \"mother-repo\" ]; then
                 echo \"Removing existing repository...\"
                 rm -rf mother-repo
               fi
-            
+
               # Clone the repository
               echo \"Cloning repository...\"
               git clone ${{ env.MOTHER_REPO_URL }} mother-repo
-            
+
               cd mother-repo
               git checkout main
-            
+
               echo \"Successfully cloned repository on main branch\"
             "
 
@@ -85,9 +85,10 @@ jobs:
 
               echo "Running setup and build processes..."
               ./setup.sh > /dev/null 2>&1
-              ./build.sh > /dev/null 2>&1
 
               echo "Deploying production services..."
+
+              cp -r /root/stock/backend/prod/secrets/ ./secrets # Copy secrets
               
               # Stop existing containers
               docker-compose -f ${{ env.COMPOSE_FILE }} down > /dev/null 2>&1 || true
