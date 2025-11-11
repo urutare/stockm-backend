@@ -1,34 +1,4 @@
 services:
-  discovery-server-prod:
-    image: stockm-discovery-service:latest
-    restart: always
-    container_name: discovery-server-prod
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      EUREKA_HOSTNAME: discovery-server
-      JAVA_OPTS: "-Xms128m -Xmx256m"
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    networks:
-      - urutare-stock-prod-network
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8761/actuator/health",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
   config-server-prod:
     image: stockm-config-service:latest
     container_name: config-server-prod
@@ -42,10 +12,6 @@ services:
       - ./stockm-config-server/src/main/resources/config:/home/app/config
       - ./secrets/.env.properties:/app/.env.properties
       - ./secrets:/app/secrets
-      - ./secrets/.env.jceks.prod:/app/.env.jceks
-    depends_on:
-      discovery-server-prod:
-        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -79,8 +45,6 @@ services:
       - ./secrets/envs/.env.gateway
       - ./secrets/envs/.env.common
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
     deploy:
@@ -89,7 +53,7 @@ services:
           memory: 1024M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./secrets/.env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
     healthcheck:
@@ -116,15 +80,13 @@ services:
       - ./secrets/envs/.env.user
       - ./secrets/envs/.env.common
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
     networks:
       - urutare-stock-prod-network
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./../../env.prod.jceks:/app/.env.jceks
 
   category-service-prod:
     image: stockm-category-service:latest
@@ -135,8 +97,6 @@ services:
     restart: on-failure:3
     container_name: category-service-prod
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
     environment:
@@ -150,7 +110,7 @@ services:
     volumes:
       - ./stockm-config-server/src/main/resources/config:/home/app/config
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./../../env.prod.jceks:/app/.env.jceks
 
   stock-service-prod:
     image: stockm-stock-service:latest
@@ -162,8 +122,6 @@ services:
       - ./secrets/envs/.env.stock
       - ./secrets/envs/.env.common
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
     deploy:
@@ -172,7 +130,7 @@ services:
           memory: 512M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./../../env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
 
@@ -186,8 +144,6 @@ services:
       - ./secrets/envs/.env.sync
       - ./secrets/envs/.env.common
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
     deploy:
@@ -196,7 +152,7 @@ services:
           memory: 512M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./../../env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
 
@@ -210,8 +166,6 @@ services:
       - ./secrets/envs/.env.payment
       - ./secrets/envs/.env.common
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
       api-gateway-prod:
@@ -222,7 +176,7 @@ services:
           memory: 512M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./../../env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
       - urutare-db-network
@@ -237,8 +191,6 @@ services:
       - ./secrets/envs/.env.storage
       - ./secrets/envs/.env.common
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
     deploy:
@@ -247,7 +199,7 @@ services:
           memory: 512M
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./../../env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
 
@@ -269,8 +221,6 @@ services:
           cpus: "0.5"
           memory: 512M
     depends_on:
-      discovery-server-prod:
-        condition: service_healthy
       config-server-prod:
         condition: service_healthy
       api-gateway-prod:

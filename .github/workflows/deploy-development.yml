@@ -44,16 +44,16 @@ jobs:
               cd ${{ env.TARGET_DIR }}
 
               # Remove existing repo if it exists
-              if [ -d \"mother-repo\" ]; then
+              if [ -d \"stockm-backend-dev\" ]; then
                 echo \"Removing existing repository...\"
-                rm -rf mother-repo
+                rm -rf stockm-backend-dev
               fi
 
               # Clone the repository
               echo \"Cloning repository...\"
-              git clone ${{ env.MOTHER_REPO_URL }} mother-repo
+              git clone ${{ env.MOTHER_REPO_URL }} stockm-backend-dev
 
-              cd mother-repo
+              cd stockm-backend-dev
               git checkout develop
 
               echo \"Successfully cloned repository on develop branch\"
@@ -67,7 +67,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             sudo sh -c '
-              cd ${{ env.TARGET_DIR }}/mother-repo
+              cd ${{ env.TARGET_DIR }}/stockm-backend-dev
 
               if [ ! -f "setup.sh" ]; then
                 echo "Error: setup.sh not found"

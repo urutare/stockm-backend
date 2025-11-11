@@ -44,16 +44,16 @@ jobs:
               cd ${{ env.TARGET_DIR }}
 
               # Remove existing repo if it exists
-              if [ -d \"mother-repo\" ]; then
+              if [ -d \"stockm-backend-prod\" ]; then
                 echo \"Removing existing repository...\"
-                rm -rf mother-repo
+                rm -rf stockm-backend-prod
               fi
 
               # Clone the repository
               echo \"Cloning repository...\"
-              git clone ${{ env.MOTHER_REPO_URL }} mother-repo
+              git clone ${{ env.MOTHER_REPO_URL }} stockm-backend-prod
 
-              cd mother-repo
+              cd stockm-backend-prod
               git checkout main
 
               echo \"Successfully cloned repository on main branch\"
@@ -67,7 +67,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             sudo sh -c '
-              cd ${{ env.TARGET_DIR }}/mother-repo
+              cd ${{ env.TARGET_DIR }}/stockm-backend-prod
 
               if [ ! -f "setup.sh" ]; then
                 echo "Error: setup.sh not found"
@@ -88,7 +88,7 @@ jobs:
 
               echo "Deploying production services..."
 
-              cp -r /root/stock/backend/dev/secrets/ ./secrets # Copy secrets
+              cp -r /root/stock/backend/prod/secrets/ ./secrets # Copy secrets
               
               # Stop existing containers
               docker-compose -f ${{ env.COMPOSE_FILE }} down > /dev/null 2>&1 || true
