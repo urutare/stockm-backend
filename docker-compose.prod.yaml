@@ -7,7 +7,7 @@ services:
     container_name: discovery-server-prod
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      EUREKA_HOSTNAME: discovery-server
+      EUREKA_HOSTNAME: discovery-server-prod
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:
