@@ -8,7 +8,6 @@ SCRIPT_PATH="`dirname \"$0\"`"
 
 # Services to build
 services=(
-"stockm-config-server"
 "stockm-category-service"
 "stockm-sync-service"
 "stockm-stock-service"

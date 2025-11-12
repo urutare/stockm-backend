@@ -31,46 +31,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  config-server:
-    image: stockm-config-service:latest
-    container_name: config-server-dev
-    restart: always
-    expose:
-      - "8888"
-    ports:
-      - "8888:8888"
-    env_file:
-      - ./secrets/envs/.env.config
-    environment:
-      SPRING_APPLICATION_NAME: config-server
-      JAVA_OPTS: "-Xms128m -Xmx256m"
-    volumes:
-      - ./stockm-config-server/src/main/resources/config:/home/app/config
-      - ./secrets:/app/secrets
-      - ./secrets/.env.jceks.dev:/app/.env.jceks
-    depends_on:
-      discovery-server:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    networks:
-      - urutare-stock-dev-network
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8888/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 10s # Allow some time for the server to start
-
   api-gateway:
     image: stockm-gateway-service:latest
     ports:
@@ -85,8 +45,6 @@ services:
       - ./secrets/envs/.env.common
     depends_on:
       discovery-server:
-        condition: service_healthy
-      config-server:
         condition: service_healthy
     deploy:
       resources:
@@ -115,7 +73,6 @@ services:
     privileged: true
     container_name: user-service-dev
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.user
@@ -123,7 +80,7 @@ services:
     depends_on:
       discovery-server:
         condition: service_healthy
-      config-server:
+      api-gateway:
         condition: service_healthy
     healthcheck:
       test:
@@ -132,7 +89,7 @@ services:
           "wget",
           "--spider",
           "-q",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8081/actuator/health",
         ]
       interval: 30s
       timeout: 10s
@@ -168,7 +125,7 @@ services:
           "wget",
           "--spider",
           "-q",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8082/actuator/health",
         ]
       interval: 30s
       timeout: 10s
@@ -191,7 +148,7 @@ services:
     depends_on:
       discovery-server:
         condition: service_healthy
-      config-server:
+      api-gateway:
         condition: service_healthy
     deploy:
       resources:
@@ -204,7 +161,7 @@ services:
           "wget",
           "--spider",
           "-q",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8084/actuator/health",
         ]
       interval: 30s
       timeout: 10s
@@ -227,7 +184,7 @@ services:
     depends_on:
       discovery-server:
         condition: service_healthy
-      config-server:
+      api-gateway:
         condition: service_healthy
     deploy:
       resources:
@@ -240,7 +197,7 @@ services:
           "wget",
           "--spider",
           "-q",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8083/actuator/health",
         ]
       interval: 30s
       timeout: 10s
@@ -272,7 +229,7 @@ services:
           "wget",
           "--spider",
           "-q",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8085/actuator/health",
         ]
       interval: 30s
       timeout: 10s
@@ -300,7 +257,7 @@ services:
     depends_on:
       discovery-server:
         condition: service_healthy
-      config-server:
+      api-gateway:
         condition: service_healthy
     deploy:
       resources:
@@ -313,7 +270,7 @@ services:
           "wget",
           "--spider",
           "-q",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8086/actuator/health",
         ]
       interval: 30s
       timeout: 10s
