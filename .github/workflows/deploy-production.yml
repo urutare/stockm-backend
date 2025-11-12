@@ -94,7 +94,7 @@ jobs:
               docker-compose -f ${{ env.COMPOSE_FILE }} down > /dev/null 2>&1 || true
               
               # Start new containers
-              docker-compose -f ${{ env.COMPOSE_FILE }} up -d > /dev/null 2>&1
+              docker-compose -f ${{ env.COMPOSE_FILE }} up -d --build > /dev/null 2>&1
               
               echo "Production deployment completed successfully"
             '

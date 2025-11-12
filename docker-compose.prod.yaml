@@ -3,7 +3,7 @@ services:
     image: stockm-discovery-service:latest
     restart: always
     ports:
-      - "8761:8761"
+      - "9761:8761"
     container_name: discovery-server-prod
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -41,10 +41,6 @@ services:
     depends_on:
       discovery-server-prod:
         condition: service_healthy
-    volumes:
-      - ./stockm-config-server/src/main/resources/config:/home/app/config
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./secrets:/app/secrets
     deploy:
       resources:
         limits:
@@ -87,7 +83,7 @@ services:
         limits:
           memory: 1024M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
+      - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
     healthcheck:
@@ -119,7 +115,6 @@ services:
     networks:
       - urutare-stock-prod-network
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.prod.jceks:/app/.env.jceks
 
   category-service-prod:
@@ -142,8 +137,6 @@ services:
     networks:
       - urutare-stock-prod-network
     volumes:
-      - ./stockm-config-server/src/main/resources/config:/home/app/config
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.prod.jceks:/app/.env.jceks
 
   stock-service-prod:
@@ -163,7 +156,6 @@ services:
         limits:
           memory: 512M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
@@ -185,7 +177,6 @@ services:
         limits:
           memory: 512M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
@@ -209,7 +200,6 @@ services:
         limits:
           memory: 512M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
@@ -232,7 +222,6 @@ services:
         limits:
           memory: 512M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
@@ -270,3 +259,8 @@ networks:
     external: false
   urutare-db-network:
     external: true
+
+volumes:
+  postgres-data:
+    driver: local
+    name: postgres-data

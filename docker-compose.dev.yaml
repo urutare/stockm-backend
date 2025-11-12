@@ -44,11 +44,6 @@ services:
     environment:
       SPRING_APPLICATION_NAME: config-server
       JAVA_OPTS: "-Xms128m -Xmx256m"
-    volumes:
-      - ./stockm-config-server/src/main/resources/config:/home/app/config
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./secrets:/app/secrets
-      - ./secrets/.env.jceks.prod:/app/.env.jceks
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -94,7 +89,6 @@ services:
         limits:
           memory: 1024M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
@@ -143,29 +137,17 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s # Allow some time for the server to start
-    dns: # Add this
-      - 8.8.8.8
-      - 1.1.1.1
-    #deploy:
-    #  resources:
-    #    limits:
-    #      memory: 512M
+      start_period: 10s
     networks:
       - urutare-stock-dev-network
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
 
   category-service:
     image: stockm-category-service:latest
     env_file:
       - ./secrets/envs/.env.category
       - ./secrets/envs/.env.common
-    expose:
-      - "8080"
-    #    ports:
-    #      - "8082:8080"
     restart: on-failure:3
     container_name: category-service-dev
     depends_on:
@@ -174,7 +156,6 @@ services:
       config-server:
         condition: service_healthy
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:
@@ -196,20 +177,13 @@ services:
     networks:
       - urutare-stock-dev-network
     volumes:
-      - ./stockm-config-server/src/main/resources/config:/home/app/config
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
 
   stock-service:
     image: stockm-stock-service:latest
     restart: on-failure:3
-    #    ports:
-    #      - "8084:8080"
-    expose:
-      - "8080"
     container_name: stock-service-dev
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.stock
@@ -238,22 +212,15 @@ services:
       start_period: 10s
     volumes:
       - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
 
   sync-service:
     image: stockm-sync-service:latest
-    #    ports:
-    #      - "8083:8080"
-    #      - "4000:5000"
-    expose:
-      - "8080"
-      - "5000"
     restart: on-failure:3
     container_name: sync-service-dev
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.sync
@@ -281,8 +248,7 @@ services:
       retries: 3
       start_period: 10s # Allow some time for the server to start
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
 
@@ -290,12 +256,7 @@ services:
     image: stockm-payment-service:latest
     container_name: "payment-service-dev"
     restart: on-failure:3
-    #    ports:
-    #      - "8086:8080"
-    expose:
-      - "8080"
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.payment
@@ -325,8 +286,7 @@ services:
         limits:
           memory: 512M
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
       - urutare-db-network
@@ -334,13 +294,8 @@ services:
   storage-service:
     image: stockm-storage-service:latest
     restart: on-failure:3
-    ports:
-      - "8086:8080"
-    expose:
-      - "8080"
     container_name: storage-service-dev
     environment:
-      SERVER_PORT: 8080
       JAVA_OPTS: "-Xms128m -Xmx256m"
     env_file:
       - ./secrets/envs/.env.storage
@@ -368,46 +323,9 @@ services:
       retries: 3
       start_period: 10s
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
-      - ./../../env.dev.jceks:/app/.env.jceks
+      - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
-
-  sms-gateway:
-    restart: on-failure:3
-    image: urutare/sms-service
-    container_name: sms-gateway-dev
-    env_file:
-      - ./secrets/envs/.env.sms
-      - ./secrets/envs/.env.common
-    environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      DB_DATABASE: stockm_sms_db_dev
-    ports:
-      - "8085:8000"
-    expose:
-      - "8000"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s # Allow some time for the server to start
-    depends_on:
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-      api-gateway:
-        condition: service_healthy
-    networks:
-      - urutare-stock-dev-network
-      - urutare-db-network
 
 networks:
   urutare-stock-dev-network:
