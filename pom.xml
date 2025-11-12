@@ -57,6 +57,7 @@
         <jjwt.version>0.9.1</jjwt.version>
         <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
         <jib-from-image>eclipse-temurin:21-jre-alpine</jib-from-image>
+        <springdoc.version>2.6.0</springdoc.version>
     </properties>
     <dependencyManagement>
         <dependencies>
