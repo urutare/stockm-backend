@@ -85,7 +85,7 @@ jobs:
 
               echo "Running setup and build processes..."
               ./setup.sh > /dev/null 2>&1
-              # ./build.sh > /dev/null 2>&1
+              ./build.sh > /dev/null 2>&1
 
               echo "Deploying development services..."
 
