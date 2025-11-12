@@ -44,6 +44,10 @@ services:
     environment:
       SPRING_APPLICATION_NAME: config-server
       JAVA_OPTS: "-Xms128m -Xmx256m"
+    volumes:
+      - ./stockm-config-server/src/main/resources/config:/home/app/config
+      - ./secrets:/app/secrets
+      - ./secrets/.env.jceks.dev:/app/.env.jceks
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -108,10 +112,6 @@ services:
   user-service:
     image: stockm-user-service:latest
     restart: on-failure:3
-    expose:
-      - "8080"
-    ports:
-      - "8081:8080"
     privileged: true
     container_name: user-service-dev
     environment:
@@ -211,7 +211,6 @@ services:
       retries: 3
       start_period: 10s
     volumes:
-      - ./secrets/.env.properties:/app/.env.properties
       - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
