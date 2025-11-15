@@ -52,6 +52,7 @@ services:
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
+      - urutare-db-network
     healthcheck:
       test:
         [
@@ -82,6 +83,7 @@ services:
         condition: service_healthy
     networks:
       - urutare-stock-prod-network
+      - urutare-db-network
     volumes:
       - ./secrets/.env.prod.jceks:/app/.env.jceks
 
@@ -106,6 +108,7 @@ services:
           memory: 512M
     networks:
       - urutare-stock-prod-network
+      - urutare-db-network
     volumes:
       - ./secrets/.env.prod.jceks:/app/.env.jceks
 
@@ -131,6 +134,7 @@ services:
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
+      - urutare-db-network
 
   sync-service-prod:
     image: stockm-sync-service:latest
@@ -154,6 +158,7 @@ services:
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
+      - urutare-db-network
 
   payment-service-prod:
     image: stockm-payment-service:latest
@@ -201,6 +206,7 @@ services:
       - ./secrets/.env.prod.jceks:/app/.env.jceks
     networks:
       - urutare-stock-prod-network
+      - urutare-db-network
 
   sms-gateway-prod:
     restart: on-failure:3
@@ -235,8 +241,3 @@ networks:
     external: false
   urutare-db-network:
     external: true
-
-volumes:
-  postgres-data:
-    driver: local
-    name: postgres-data
