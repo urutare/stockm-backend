@@ -54,6 +54,7 @@ services:
       - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
+      - urutare-db-network
     healthcheck:
       test:
         [
@@ -97,6 +98,7 @@ services:
       start_period: 10s
     networks:
       - urutare-stock-dev-network
+      - urutare-db-network
     volumes:
       - ./secrets/.env.dev.jceks:/app/.env.jceks
 
@@ -133,6 +135,7 @@ services:
       start_period: 10s
     networks:
       - urutare-stock-dev-network
+      - urutare-db-network
     volumes:
       - ./secrets/.env.dev.jceks:/app/.env.jceks
 
@@ -171,7 +174,7 @@ services:
       - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
-
+      - urutare-db-network
   sync-service:
     image: stockm-sync-service:latest
     restart: on-failure:3
@@ -207,7 +210,7 @@ services:
       - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
-
+      - urutare-db-network
   payment-service:
     image: stockm-payment-service:latest
     container_name: "payment-service-dev"
@@ -244,7 +247,6 @@ services:
     networks:
       - urutare-stock-dev-network
       - urutare-db-network
-
   storage-service:
     image: stockm-storage-service:latest
     restart: on-failure:3
@@ -280,7 +282,7 @@ services:
       - ./secrets/.env.dev.jceks:/app/.env.jceks
     networks:
       - urutare-stock-dev-network
-
+      - urutare-db-network
 networks:
   urutare-stock-dev-network:
     name: urutare-stock-dev-network
