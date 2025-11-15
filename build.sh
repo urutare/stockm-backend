@@ -18,15 +18,10 @@ services=(
 "stockm-storage-service"
 )
 
-# Maven clean install for project
-echo "Running Maven clean install for the entire project..."
-"${SCRIPT_PATH}"/mvnw -f "${SCRIPT_PATH}"/pom.xml clean install -DskipTests
-echo
-
 # Build new Docker image for each service
 for service in "${services[@]}"; do
     echo "Building Docker image for ${service}..."
-    "${SCRIPT_PATH}"/mvnw -f "${SCRIPT_PATH}/${service}/pom.xml" jib:dockerBuild
+    "${SCRIPT_PATH}"/mvnw -f "${SCRIPT_PATH}/${service}/pom.xml" compile jib:dockerBuild -DskipTests
 done
 
 echo "All Docker images have been built successfully."
