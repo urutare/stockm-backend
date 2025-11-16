@@ -208,10 +208,10 @@ services:
       - urutare-stock-prod-network
       - urutare-db-network
 
-  sms-gateway-prod:
+  sms-gateway:
     restart: on-failure:3
     image: urutare/sms-service
-    container_name: sms-gateway-prod
+    container_name: sms-gateway
     env_file:
       - ./secrets/envs/.env.sms
       - ./secrets/envs/.env.common
