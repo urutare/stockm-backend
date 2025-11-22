@@ -46,9 +46,9 @@ for r in "${repositories[@]}"; do
     if [ -d "$r" ]; then
         echo "Updating $r..."
         cd "$r" || exit
-        git checkout main
+        git checkout develop
         git stash
-        git pull origin main
+        git pull origin develop
         cd ..
     else
         echo "$r does not exist. Cloning..."

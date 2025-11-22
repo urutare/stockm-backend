@@ -43,20 +43,21 @@ jobs:
             sudo sh -c "
               cd ${{ env.TARGET_DIR }}
 
-              # Remove existing repo if it exists
-              if [ -d \"stockm-backend-prod\" ]; then
-                echo \"Removing existing repository...\"
-                rm -rf stockm-backend-prod
+              # Clone the repository if it doesn't exist
+              if [ ! -d \"stockm-backend-prod\" ]; then
+                echo \"Cloning repository...\"
+                git clone ${{ env.MOTHER_REPO_URL }} stockm-backend-prod
+                cd stockm-backend-prod
+                git checkout main
+                echo \"Successfully cloned repository on main branch\"
+              else
+                echo \"Repository already exists, pulling latest changes...\"
+                cd stockm-backend-prod
+                git fetch origin
+                git checkout main
+                git pull origin main
+                echo \"Successfully updated repository to latest main branch\"
               fi
-
-              # Clone the repository
-              echo \"Cloning repository...\"
-              git clone ${{ env.MOTHER_REPO_URL }} stockm-backend-prod
-
-              cd stockm-backend-prod
-              git checkout main
-
-              echo \"Successfully cloned repository on main branch\"
             "
 
       - name: Build and Deploy Services
