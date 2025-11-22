@@ -18,6 +18,10 @@ services=(
 "stockm-storage-service"
 )
 
+# Clean installation
+echo "Performing clean installation..."
+"${SCRIPT_PATH}"/mvnw clean install -DskipTests
+
 # Build new Docker image for each service
 for service in "${services[@]}"; do
     echo "Building Docker image for ${service}..."
