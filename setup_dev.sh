@@ -1,7 +1,6 @@
 #!/bin/bash
 # Array of repository names
 repositories=(
-"stockm-config-server"
 "stockm-category-service"
 "stockm-sync-service"
 "stockm-stock-service"
