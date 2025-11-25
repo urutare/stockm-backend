@@ -35,7 +35,6 @@
         <module>POSMainExport</module>
         <module>stockm-common-core</module>
         <module>stockm-discovery-service</module>
-        <module>stockm-config-server</module>
         <module>stockm-api-gateway</module>
         <module>stockm-auth-service</module>
         <module>stockm-sync-service</module>
