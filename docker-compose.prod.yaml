@@ -212,6 +212,9 @@ services:
     restart: on-failure:3
     image: urutare/sms-service
     container_name: sms-gateway
+    build:
+      context: ./sms-gateway
+      dockerfile: Dockerfile
     env_file:
       - ./secrets/envs/.env.sms
       - ./secrets/envs/.env.common
